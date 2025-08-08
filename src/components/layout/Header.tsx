@@ -24,7 +24,7 @@ const Header = () => {
       animate={{ opacity: 1, y: 0 }}
       className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-xl"
     >
-      <div className="px-6 py-4 ml-64">
+      <div className="px-6 py-4">
         <ShinyProgressHeader
           title="Startup Journey"
           subtitle={`${format(today, "EEEE, MMMM do")} • ${daysRemaining} days left`}
