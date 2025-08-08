@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useChatCompletion } from "../hooks/useChat";
+import { GlassIconButton } from "../components/ui/glass-icon-button";
 
 interface Message {
   id: string;
@@ -169,14 +170,22 @@ export default function Chat() {
             rows={2}
             className="flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
-          <button
+          <GlassIconButton
             onClick={sendMessage}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:opacity-90 disabled:opacity-50"
+            ariaLabel="Send message"
+            title="Send"
             disabled={!canSend}
           >
-            <span>Send</span>
-            <span aria-hidden>↩︎</span>
-          </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-5 w-5"
+              aria-hidden
+            >
+              <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2 .01 7z" />
+            </svg>
+          </GlassIconButton>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">Press Enter to send, Shift+Enter for a new line.</p>
       </div>
