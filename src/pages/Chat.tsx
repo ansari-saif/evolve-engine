@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 
 interface Message {
   id: string;
@@ -27,12 +28,48 @@ export default function Chat() {
   ]);
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // OpenAPI details (from openapi.json)
+  const apiBaseUrl = "https://webhook.site";
+  const apiPath = "/151586b8-443e-48ea-be1e-c664fdb2e9a0";
+  const apiUrl = useMemo(() => `${apiBaseUrl}${apiPath}`, [apiBaseUrl, apiPath]);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
 
-  const sendMessage = async () => {
+  const { mutateAsync: askApi, isPending } = useMutation<{ answer?: string }, Error, { prompt: string }>(
+    {
+      mutationFn: async ({ prompt }) => {
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            accept: "application/json",
+          },
+          body: JSON.stringify({ prompt }),
+        });
+        // Webhook.site returns 200 OK but may not echo JSON; handle gracefully
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          return (await res.json()) as { answer?: string };
+        }
+        // Fallback: try text
+        const text = await res.text();
+        // Attempt to parse JSON from text, otherwise wrap
+        try {
+          return JSON.parse(text);
+        } catch {
+          return { answer: text || undefined };
+        }
+      },
+    }
+  );
+
+  const canSend = useMemo(() => input.trim().length > 0 && !isPending, [input, isPending]);
+
+  const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text) return;
 
@@ -40,34 +77,51 @@ export default function Chat() {
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
-    // Fake assistant response for now
     const thinkingId = crypto.randomUUID();
     setMessages((m) => [
       ...m,
       { id: thinkingId, role: "assistant", content: "", loading: true },
     ]);
 
-    setTimeout(() => {
+    try {
+      const data = await askApi({ prompt: text });
+      const answer = data?.answer ?? "";
+      setMessages((m) =>
+        m.map((msg) =>
+          msg.id === thinkingId
+            ? { ...msg, loading: false, content: answer || "(No answer received)" }
+            : msg
+        )
+      );
+    } catch (err: unknown) {
       setMessages((m) =>
         m.map((msg) =>
           msg.id === thinkingId
             ? {
                 ...msg,
                 loading: false,
-                content: `You said: "${text}". (Hook this up to your backend/LLM)`,
+                content:
+                  "Error: " +
+                  (err instanceof Error ? err.message : String(err) || "Failed to get response"),
               }
             : msg
         )
       );
-    }, 600);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+    } finally {
+      // Return focus for faster typing
+      inputRef.current?.focus();
     }
-  };
+  }, [askApi, input]);
+
+  const onKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (canSend) void sendMessage();
+      }
+    },
+    [canSend, sendMessage]
+  );
 
   return (
     <div className="mx-auto max-w-3xl h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] flex flex-col">
@@ -129,6 +183,7 @@ export default function Chat() {
       <div className="mt-4">
         <div className="flex items-end gap-2">
           <textarea
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
@@ -139,7 +194,7 @@ export default function Chat() {
           <button
             onClick={sendMessage}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:opacity-90 disabled:opacity-50"
-            disabled={!input.trim()}
+            disabled={!canSend}
           >
             <span>Send</span>
             <span aria-hidden>↩︎</span>
