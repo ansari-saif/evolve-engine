@@ -12,6 +12,8 @@ import Statistics from "./pages/Statistics";
 import Settings from "./pages/Settings";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Chat from "./pages/Chat";
+import BottomTabBar from "@/components/layout/BottomTabBar";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +29,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-background p-8">
+          <div className="min-h-screen bg-background p-8 pb-24">
             <Routes>
               <Route path="/welcome" element={<Index />} />
               <Route path="/" element={<Dashboard />} />
@@ -36,9 +38,11 @@ const App = () => {
               <Route path="/diary" element={<Diary />} />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/chat" element={<Chat />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <BottomTabBar />
           </div>
         </BrowserRouter>
       </TooltipProvider>

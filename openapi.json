@@ -1,0 +1,130 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Webhook API",
+    "version": "1.0.0",
+    "description": "Auto-generated OpenAPI spec for the /151586b8-443e-48ea-be1e-c664fdb2e9a0 POST endpoint."
+  },
+  "servers": [
+    {
+      "url": "https://webhook.site",
+      "description": "Webhook server"
+    }
+  ],
+  "paths": {
+    "/151586b8-443e-48ea-be1e-c664fdb2e9a0": {
+      "post": {
+        "summary": "Send data to Webhook",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "content-length",
+            "schema": {
+              "type": "string",
+              "example": "31"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "accept-encoding",
+            "schema": {
+              "type": "string",
+              "example": "gzip, deflate, br"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "host",
+            "schema": {
+              "type": "string",
+              "example": "webhook.site"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "postman-token",
+            "schema": {
+              "type": "string",
+              "example": "bf2e5af4-f14d-4fb9-bf17-1400826e0bf4"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "cache-control",
+            "schema": {
+              "type": "string",
+              "example": "no-cache"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "accept",
+            "schema": {
+              "type": "string",
+              "example": "*/*"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "user-agent",
+            "schema": {
+              "type": "string",
+              "example": "PostmanRuntime/7.45.0"
+            },
+            "required": true
+          },
+          {
+            "in": "header",
+            "name": "content-type",
+            "schema": {
+              "type": "string",
+              "example": "application/json"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "example": "hello - saif"
+                  }
+                },
+                "required": ["prompt"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Request successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "answer": {
+                      "type": "string",
+                      "example": "hey how are you"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
