@@ -14,6 +14,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
 import BottomTabBar from "@/components/layout/BottomTabBar";
+import Header from "@/components/layout/Header";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +30,8 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-background p-8 pb-24">
+          <div className="min-h-screen bg-background p-8 pb-24 pt-28">
+            <Header />
             <Routes>
               <Route path="/welcome" element={<Index />} />
               <Route path="/" element={<Dashboard />} />
