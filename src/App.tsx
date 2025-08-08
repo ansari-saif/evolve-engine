@@ -11,7 +11,6 @@ import Diary from "./pages/Diary";
 import Statistics from "./pages/Statistics";
 import Settings from "./pages/Settings";
 import Index from "./pages/Index";
-import Layout from "./components/layout/Layout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,41 +27,19 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/welcome" element={<Index />} />
-            <Route path="/" element={
-              <Layout>
-                <Dashboard />
-              </Layout>
-            } />
-            <Route path="/tasks" element={
-              <Layout>
-                <Tasks />
-              </Layout>
-            } />
-            <Route path="/goals" element={
-              <Layout>
-                <Goals />
-              </Layout>
-            } />
-            <Route path="/diary" element={
-              <Layout>
-                <Diary />
-              </Layout>
-            } />
-            <Route path="/statistics" element={
-              <Layout>
-                <Statistics />
-              </Layout>
-            } />
-            <Route path="/settings" element={
-              <Layout>
-                <Settings />
-              </Layout>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <div className="min-h-screen bg-background p-8">
+            <Routes>
+              <Route path="/welcome" element={<Index />} />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/goals" element={<Goals />} />
+              <Route path="/diary" element={<Diary />} />
+              <Route path="/statistics" element={<Statistics />} />
+              <Route path="/settings" element={<Settings />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

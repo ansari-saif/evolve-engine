@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { TrendingUp, CheckCircle, Flame, Clock } from "lucide-react";
+import { LiquidCard } from "../ui/liquid-card";
 
 const stats = [
   {
@@ -51,24 +52,17 @@ const StatsCards = () => {
         const Icon = stat.icon;
         
         return (
-          <motion.div
+          <LiquidCard
             key={stat.id}
+            variant={stat.gradient === "bg-gradient-success" ? "success" : 
+                    stat.gradient === "bg-gradient-warning" ? "warning" : 
+                    stat.gradient === "bg-gradient-primary" ? "primary" : "secondary"}
+            hoverEffect="both"
+            className="p-6 cursor-pointer group relative"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.5 }}
-            whileHover={{ 
-              scale: 1.05, 
-              y: -4,
-              boxShadow: "0 20px 40px -12px rgba(99, 102, 241, 0.25)"
-            }}
-            className="bg-card rounded-2xl p-6 border border-border/50 shadow-card cursor-pointer group relative overflow-hidden"
           >
-            {/* Background gradient on hover */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 0.05 }}
-              className={`absolute inset-0 ${stat.gradient}`}
-            />
             
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
@@ -103,7 +97,7 @@ const StatsCards = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </LiquidCard>
         );
       })}
     </div>

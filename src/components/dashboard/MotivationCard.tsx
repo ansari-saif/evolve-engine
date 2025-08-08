@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Zap, Heart, Target } from "lucide-react";
 import { useState, useEffect } from "react";
+import { LiquidGlass } from "../ui/liquid-glass";
 
 interface MotivationMessage {
   type: "celebration" | "encouragement" | "accountability" | "inspiration";
@@ -66,14 +67,12 @@ const MotivationCard = () => {
   const Icon = currentMessage.icon;
 
   return (
-    <motion.div
+    <LiquidGlass
+      intensity={8}
+      color={getGradientByType(currentMessage.type)}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.02, y: -2 }}
-      className={`
-        ${getGradientByType(currentMessage.type)} rounded-2xl p-6 text-white relative overflow-hidden cursor-pointer
-        shadow-card hover:shadow-glow transition-all duration-300
-      `}
+      className="p-6 text-white relative cursor-pointer"
     >
       {/* Animated background elements */}
       <motion.div
@@ -177,7 +176,7 @@ const MotivationCard = () => {
           </motion.div>
         )}
       </div>
-    </motion.div>
+    </LiquidGlass>
   );
 };
 

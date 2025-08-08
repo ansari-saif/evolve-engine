@@ -3,25 +3,33 @@ import WeeklyRoadmap from "../components/dashboard/WeeklyRoadmap";
 import StatsCards from "../components/dashboard/StatsCards";
 import TodaysTasks from "../components/dashboard/TodaysTasks";
 import MotivationCard from "../components/dashboard/MotivationCard";
+import { LiquidGlass } from "../components/ui/liquid-glass";
 
 const Dashboard = () => {
   return (
-    <div className="space-y-6 pt-16">
+    <div className="space-y-6">
       {/* Hero Section with Weekly Roadmap */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold text-gradient-primary mb-2">
-            Your Startup Journey
-          </h1>
-          <p className="text-text-secondary text-lg">
-            Transform your dreams into reality, one day at a time.
-          </p>
-        </div>
-        <WeeklyRoadmap />
+        <LiquidGlass 
+          intensity={3}
+          borderRadius="1.5rem"
+          className="p-6 mb-6"
+          disableHoverEffect={true}
+        >
+          <div className="mb-6">
+            <h1 className="text-4xl font-bold text-gradient-primary mb-2">
+              Your Startup Journey
+            </h1>
+            <p className="text-text-secondary text-lg">
+              Transform your dreams into reality, one day at a time.
+            </p>
+          </div>
+          <WeeklyRoadmap />
+        </LiquidGlass>
       </motion.section>
 
       {/* Stats Overview */}

@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { CheckCircle, Circle, Clock, Plus, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LiquidCard } from "../ui/liquid-card";
+import { LiquidButton } from "../ui/liquid-button";
 import { useState } from "react";
 import confetti from "canvas-confetti";
 
@@ -82,10 +84,12 @@ const TodaysTasks = () => {
   };
 
   return (
-    <motion.div
+    <LiquidCard
+      variant="default"
+      hoverEffect="glow"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-2xl p-6 border border-border/50 shadow-card"
+      className="p-6"
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
@@ -110,10 +114,9 @@ const TodaysTasks = () => {
               <span className="text-xs font-semibold">On Fire!</span>
             </motion.div>
           )}
-          <Button size="sm" className="bg-gradient-primary hover:opacity-90">
-            <Plus className="w-4 h-4 mr-1" />
+          <LiquidButton size="sm" variant="primary" icon={<Plus className="w-4 h-4" />}>
             Add
-          </Button>
+          </LiquidButton>
         </div>
       </div>
 
@@ -204,14 +207,14 @@ const TodaysTasks = () => {
           </motion.div>
         ))}
       </div>
-
+      
       {tasks.length === 0 && (
         <div className="text-center py-8 text-text-muted">
           <Circle className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p>No tasks for today. Add one to get started!</p>
         </div>
       )}
-    </motion.div>
+    </LiquidCard>
   );
 };
 
