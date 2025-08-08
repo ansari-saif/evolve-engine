@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useChatCompletion } from "../hooks/useChat";
 
 interface Message {
   id: string;
@@ -30,40 +31,17 @@ export default function Chat() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // OpenAPI details (from openapi.json)
-  const apiBaseUrl = "https://webhook.site";
-  const apiPath = "/151586b8-443e-48ea-be1e-c664fdb2e9a0";
-  const apiUrl = useMemo(() => `${apiBaseUrl}${apiPath}`, [apiBaseUrl, apiPath]);
+  // Initialize chat client hook (base URL is centralized in OpenAPI.BASE)
+  const { ask } = useChatCompletion();
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
 
+  // Backward compat: keep types, but delegate to hook
   const { mutateAsync: askApi, isPending } = useMutation<{ answer?: string }, Error, { prompt: string }>(
     {
-      mutationFn: async ({ prompt }) => {
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            accept: "application/json",
-          },
-          body: JSON.stringify({ prompt }),
-        });
-        // Webhook.site returns 200 OK but may not echo JSON; handle gracefully
-        const contentType = res.headers.get("content-type") || "";
-        if (contentType.includes("application/json")) {
-          return (await res.json()) as { answer?: string };
-        }
-        // Fallback: try text
-        const text = await res.text();
-        // Attempt to parse JSON from text, otherwise wrap
-        try {
-          return JSON.parse(text);
-        } catch {
-          return { answer: text || undefined };
-        }
-      },
+      mutationFn: async ({ prompt }) => ask({ prompt }),
     }
   );
 
