@@ -8,89 +8,121 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Main backgrounds - Modern dark theme */
+    --background: 220 13% 6%;        /* Slate 900 equivalent */
+    --foreground: 210 20% 95%;       /* Slate 50 equivalent */
+    --surface: 217 19% 12%;          /* Slate 800 equivalent */
+    --surface-light: 215 16% 17%;    /* Slate 700 equivalent */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card backgrounds */
+    --card: 217 19% 12%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popover backgrounds */
+    --popover: 217 19% 12%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Indigo brand color */
+    --primary: 231 48% 63%;          /* Indigo 500 */
+    --primary-dark: 232 54% 56%;     /* Indigo 600 */
+    --primary-foreground: 210 20% 95%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Pink accent for motivation */
+    --secondary: 328 86% 70%;        /* Pink 400 */
+    --secondary-foreground: 210 20% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Success - Green for completed items */
+    --success: 158 64% 52%;          /* Green 500 */
+    --success-foreground: 210 20% 95%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Warning - Amber for deadlines */
+    --warning: 43 96% 56%;           /* Amber 400 */
+    --warning-foreground: 220 13% 6%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Danger - Red for overdue items */
+    --danger: 0 84% 60%;             /* Red 500 */
+    --danger-foreground: 210 20% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Text colors */
+    --text-primary: 210 20% 95%;     /* Slate 50 */
+    --text-secondary: 215 16% 65%;   /* Slate 400 */
+    --text-muted: 215 20% 45%;       /* Slate 500 */
 
-    --radius: 0.5rem;
+    /* Muted backgrounds */
+    --muted: 215 16% 17%;
+    --muted-foreground: 215 16% 65%;
 
-    --sidebar-background: 0 0% 98%;
+    /* Accent backgrounds */
+    --accent: 215 16% 17%;
+    --accent-foreground: 210 20% 95%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 95%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Borders and inputs */
+    --border: 215 16% 17%;
+    --input: 215 16% 17%;
+    --ring: 231 48% 63%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Gradients for beautiful effects */
+    --gradient-primary: linear-gradient(135deg, hsl(231 48% 63%) 0%, hsl(250 84% 70%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(158 64% 52%) 0%, hsl(158 84% 45%) 100%);
+    --gradient-motivation: linear-gradient(135deg, hsl(328 86% 70%) 0%, hsl(347 77% 65%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(38 92% 50%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(217 19% 12%) 0%, hsl(220 13% 9%) 100%);
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Shadows with primary color */
+    --shadow-elegant: 0 10px 30px -10px hsl(231 48% 63% / 0.3);
+    --shadow-glow: 0 0 40px hsl(231 48% 70% / 0.4);
+    --shadow-card: 0 4px 16px -4px hsl(217 19% 8% / 0.4);
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Animation variables */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 
-    --sidebar-border: 220 13% 91%;
+    --radius: 0.75rem;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar colors */
+    --sidebar-background: 217 19% 12%;
+    --sidebar-foreground: 215 16% 65%;
+    --sidebar-primary: 231 48% 63%;
+    --sidebar-primary-foreground: 210 20% 95%;
+    --sidebar-accent: 215 16% 17%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 16% 17%;
+    --sidebar-ring: 231 48% 63%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Already optimized for dark theme above */
+    --background: 220 13% 6%;
+    --foreground: 210 20% 95%;
+    --card: 217 19% 12%;
+    --card-foreground: 210 20% 95%;
+    --popover: 217 19% 12%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 231 48% 63%;
+    --primary-foreground: 210 20% 95%;
+    --secondary: 328 86% 70%;
+    --secondary-foreground: 210 20% 95%;
+    --muted: 215 16% 17%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 215 16% 17%;
+    --accent-foreground: 210 20% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 95%;
+    --border: 215 16% 17%;
+    --input: 215 16% 17%;
+    --ring: 231 48% 63%;
+    --sidebar-background: 217 19% 12%;
+    --sidebar-foreground: 215 16% 65%;
+    --sidebar-primary: 231 48% 63%;
+    --sidebar-primary-foreground: 210 20% 95%;
+    --sidebar-accent: 215 16% 17%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 215 16% 17%;
+    --sidebar-ring: 231 48% 63%;
   }
 }
 
@@ -101,5 +133,102 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-variant-numeric: tabular-nums;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+}
+
+@layer components {
+  /* Gradient backgrounds for cards and buttons */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .bg-gradient-success {
+    background: var(--gradient-success);
+  }
+
+  .bg-gradient-motivation {
+    background: var(--gradient-motivation);
+  }
+
+  .bg-gradient-warning {
+    background: var(--gradient-warning);
+  }
+
+  .bg-gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  /* Shadow utilities */
+  .shadow-elegant {
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Animation utilities */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-spring {
+    transition: var(--transition-spring);
+  }
+
+  /* Interactive elements */
+  .hover-scale {
+    @apply transition-all duration-200 hover:scale-105;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  /* Text gradients */
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-motivation {
+    background: var(--gradient-motivation);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
