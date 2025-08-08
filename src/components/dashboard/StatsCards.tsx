@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { TrendingUp, CheckCircle, Flame, Clock } from "lucide-react";
-import { floatingCard, floatingIcon } from "@/utils/animations";
 
 const stats = [
   {
@@ -55,24 +54,14 @@ const StatsCards = () => {
           <motion.div
             key={stat.id}
             initial={{ opacity: 0, y: 20 }}
-            animate={{ 
-              opacity: 1, 
-              y: [0, -8, 0],
-              rotate: [0, 0.5, 0]
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.5 }}
+            whileHover={{ 
+              scale: 1.05, 
+              y: -4,
+              boxShadow: "0 20px 40px -12px rgba(99, 102, 241, 0.25)"
             }}
-            transition={{ 
-              opacity: { duration: 0.5, delay: index * 0.1 },
-              y: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: index * 0.5 },
-              rotate: { duration: 6, repeat: Infinity, ease: "easeInOut", delay: index * 0.5 }
-            }}
-            whileHover={{
-              scale: 1.05,
-              y: -12,
-              rotate: 1,
-              boxShadow: "0 25px 50px -12px hsl(var(--primary) / 0.25)",
-              transition: { duration: 0.3, ease: "easeOut" }
-            }}
-            className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-card cursor-pointer group relative overflow-hidden"
+            className="bg-card rounded-2xl p-6 border border-border/50 shadow-card cursor-pointer group relative overflow-hidden"
           >
             {/* Background gradient on hover */}
             <motion.div
@@ -84,18 +73,8 @@ const StatsCards = () => {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-4">
                 <motion.div
-                  animate={{
-                    y: [0, -10, 0],
-                    rotate: [0, 10, 0]
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: [0.4, 0, 0.2, 1],
-                    delay: index * 0.2
-                  }}
-                  whileHover={{ scale: 1.2, rotate: 15 }}
-                  className={`w-10 h-10 ${stat.gradient} rounded-xl flex items-center justify-center shadow-lg`}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className={`w-10 h-10 ${stat.gradient} rounded-xl flex items-center justify-center`}
                 >
                   <Icon className="w-5 h-5 text-white" />
                 </motion.div>

@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Sparkles, TrendingUp, Zap, Heart, Target } from "lucide-react";
 import { useState, useEffect } from "react";
-import { pulsatingGlow, floatingIcon } from "@/utils/animations";
 
 interface MotivationMessage {
   type: "celebration" | "encouragement" | "accountability" | "inspiration";
@@ -69,43 +68,24 @@ const MotivationCard = () => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ 
-        opacity: 1, 
-        scale: [1, 1.02, 1],
-        boxShadow: [
-          "0 0 20px hsl(var(--primary) / 0.3)",
-          "0 0 40px hsl(var(--primary) / 0.5)", 
-          "0 0 20px hsl(var(--primary) / 0.3)"
-        ]
-      }}
-      transition={{
-        scale: { duration: 3, repeat: Infinity, ease: [0.4, 0, 0.2, 1] },
-        boxShadow: { duration: 3, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }
-      }}
-      whileHover={{ 
-        scale: 1.05, 
-        y: -8,
-        rotate: 0.5,
-        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-      }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02, y: -2 }}
       className={`
         ${getGradientByType(currentMessage.type)} rounded-2xl p-6 text-white relative overflow-hidden cursor-pointer
-        shadow-card hover:shadow-glow transition-all duration-300 backdrop-blur-sm
+        shadow-card hover:shadow-glow transition-all duration-300
       `}
     >
       {/* Animated background elements */}
       <motion.div
         animate={{ 
           rotate: 360,
-          scale: [1, 1.2, 1],
-          y: [0, -5, 0]
+          scale: [1, 1.1, 1]
         }}
         transition={{ 
-          rotate: { duration: 15, repeat: Infinity, ease: "linear" },
-          scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-          y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+          rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+          scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
         }}
-        className="absolute -top-4 -right-4 w-20 h-20 opacity-25"
+        className="absolute -top-4 -right-4 w-16 h-16 opacity-20"
       >
         <Icon className="w-16 h-16" />
       </motion.div>
@@ -129,17 +109,8 @@ const MotivationCard = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <motion.div
-              animate={{
-                y: [0, -10, 0],
-                rotate: [0, 10, 0]
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: [0.4, 0, 0.2, 1]
-              }}
-              whileHover={{ scale: 1.2, rotate: 25 }}
-              className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg"
+              whileHover={{ scale: 1.1, rotate: 15 }}
+              className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center"
             >
               <Icon className="w-4 h-4" />
             </motion.div>

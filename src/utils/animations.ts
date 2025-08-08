@@ -7,26 +7,6 @@ export const pageTransition = {
   transition: { duration: 0.3, ease: "easeInOut" }
 };
 
-// Enhanced floating animations
-export const floatingCard = {
-  animate: {
-    y: [0, -8, 0],
-    rotate: [0, 0.5, 0],
-    transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: [0.4, 0, 0.2, 1]
-    }
-  },
-  hover: {
-    scale: 1.05,
-    y: -12,
-    rotate: 1,
-    boxShadow: "0 25px 50px -12px hsl(var(--primary) / 0.25)",
-    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-  }
-};
-
 export const cardHover = {
   hover: {
     scale: 1.02,
@@ -105,78 +85,6 @@ export const bounceIn = {
       type: "spring",
       stiffness: 400,
       damping: 25
-    }
-  }
-};
-
-// Floating background elements
-export const floatingElement = {
-  animate: {
-    y: [0, -20, 0],
-    x: [0, 10, 0],
-    rotate: [0, 5, 0],
-    scale: [1, 1.1, 1],
-    transition: {
-      duration: 8,
-      repeat: Infinity,
-      ease: [0.4, 0, 0.2, 1]
-    }
-  }
-};
-
-export const floatingElementReverse = {
-  animate: {
-    y: [0, 15, 0],
-    x: [0, -8, 0],
-    rotate: [0, -3, 0],
-    scale: [1, 0.9, 1],
-    transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: [0.4, 0, 0.2, 1],
-      delay: 2
-    }
-  }
-};
-
-// Enhanced motivation card animations
-export const pulsatingGlow = {
-  animate: {
-    boxShadow: [
-      "0 0 20px hsl(var(--primary) / 0.3)",
-      "0 0 40px hsl(var(--primary) / 0.5)", 
-      "0 0 20px hsl(var(--primary) / 0.3)"
-    ],
-    scale: [1, 1.02, 1],
-    transition: {
-      duration: 3,
-      repeat: Infinity,
-      ease: [0.4, 0, 0.2, 1]
-    }
-  }
-};
-
-// Floating icon animations
-export const floatingIcon = {
-  animate: {
-    y: [0, -10, 0],
-    rotate: [0, 10, 0],
-    transition: {
-      duration: 4,
-      repeat: Infinity,
-      ease: [0.4, 0, 0.2, 1]
-    }
-  }
-};
-
-// Alive breathing animation for containers
-export const breathingContainer = {
-  animate: {
-    scale: [1, 1.01, 1],
-    transition: {
-      duration: 4,
-      repeat: Infinity,
-      ease: [0.4, 0, 0.2, 1]
     }
   }
 };
