@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useChatCompletion } from "../hooks/useChat";
 import { GlassIconButton } from "../components/ui/glass-icon-button";
+import { useNotification } from "@/hooks/use-notification";
 
 interface Message {
   id: string;
@@ -34,10 +35,85 @@ export default function Chat() {
 
   // Initialize chat client hook (base URL is centralized in OpenAPI.BASE)
   const { ask } = useChatCompletion();
+  // Native notifications
+  const { notify, permission, isSupported, requestPermission } = useNotification();
+
+  // Fallback alerts: beep and flash title
+  const playBeep = useCallback(() => {
+    try {
+      type WindowWithWebkitAudio = Window & { webkitAudioContext?: typeof AudioContext };
+      const w = window as WindowWithWebkitAudio;
+      const Ctx = window.AudioContext ?? w.webkitAudioContext;
+      if (!Ctx) return; // audio not supported
+      const ctx = new Ctx();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = 880; // A5
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      o.start();
+      o.stop(ctx.currentTime + 0.32);
+    } catch (e) {
+      // ignore audio failures
+    }
+  }, []);
+
+  const flashTitle = useCallback((msg: string) => {
+    const original = document.title;
+    let on = false;
+    const id = setInterval(() => {
+      document.title = on ? original : `✦ ${msg}`;
+      on = !on;
+    }, 600);
+    const clear = () => {
+      clearInterval(id);
+      document.title = original;
+      window.removeEventListener('focus', clear);
+      document.removeEventListener('visibilitychange', clear);
+    };
+    window.addEventListener('focus', clear);
+    document.addEventListener('visibilitychange', clear);
+    // auto clear after 8s
+    setTimeout(clear, 8000);
+  }, []);
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
+
+  // Try to request permission early (non-blocking)
+  useEffect(() => {
+    if (isSupported && permission === "default") {
+      // Fire and forget; users may still deny
+      void requestPermission();
+    }
+  }, [isSupported, permission, requestPermission]);
+
+  const handleEnableNotifications = useCallback(async () => {
+    const res = await requestPermission();
+    if (res === "granted") {
+      void notify("Notifications enabled", {
+        body: "You will receive chat updates here.",
+      });
+    }
+  }, [notify, requestPermission]);
+
+  const handleTestNotification = useCallback(async () => {
+    if (permission === "granted") {
+      const ok = await notify("Test notification", {
+        body: "If you see this, notifications work.",
+        requireInteraction: true,
+        tag: "chat-test",
+      });
+      if (!ok) {
+        console.warn("notify() returned false even though permission is granted");
+      }
+    }
+  }, [notify, permission]);
 
   // Backward compat: keep types, but delegate to hook
   const { mutateAsync: askApi, isPending } = useMutation<{ answer?: string }, Error, { prompt: string }>(
@@ -51,6 +127,11 @@ export default function Chat() {
   const sendMessage = useCallback(async () => {
     const text = input.trim();
     if (!text) return;
+
+    // Ensure we prompt for notification permission during a user gesture
+    if (isSupported && permission === "default") {
+      await requestPermission();
+    }
 
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     setMessages((m) => [...m, userMsg]);
@@ -72,6 +153,19 @@ export default function Chat() {
             : msg
         )
       );
+      // Native notification on successful reply (only if allowed)
+      const canNotify = permission === "granted" || Notification.permission === "granted";
+      if (canNotify) {
+        void notify("Reply received", {
+          body: answer ? "The assistant has responded." : "No content returned.",
+          icon: "/favicon.ico",
+        });
+        // Fallback cue in case OS delivers quietly
+        playBeep();
+        flashTitle("Reply received");
+      } else {
+        console.warn("Notification not shown: permission=", permission);
+      }
     } catch (err: unknown) {
       setMessages((m) =>
         m.map((msg) =>
@@ -86,11 +180,25 @@ export default function Chat() {
             : msg
         )
       );
+      // Native notification on error (only if allowed)
+      const canNotifyErr = permission === "granted" || Notification.permission === "granted";
+      if (canNotifyErr) {
+        void notify("Failed to get response", {
+          body:
+            err instanceof Error ? err.message : String(err) || "Unknown error occurred",
+          icon: "/favicon.ico",
+        });
+        // Fallback cue in case OS delivers quietly
+        playBeep();
+        flashTitle("Chat error");
+      } else {
+        console.warn("Notification not shown: permission=", permission);
+      }
     } finally {
       // Return focus for faster typing
       inputRef.current?.focus();
     }
-  }, [askApi, input]);
+  }, [askApi, input, notify, permission, isSupported, requestPermission, playBeep, flashTitle]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -108,6 +216,37 @@ export default function Chat() {
       <div className="pb-2">
         <h1 className="text-xl font-semibold">Chat</h1>
         <p className="text-sm text-muted-foreground">ChatGPT-like interface</p>
+        {isSupported ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Permission: {permission}</span>
+            {permission !== "granted" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleEnableNotifications}
+                  className="px-2 py-1 text-xs rounded-md border bg-background hover:bg-muted"
+                >
+                  Enable notifications
+                </button>
+                {permission === "denied" && (
+                  <span className="text-xs text-muted-foreground">
+                    Unblock in browser site settings (lock icon → Site settings → Notifications → Allow).
+                  </span>
+                )}
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleTestNotification}
+                className="px-2 py-1 text-xs rounded-md border bg-background hover:bg-muted"
+              >
+                Test notification
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">Notifications not supported in this browser.</p>
+        )}
       </div>
 
       {/* Messages */}

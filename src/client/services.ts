@@ -46,7 +46,9 @@ requestBody,
 			method: 'POST',
 			url: '/151586b8-443e-48ea-be1e-c664fdb2e9a0',
 			headers: {
-				'content-length': contentLength, 'accept-encoding': acceptEncoding, host, 'postman-token': postmanToken, 'cache-control': cacheControl, accept, 'user-agent': userAgent, 'content-type': contentType
+				// Only include safe, browser-allowed headers. Others are managed by the browser.
+				accept,
+				'content-type': contentType,
 			},
 			body: requestBody,
 			mediaType: 'application/json',
