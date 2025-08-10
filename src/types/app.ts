@@ -1,5 +1,14 @@
 // Application-specific types for the startup diary
 
+import type { CompletionStatusEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../client/models';
+
+export type TaskFilter = {
+  status: CompletionStatusEnum | 'All';
+  priority: TaskPriorityEnum | 'All';
+  energy: EnergyRequiredEnum | 'All';
+  goal: number | 'All';
+};
+
 export interface Task {
   id: number;
   title: string;

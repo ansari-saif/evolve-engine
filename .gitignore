@@ -31,6 +31,4 @@ node_modules/
 .vscode
 # OS specific
 
-# Task files
-tasks.json
-tasks/ 
+
