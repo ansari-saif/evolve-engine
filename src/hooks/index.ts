@@ -63,12 +63,50 @@ export {
   useCreateJobMetric,
   useUpdateJobMetric,
   useDeleteJobMetric,
-  useGenerateJobMetricsForUser,
+  useGenerateJobMetrics,
   useUpdateFinancialMetrics,
   useAnalyzeMetricsWithAi,
 } from './useJobMetrics';
 
-export { useChatCompletion } from './useChat';
+export { 
+  useUsers,
+  useGetUsers,
+  useGetUser,
+  useGetUserProfile,
+  useCreateUser,
+  useUpdateUser,
+  useDeleteUser,
+} from './useUsers';
+
+export { 
+  useAiContext,
+  useGetAiContext,
+  useGetAiContextByUser,
+  useCreateAiContext,
+  useUpdateAiContext,
+  useDeleteAiContext,
+} from './useAiContext';
+
+export { 
+  useLogs,
+  useGetLogs,
+  useGetLog,
+  useCreateLog,
+} from './useLogs';
+
+export { 
+  usePrompts,
+  useGetUserPrompts,
+  useGetPrompt,
+  useCreatePrompt,
+  useUpdatePrompt,
+} from './usePrompts';
+
+// Error handling hooks
+export { useErrorHandler } from './useErrorHandler';
+export { useQueryErrorHandler } from './useQueryErrorHandler';
+
+export { useChatCompletion, useUserPrompts } from './useChat';
 
 // Export existing hooks
 export { useNotification } from './use-notification';

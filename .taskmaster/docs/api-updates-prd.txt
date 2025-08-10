@@ -1,0 +1,101 @@
+# Frontend API Integration Updates PRD
+
+## Overview
+The backend APIs have been updated and the client folder is already current. This PRD focuses on updating frontend components, hooks, and other code to properly integrate with the existing updated client APIs. NO modifications to the client folder are needed.
+
+## Current State Analysis
+- ✅ API client structure is already updated (services.ts, models.ts, schemas.ts)
+- ✅ React Query hooks are implemented for most services
+- ❌ Frontend components may need updates to match new API structure
+- ❌ Some potential type mismatches and missing error handling in frontend code
+- ❌ Components may not be using the updated client APIs properly
+
+## Required Frontend Updates
+
+### 1. Hook Integration Updates
+- Verify all React Query hooks properly use the updated client services
+- Update hook return types to match new API response structures
+- Ensure proper error handling in all hooks
+- Add missing hooks for any services not yet covered
+- Update mutation hooks to use correct request body types
+
+### 2. Component Updates
+- Update TodaysTasks component to properly use updated task APIs
+- Update all form components to validate against new schemas
+- Add proper loading states and error handling to all components
+- Update data display components to match new response structures
+- Ensure all components use the correct API service methods
+
+### 3. Type Safety Improvements in Frontend
+- Replace any remaining `any` or `Record<string, unknown>` types in components
+- Ensure consistent handling of numeric vs string types in JobMetrics components
+- Add proper type guards for API responses in components
+- Update date handling in components to match API format requirements
+- Import and use correct types from the updated client models
+
+### 4. Error Handling Enhancement
+- Implement consistent error handling across all components
+- Add user-friendly error messages using the existing error handling utilities
+- Add toast notifications for API errors
+- Implement retry mechanisms for failed requests
+- Update error boundaries to handle new error types
+
+### 5. Performance Optimizations
+- Add optimistic updates for better UX
+- Implement proper caching strategies using React Query
+- Add pagination support for list queries
+- Optimize re-renders with proper memoization
+- Update query invalidation strategies
+
+### 6. Testing and Validation
+- Test all API integrations in components
+- Validate form submissions against schemas
+- Test error scenarios in components
+- Ensure responsive design works with new data structures
+- Test loading states and error states
+
+## Technical Requirements
+
+### Frontend Technologies
+- React 18+ with TypeScript
+- React Query for API state management
+- Tailwind CSS for styling
+- Lucide React for icons
+
+### API Integration Requirements
+- All API calls must use the existing updated client services
+- Proper TypeScript types imported from the updated client models
+- Consistent error handling using existing getErrorMessage utility
+- Loading states for all async operations
+
+### Code Quality Requirements
+- No TypeScript errors
+- Proper ESLint compliance
+- Consistent code formatting
+- Comprehensive error handling
+
+## Success Criteria
+- All frontend components properly use the updated client APIs
+- No TypeScript errors in the codebase
+- All components handle loading and error states gracefully
+- Forms validate correctly against API schemas
+- Performance is optimized with proper caching
+- User experience is smooth with proper feedback
+
+## Timeline
+- Phase 1: Hook verification and updates (1-2 days)
+- Phase 2: Component updates and type safety improvements (2-3 days)
+- Phase 3: Error handling and performance optimization (1-2 days)
+- Phase 4: Testing and validation (1 day)
+
+## Dependencies
+- ✅ Updated API client files (already complete - DO NOT MODIFY)
+- React Query setup
+- Existing component structure
+- Error handling utilities
+
+## Important Notes
+- DO NOT modify any files in the src/client/ folder
+- Focus only on updating frontend components, hooks, and utilities
+- Import types and services from the existing updated client
+- Ensure all components use the correct API service methods

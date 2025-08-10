@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, UseMutationResult } from '@tanstack/react-query';
 import { AiServiceService } from '../client';
 import { getErrorMessage } from '../utils/errorHandling';
 import type {
@@ -13,7 +13,7 @@ import type {
 
 export const useAiService = () => {
   // Generate daily tasks
-  const generateDailyTasks = useMutation({
+  const generateDailyTasks = useMutation<Array<Record<string, unknown>>, Error, DailyTasksRequest, unknown>({
     mutationFn: async (request: DailyTasksRequest) => {
       const response = await AiServiceService.generateDailyTasksEndpointAiDailyTasksPost({ 
         requestBody: request 
@@ -26,7 +26,7 @@ export const useAiService = () => {
   });
 
   // Generate motivation
-  const generateMotivation = useMutation({
+  const generateMotivation = useMutation<string, Error, MotivationRequest, unknown>({
     mutationFn: async (request: MotivationRequest) => {
       const response = await AiServiceService.generateMotivationAiMotivationPost({ 
         requestBody: request 
@@ -39,7 +39,7 @@ export const useAiService = () => {
   });
 
   // Generate deadline reminder
-  const generateDeadlineReminder = useMutation({
+  const generateDeadlineReminder = useMutation<string, Error, DeadlineReminderRequest, unknown>({
     mutationFn: async (request: DeadlineReminderRequest) => {
       const response = await AiServiceService.generateDeadlineReminderAiDeadlineReminderPost({ 
         requestBody: request 
@@ -52,7 +52,7 @@ export const useAiService = () => {
   });
 
   // Generate weekly analysis
-  const generateWeeklyAnalysis = useMutation({
+  const generateWeeklyAnalysis = useMutation<Record<string, unknown>, Error, WeeklyAnalysisRequest, unknown>({
     mutationFn: async (request: WeeklyAnalysisRequest) => {
       const response = await AiServiceService.generateWeeklyAnalysisAiWeeklyAnalysisPost({ 
         requestBody: request 
@@ -65,7 +65,7 @@ export const useAiService = () => {
   });
 
   // Evaluate phase transition
-  const evaluatePhaseTransition = useMutation({
+  const evaluatePhaseTransition = useMutation<Record<string, unknown>, Error, PhaseTransitionRequest, unknown>({
     mutationFn: async (request: PhaseTransitionRequest) => {
       const response = await AiServiceService.evaluatePhaseTransitionAiPhaseTransitionPost({ 
         requestBody: request 
@@ -78,7 +78,7 @@ export const useAiService = () => {
   });
 
   // Analyze goals
-  const analyzeGoals = useMutation({
+  const analyzeGoals = useMutation<Record<string, unknown>, Error, GoalsAnalysisRequest, unknown>({
     mutationFn: async (request: GoalsAnalysisRequest) => {
       const response = await AiServiceService.analyzeGoalsAiAnalyzeGoalsPost({ 
         requestBody: request 
@@ -91,7 +91,7 @@ export const useAiService = () => {
   });
 
   // Analyze career transition
-  const analyzeCareerTransition = useMutation({
+  const analyzeCareerTransition = useMutation<Record<string, unknown>, Error, CareerTransitionRequest, unknown>({
     mutationFn: async (request: CareerTransitionRequest) => {
       const response = await AiServiceService.analyzeCareerTransitionAiCareerTransitionPost({ 
         requestBody: request 
@@ -104,7 +104,7 @@ export const useAiService = () => {
   });
 
   // Generate complete user analysis
-  const generateCompleteUserAnalysis = useMutation({
+  const generateCompleteUserAnalysis = useMutation<Record<string, unknown>, Error, string, unknown>({
     mutationFn: async (userId: string) => {
       const response = await AiServiceService.generateCompleteUserAnalysisAiUserUserIdCompleteAnalysisPost({ 
         userId 

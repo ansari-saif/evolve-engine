@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { GoalsService } from '../client';
 import { getErrorMessage } from '../utils/errorHandling';
 import type { GoalResponse, GoalCreate, GoalUpdate } from '../client/models';
 
 // Individual query hooks
-export const useGetGoals = () => {
+export const useGetGoals = (): UseQueryResult<GoalResponse[], Error> => {
   return useQuery({
     queryKey: ['goals'],
     queryFn: async () => {
@@ -15,7 +15,7 @@ export const useGetGoals = () => {
   });
 };
 
-export const useGetGoal = (id: number) => {
+export const useGetGoal = (id: number): UseQueryResult<GoalResponse, Error> => {
   return useQuery({
     queryKey: ['goals', id],
     queryFn: async () => {
@@ -27,7 +27,7 @@ export const useGetGoal = (id: number) => {
   });
 };
 
-export const useGetUserGoals = (userId: string) => {
+export const useGetUserGoals = (userId: string): UseQueryResult<GoalResponse[], Error> => {
   return useQuery({
     queryKey: ['goals', 'user', userId],
     queryFn: async () => {
@@ -39,7 +39,7 @@ export const useGetUserGoals = (userId: string) => {
   });
 };
 
-export const useGetUserPendingGoals = (userId: string) => {
+export const useGetUserPendingGoals = (userId: string): UseQueryResult<GoalResponse[], Error> => {
   return useQuery({
     queryKey: ['goals', 'user', userId, 'pending'],
     queryFn: async () => {
@@ -52,7 +52,7 @@ export const useGetUserPendingGoals = (userId: string) => {
 };
 
 // Mutation hooks
-export const useCreateGoal = () => {
+export const useCreateGoal = (): UseMutationResult<GoalResponse, Error, GoalCreate, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -69,7 +69,7 @@ export const useCreateGoal = () => {
   });
 };
 
-export const useUpdateGoal = () => {
+export const useUpdateGoal = (): UseMutationResult<GoalResponse, Error, { id: number; data: GoalUpdate }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -90,7 +90,7 @@ export const useUpdateGoal = () => {
   });
 };
 
-export const useDeleteGoal = () => {
+export const useDeleteGoal = (): UseMutationResult<void, Error, number, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({

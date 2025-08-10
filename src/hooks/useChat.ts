@@ -1,32 +1,28 @@
-import { useMutation } from '@tanstack/react-query';
-import { OpenAPI, DefaultService } from '../client';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { PromptsService } from '../client';
+import type { PromptCreate, PromptResponse } from '../client/models';
 
-export type AskArgs = { prompt: string };
-export type AskResult = { answer?: string };
+export type AskArgs = { prompt: string; userId: string };
+export type AskResult = PromptResponse;
 
 /**
  * useChatCompletion
- * - Encapsulates the chat webhook call using the generated API client.
- * - Sets the OpenAPI base URL on mount (customizable via argument).
+ * - Encapsulates the chat completion using the PromptsService.
+ * - Uses the proper CreatePromptPromptsPost type structure.
  */
 export function useChatCompletion() {
   const mutation = useMutation<AskResult, Error, AskArgs>({
-    mutationFn: async ({ prompt }) => {
-      const body = { prompt };
-      const payload = {
-        contentLength: String(JSON.stringify(body).length),
-        acceptEncoding: 'gzip, deflate, br',
-        host: new URL(OpenAPI.BASE).host,
-        postmanToken: '',
-        cacheControl: 'no-cache',
-        accept: 'application/json',
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-        contentType: 'application/json',
-        requestBody: body,
-      } as const;
+    mutationFn: async ({ prompt, userId }) => {
+      const promptData: PromptCreate = {
+        user_id: userId,
+        prompt_text: prompt,
+      };
 
-      const res = await DefaultService.post151586B8443e48EaBe1eC664Fdb2E9A0(payload);
-      return res as AskResult;
+      const response = await PromptsService.createPromptPromptsPost({
+        requestBody: promptData,
+      });
+      
+      return response;
     },
   });
 
@@ -35,4 +31,24 @@ export function useChatCompletion() {
     isPending: mutation.isPending,
     ...mutation,
   };
+}
+
+/**
+ * useUserPrompts
+ * - Fetches all prompts for a specific user using GetUserPromptsPromptsUserUserIdGet.
+ * - Returns the prompts sorted by creation date (newest first).
+ */
+export function useUserPrompts(userId: string) {
+  return useQuery<PromptResponse[], Error>({
+    queryKey: ['userPrompts', userId],
+    queryFn: async () => {
+      const response = await PromptsService.getUserPromptsPromptsUserUserIdGet({ userId });
+      // Sort by creation date, newest first
+      return response.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 }

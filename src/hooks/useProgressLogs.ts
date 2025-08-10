@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { ProgressLogsService } from '../client';
 import { getErrorMessage } from '../utils/errorHandling';
 import type { ProgressLogResponse, ProgressLogCreate, ProgressLogUpdate } from '../client/models';
 
 // Individual query hooks
-export const useGetProgressLogs = () => {
+export const useGetProgressLogs = (): UseQueryResult<ProgressLogResponse[], Error> => {
   return useQuery({
     queryKey: ['progressLogs'],
     queryFn: async () => {
@@ -15,7 +15,7 @@ export const useGetProgressLogs = () => {
   });
 };
 
-export const useGetProgressLog = (id: number) => {
+export const useGetProgressLog = (id: number): UseQueryResult<ProgressLogResponse, Error> => {
   return useQuery({
     queryKey: ['progressLogs', id],
     queryFn: async () => {
@@ -42,7 +42,7 @@ export const useGetProgressLogsByDateRange = (startDate: string, endDate: string
   });
 };
 
-export const useGetUserProgressLogs = (userId: string) => {
+export const useGetUserProgressLogs = (userId: string): UseQueryResult<ProgressLogResponse[], Error> => {
   return useQuery({
     queryKey: ['progressLogs', 'user', userId],
     queryFn: async () => {
@@ -54,14 +54,11 @@ export const useGetUserProgressLogs = (userId: string) => {
   });
 };
 
-export const useGetUserRecentProgressLogs = (userId: string, days: number = 7) => {
+export const useGetUserRecentProgressLogs = (userId: string, days: number = 7): UseQueryResult<ProgressLogResponse[], Error> => {
   return useQuery({
     queryKey: ['progressLogs', 'user', userId, 'recent', days],
     queryFn: async () => {
-      const response = await ProgressLogsService.getUserRecentProgressLogsProgressLogsUserUserIdRecentGet({ 
-        userId, 
-        days 
-      });
+      const response = await ProgressLogsService.getUserRecentProgressLogsProgressLogsUserUserIdRecentGet({ userId, days });
       return response;
     },
     enabled: !!userId,
@@ -69,14 +66,11 @@ export const useGetUserRecentProgressLogs = (userId: string, days: number = 7) =
   });
 };
 
-export const useGetUserProgressStats = (userId: string, days: number = 30) => {
+export const useGetUserProgressStats = (userId: string, days: number = 30): UseQueryResult<Record<string, unknown>, Error> => {
   return useQuery({
     queryKey: ['progressLogs', 'user', userId, 'stats', days],
     queryFn: async () => {
-      const response = await ProgressLogsService.getUserProgressStatsProgressLogsUserUserIdStatsGet({ 
-        userId, 
-        days 
-      });
+      const response = await ProgressLogsService.getUserProgressStatsProgressLogsUserUserIdStatsGet({ userId, days });
       return response;
     },
     enabled: !!userId,
@@ -85,7 +79,7 @@ export const useGetUserProgressStats = (userId: string, days: number = 30) => {
 };
 
 // Mutation hooks
-export const useCreateProgressLog = () => {
+export const useCreateProgressLog = (): UseMutationResult<ProgressLogResponse, Error, ProgressLogCreate, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -102,7 +96,7 @@ export const useCreateProgressLog = () => {
   });
 };
 
-export const useUpdateProgressLog = () => {
+export const useUpdateProgressLog = (): UseMutationResult<ProgressLogResponse, Error, { id: number; data: ProgressLogUpdate }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -123,7 +117,7 @@ export const useUpdateProgressLog = () => {
   });
 };
 
-export const useDeleteProgressLog = () => {
+export const useDeleteProgressLog = (): UseMutationResult<void, Error, number, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -139,15 +133,12 @@ export const useDeleteProgressLog = () => {
   });
 };
 
-export const useGenerateProgressLog = () => {
+export const useGenerateProgressLog = (): UseMutationResult<ProgressLogResponse, Error, { userId: string; date?: string }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ userId, date }: { userId: string; date?: string }) => {
-      const response = await ProgressLogsService.generateProgressLogProgressLogsGenerateUserIdPost({ 
-        userId, 
-        date 
-      });
+      const response = await ProgressLogsService.generateProgressLogProgressLogsGenerateUserIdPost({ userId, date });
       return response;
     },
     onSuccess: () => {

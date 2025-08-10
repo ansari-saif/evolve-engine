@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { JobMetricsService } from '../client';
 import { getErrorMessage } from '../utils/errorHandling';
 import type { JobMetricsResponse, JobMetricsCreate, JobMetricsUpdate } from '../client/models';
 
 // Individual query hooks
-export const useGetJobMetrics = () => {
+export const useGetJobMetrics = (): UseQueryResult<JobMetricsResponse[], Error> => {
   return useQuery({
     queryKey: ['jobMetrics'],
     queryFn: async () => {
@@ -15,7 +15,7 @@ export const useGetJobMetrics = () => {
   });
 };
 
-export const useGetJobMetric = (id: number) => {
+export const useGetJobMetric = (id: number): UseQueryResult<JobMetricsResponse, Error> => {
   return useQuery({
     queryKey: ['jobMetrics', id],
     queryFn: async () => {
@@ -27,7 +27,7 @@ export const useGetJobMetric = (id: number) => {
   });
 };
 
-export const useGetUserJobMetrics = (userId: string) => {
+export const useGetUserJobMetrics = (userId: string): UseQueryResult<JobMetricsResponse, Error> => {
   return useQuery({
     queryKey: ['jobMetrics', 'user', userId],
     queryFn: async () => {
@@ -39,9 +39,9 @@ export const useGetUserJobMetrics = (userId: string) => {
   });
 };
 
-export const useGetFinancialAnalysis = (userId: string) => {
+export const useGetFinancialAnalysis = (userId: string): UseQueryResult<Record<string, unknown>, Error> => {
   return useQuery({
-    queryKey: ['jobMetrics', 'user', userId, 'financial'],
+    queryKey: ['jobMetrics', 'user', userId, 'financial-analysis'],
     queryFn: async () => {
       const response = await JobMetricsService.getFinancialAnalysisJobMetricsUserUserIdAnalysisGet({ userId });
       return response;
@@ -52,7 +52,7 @@ export const useGetFinancialAnalysis = (userId: string) => {
 };
 
 // Mutation hooks
-export const useCreateJobMetric = () => {
+export const useCreateJobMetric = (): UseMutationResult<JobMetricsResponse, Error, JobMetricsCreate, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -69,7 +69,7 @@ export const useCreateJobMetric = () => {
   });
 };
 
-export const useUpdateJobMetric = () => {
+export const useUpdateJobMetric = (): UseMutationResult<JobMetricsResponse, Error, { id: number; data: JobMetricsUpdate }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -90,7 +90,7 @@ export const useUpdateJobMetric = () => {
   });
 };
 
-export const useDeleteJobMetric = () => {
+export const useDeleteJobMetric = (): UseMutationResult<void, Error, number, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -106,7 +106,7 @@ export const useDeleteJobMetric = () => {
   });
 };
 
-export const useGenerateJobMetricsForUser = () => {
+export const useGenerateJobMetrics = (): UseMutationResult<JobMetricsResponse, Error, string, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -118,12 +118,12 @@ export const useGenerateJobMetricsForUser = () => {
       queryClient.invalidateQueries({ queryKey: ['jobMetrics'] });
     },
     onError: (error) => {
-      console.error('Failed to generate job metrics for user:', getErrorMessage(error));
+      console.error('Failed to generate job metrics:', getErrorMessage(error));
     },
   });
 };
 
-export const useUpdateFinancialMetrics = () => {
+export const useUpdateFinancialMetrics = (): UseMutationResult<JobMetricsResponse, Error, { userId: string; data: Record<string, unknown> }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -134,8 +134,10 @@ export const useUpdateFinancialMetrics = () => {
       });
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['jobMetrics'] });
+      queryClient.invalidateQueries({ queryKey: ['jobMetrics', 'user', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['jobMetrics', 'user', variables.userId, 'financial-analysis'] });
     },
     onError: (error) => {
       console.error('Failed to update financial metrics:', getErrorMessage(error));
@@ -143,7 +145,7 @@ export const useUpdateFinancialMetrics = () => {
   });
 };
 
-export const useAnalyzeMetricsWithAi = () => {
+export const useAnalyzeMetricsWithAi = (): UseMutationResult<JobMetricsResponse, Error, number, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -171,7 +173,7 @@ export const useJobMetrics = () => {
     useCreateJobMetric,
     useUpdateJobMetric,
     useDeleteJobMetric,
-    useGenerateJobMetricsForUser,
+    useGenerateJobMetrics,
     useUpdateFinancialMetrics,
     useAnalyzeMetricsWithAi,
   };

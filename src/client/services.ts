@@ -310,6 +310,9 @@ export type PromptsData = {
   CreatePromptPromptsPost: {
     requestBody: PromptCreate;
   };
+  GetUserPromptsPromptsUserUserIdGet: {
+    userId: string;
+  };
   GetPromptPromptsPromptIdGet: {
     promptId: string;
   };
@@ -778,7 +781,7 @@ export class TasksService {
 
   /**
    * Get User Today Tasks
-   * Get all tasks due today for a specific user.
+   * Get today's tasks for a specific user based on scheduled_for_date only.
    * @returns TaskResponse Successful Response
    * @throws ApiError
    */
@@ -1880,6 +1883,28 @@ export class PromptsService {
       url: "/prompts/",
       body: requestBody,
       mediaType: "application/json",
+      errors: {
+        422: `Validation Error`,
+      },
+    });
+  }
+
+  /**
+   * Get User Prompts
+   * Get all prompts for a specific user
+   * @returns PromptResponse Successful Response
+   * @throws ApiError
+   */
+  public static getUserPromptsPromptsUserUserIdGet(
+    data: PromptsData["GetUserPromptsPromptsUserUserIdGet"]
+  ): CancelablePromise<Array<PromptResponse>> {
+    const { userId } = data;
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/prompts/user/{user_id}",
+      path: {
+        user_id: userId,
+      },
       errors: {
         422: `Validation Error`,
       },

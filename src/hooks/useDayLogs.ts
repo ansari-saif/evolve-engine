@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { DayLogsService } from '../client';
 import { getErrorMessage } from '../utils/errorHandling';
 import type { DayLogResponse, DayLogCreate, DayLogUpdate, DayLogBulkCreate } from '../client/models';
 
 // Individual query hooks
-export const useGetDayLog = (id: number) => {
+export const useGetDayLog = (id: number): UseQueryResult<DayLogResponse, Error> => {
   return useQuery({
     queryKey: ['dayLogs', id],
     queryFn: async () => {
@@ -16,11 +16,11 @@ export const useGetDayLog = (id: number) => {
   });
 };
 
-export const useGetUserDayLogs = (userId: string) => {
+export const useGetUserDayLogs = (userId: string, limit: number = 10, skip: number = 0): UseQueryResult<DayLogResponse[], Error> => {
   return useQuery({
-    queryKey: ['dayLogs', 'user', userId],
+    queryKey: ['dayLogs', 'user', userId, limit, skip],
     queryFn: async () => {
-      const response = await DayLogsService.getUserDayLogsDayLogsUserUserIdGet({ userId });
+      const response = await DayLogsService.getUserDayLogsDayLogsUserUserIdGet({ userId, limit, skip });
       return response;
     },
     enabled: !!userId,
@@ -28,14 +28,11 @@ export const useGetUserDayLogs = (userId: string) => {
   });
 };
 
-export const useGetUserDayLogByDate = (userId: string, date: string) => {
+export const useGetUserDayLogByDate = (userId: string, date: string): UseQueryResult<DayLogResponse, Error> => {
   return useQuery({
     queryKey: ['dayLogs', 'user', userId, 'date', date],
     queryFn: async () => {
-      const response = await DayLogsService.getUserDayLogByDateDayLogsUserUserIdDateDateGet({ 
-        userId, 
-        date 
-      });
+      const response = await DayLogsService.getUserDayLogByDateDayLogsUserUserIdDateDateGet({ userId, date });
       return response;
     },
     enabled: !!userId && !!date,
@@ -43,14 +40,20 @@ export const useGetUserDayLogByDate = (userId: string, date: string) => {
   });
 };
 
-export const useGetUserDayLogsByDateRange = (userId: string, startDate: string, endDate: string) => {
+export const useGetUserDayLogsByDateRange = (
+  userId: string, 
+  startDate: string, 
+  endDate: string, 
+  location?: string
+): UseQueryResult<DayLogResponse[], Error> => {
   return useQuery({
-    queryKey: ['dayLogs', 'user', userId, 'dateRange', startDate, endDate],
+    queryKey: ['dayLogs', 'user', userId, 'range', startDate, endDate, location],
     queryFn: async () => {
       const response = await DayLogsService.getUserDayLogsByDateRangeDayLogsUserUserIdRangeGet({ 
         userId, 
         startDate, 
-        endDate 
+        endDate, 
+        location 
       });
       return response;
     },
@@ -59,7 +62,7 @@ export const useGetUserDayLogsByDateRange = (userId: string, startDate: string, 
   });
 };
 
-export const useGetUserDayLogStats = (userId: string) => {
+export const useGetUserDayLogStats = (userId: string): UseQueryResult<unknown, Error> => {
   return useQuery({
     queryKey: ['dayLogs', 'user', userId, 'stats'],
     queryFn: async () => {
@@ -72,7 +75,7 @@ export const useGetUserDayLogStats = (userId: string) => {
 };
 
 // Mutation hooks
-export const useCreateDayLog = () => {
+export const useCreateDayLog = (): UseMutationResult<DayLogResponse, Error, DayLogCreate, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -89,7 +92,7 @@ export const useCreateDayLog = () => {
   });
 };
 
-export const useUpdateDayLog = () => {
+export const useUpdateDayLog = (): UseMutationResult<DayLogResponse, Error, { id: number; data: DayLogUpdate }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -110,7 +113,7 @@ export const useUpdateDayLog = () => {
   });
 };
 
-export const useDeleteDayLog = () => {
+export const useDeleteDayLog = (): UseMutationResult<void, Error, number, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -126,7 +129,7 @@ export const useDeleteDayLog = () => {
   });
 };
 
-export const useCreateBulkDayLogs = () => {
+export const useCreateBulkDayLogs = (): UseMutationResult<DayLogResponse[], Error, DayLogBulkCreate, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -143,15 +146,12 @@ export const useCreateBulkDayLogs = () => {
   });
 };
 
-export const useGenerateDayLog = () => {
+export const useGenerateDayLog = (): UseMutationResult<DayLogResponse, Error, { userId: string; dateValue?: string }, unknown> => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ userId, dateValue }: { userId: string; dateValue?: string }) => {
-      const response = await DayLogsService.generateDayLogDayLogsGenerateUserIdPost({ 
-        userId, 
-        dateValue 
-      });
+      const response = await DayLogsService.generateDayLogDayLogsGenerateUserIdPost({ userId, dateValue });
       return response;
     },
     onSuccess: () => {

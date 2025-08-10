@@ -1,10 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { TasksService } from '../client';
 import { getErrorMessage } from '../utils/errorHandling';
+import { useErrorHandler } from './useErrorHandler';
 import type { TaskResponse, TaskCreate, TaskUpdate, BulkTaskCreate } from '../client/models';
 
 // Individual query hooks
-export const useGetTasks = () => {
+export const useGetTasks = (): UseQueryResult<TaskResponse[], Error> => {
+  const { createRetryConfig } = useErrorHandler();
+  
   return useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
@@ -12,10 +15,13 @@ export const useGetTasks = () => {
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    ...createRetryConfig(2, 1000),
   });
 };
 
-export const useGetTask = (id: number) => {
+export const useGetTask = (id: number): UseQueryResult<TaskResponse, Error> => {
+  const { createRetryConfig } = useErrorHandler();
+  
   return useQuery({
     queryKey: ['tasks', id],
     queryFn: async () => {
@@ -24,10 +30,13 @@ export const useGetTask = (id: number) => {
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    ...createRetryConfig(2, 1000),
   });
 };
 
-export const useGetUserTasks = (userId: string) => {
+export const useGetUserTasks = (userId: string): UseQueryResult<TaskResponse[], Error> => {
+  const { createRetryConfig } = useErrorHandler();
+  
   return useQuery({
     queryKey: ['tasks', 'user', userId],
     queryFn: async () => {
@@ -36,10 +45,13 @@ export const useGetUserTasks = (userId: string) => {
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    ...createRetryConfig(2, 1000),
   });
 };
 
-export const useGetUserPendingTasks = (userId: string) => {
+export const useGetUserPendingTasks = (userId: string): UseQueryResult<TaskResponse[], Error> => {
+  const { createRetryConfig } = useErrorHandler();
+  
   return useQuery({
     queryKey: ['tasks', 'user', userId, 'pending'],
     queryFn: async () => {
@@ -48,10 +60,13 @@ export const useGetUserPendingTasks = (userId: string) => {
     },
     enabled: !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    ...createRetryConfig(2, 1000),
   });
 };
 
-export const useGetUserTodayTasks = (userId: string) => {
+export const useGetUserTodayTasks = (userId: string): UseQueryResult<TaskResponse[], Error> => {
+  const { createRetryConfig } = useErrorHandler();
+  
   return useQuery({
     queryKey: ['tasks', 'user', userId, 'today'],
     queryFn: async () => {
@@ -60,12 +75,14 @@ export const useGetUserTodayTasks = (userId: string) => {
     },
     enabled: !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    ...createRetryConfig(2, 1000),
   });
 };
 
 // Mutation hooks
-export const useCreateTask = () => {
+export const useCreateTask = (): UseMutationResult<TaskResponse, Error, TaskCreate, unknown> => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: async (taskData: TaskCreate) => {
@@ -76,13 +93,17 @@ export const useCreateTask = () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
     onError: (error) => {
-      console.error('Failed to create task:', getErrorMessage(error));
+      handleError(error, {
+        showToast: true,
+        toastTitle: 'Failed to create task',
+      });
     },
   });
 };
 
-export const useUpdateTask = () => {
+export const useUpdateTask = (): UseMutationResult<TaskResponse, Error, { id: number; data: TaskUpdate }, unknown> => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: TaskUpdate }) => {
@@ -97,13 +118,17 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', variables.id] });
     },
     onError: (error) => {
-      console.error('Failed to update task:', getErrorMessage(error));
+      handleError(error, {
+        showToast: true,
+        toastTitle: 'Failed to update task',
+      });
     },
   });
 };
 
-export const useCompleteTask = () => {
+export const useCompleteTask = (): UseMutationResult<TaskResponse, Error, number, unknown> => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: async (taskId: number) => {
@@ -115,13 +140,17 @@ export const useCompleteTask = () => {
       queryClient.invalidateQueries({ queryKey: ['tasks', taskId] });
     },
     onError: (error) => {
-      console.error('Failed to complete task:', getErrorMessage(error));
+      handleError(error, {
+        showToast: true,
+        toastTitle: 'Failed to complete task',
+      });
     },
   });
 };
 
-export const useDeleteTask = () => {
+export const useDeleteTask = (): UseMutationResult<void, Error, number, unknown> => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: async (id: number) => {
@@ -131,13 +160,17 @@ export const useDeleteTask = () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
     onError: (error) => {
-      console.error('Failed to delete task:', getErrorMessage(error));
+      handleError(error, {
+        showToast: true,
+        toastTitle: 'Failed to delete task',
+      });
     },
   });
 };
 
-export const useCreateBulkTasks = () => {
+export const useCreateBulkTasks = (): UseMutationResult<TaskResponse[], Error, BulkTaskCreate, unknown> => {
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
   
   return useMutation({
     mutationFn: async (tasksData: BulkTaskCreate) => {
@@ -148,7 +181,10 @@ export const useCreateBulkTasks = () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
     onError: (error) => {
-      console.error('Failed to create bulk tasks:', getErrorMessage(error));
+      handleError(error, {
+        showToast: true,
+        toastTitle: 'Failed to create bulk tasks',
+      });
     },
   });
 };

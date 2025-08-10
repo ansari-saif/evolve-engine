@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useChatCompletion } from "../hooks/useChat";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useChatCompletion, useUserPrompts } from "../hooks/useChat";
 import { GlassIconButton } from "../components/ui/glass-icon-button";
 import { useNotification } from "@/hooks/use-notification";
+import { useUserId } from "../contexts/AppContext";
 
 interface Message {
   id: string;
@@ -35,6 +36,12 @@ export default function Chat() {
 
   // Initialize chat client hook (base URL is centralized in OpenAPI.BASE)
   const { ask } = useChatCompletion();
+  const userId = useUserId();
+  const queryClient = useQueryClient();
+  
+  // Fetch previous user prompts
+  const { data: userPrompts, isLoading: isLoadingPrompts } = useUserPrompts(userId);
+  
   // Native notifications
   const { notify, permission, isSupported, requestPermission } = useNotification();
 
@@ -93,6 +100,37 @@ export default function Chat() {
     }
   }, [isSupported, permission, requestPermission]);
 
+  // Load previous messages when userPrompts data is available
+  useEffect(() => {
+    if (userPrompts && userPrompts.length > 0) {
+      const previousMessages: Message[] = [];
+      
+      // Convert prompts to messages (reverse order to show oldest first)
+      userPrompts.reverse().forEach((prompt) => {
+        // Add user message
+        previousMessages.push({
+          id: `user-${prompt.prompt_id}`,
+          role: "user" as const,
+          content: prompt.prompt_text,
+        });
+        
+        // Add assistant response if available
+        if (prompt.response_text) {
+          previousMessages.push({
+            id: `assistant-${prompt.prompt_id}`,
+            role: "assistant" as const,
+            content: prompt.response_text,
+          });
+        }
+      });
+      
+      // Replace the welcome message with previous messages if we have any
+      if (previousMessages.length > 0) {
+        setMessages(previousMessages);
+      }
+    }
+  }, [userPrompts]);
+
   const handleEnableNotifications = useCallback(async () => {
     const res = await requestPermission();
     if (res === "granted") {
@@ -116,9 +154,16 @@ export default function Chat() {
   }, [notify, permission]);
 
   // Backward compat: keep types, but delegate to hook
-  const { mutateAsync: askApi, isPending } = useMutation<{ answer?: string }, Error, { prompt: string }>(
+  const { mutateAsync: askApi, isPending } = useMutation<{ response_text?: string }, Error, { prompt: string }>(
     {
-      mutationFn: async ({ prompt }) => ask({ prompt }),
+      mutationFn: async ({ prompt }) => {
+        const response = await ask({ prompt, userId });
+        return { response_text: response.response_text };
+      },
+      onSuccess: () => {
+        // Invalidate and refetch user prompts to include the new message
+        queryClient.invalidateQueries({ queryKey: ['userPrompts', userId] });
+      },
     }
   );
 
@@ -145,7 +190,7 @@ export default function Chat() {
 
     try {
       const data = await askApi({ prompt: text });
-      const answer = data?.answer ?? "";
+      const answer = data?.response_text ?? "";
       setMessages((m) =>
         m.map((msg) =>
           msg.id === thinkingId
@@ -254,47 +299,56 @@ export default function Chat() {
         ref={listRef}
         className="flex-1 overflow-auto rounded-lg border bg-background/50 p-4 space-y-4"
       >
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={
-              "flex gap-3 items-end " + (m.role === "user" ? "justify-end" : "justify-start")
-            }
-          >
-            {/* Assistant on the left */}
-            {m.role === "assistant" && (
-              <div
-                className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm bg-primary/10 text-primary"
-                aria-hidden
-              >
-                🤖
-              </div>
-            )}
-
-            <div className="min-w-0 max-w-[80%]">
-              <div
-                className={
-                  "rounded-lg px-3 py-2 whitespace-pre-wrap leading-relaxed " +
-                  (m.role === "user"
-                    ? "bg-primary text-primary-foreground text-right"
-                    : "bg-muted/50 text-foreground text-left")
-                }
-              >
-                {m.loading ? <TypingDots /> : m.content}
-              </div>
+        {isLoadingPrompts ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span>Loading previous messages...</span>
             </div>
-
-            {/* User on the right */}
-            {m.role === "user" && (
-              <div
-                className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm bg-muted text-foreground"
-                aria-hidden
-              >
-                🧑
-              </div>
-            )}
           </div>
-        ))}
+        ) : (
+          messages.map((m) => (
+            <div
+              key={m.id}
+              className={
+                "flex gap-3 items-end " + (m.role === "user" ? "justify-end" : "justify-start")
+              }
+            >
+              {/* Assistant on the left */}
+              {m.role === "assistant" && (
+                <div
+                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm bg-primary/10 text-primary"
+                  aria-hidden
+                >
+                  🤖
+                </div>
+              )}
+
+              <div className="min-w-0 max-w-[80%]">
+                <div
+                  className={
+                    "rounded-lg px-3 py-2 whitespace-pre-wrap leading-relaxed " +
+                    (m.role === "user"
+                      ? "bg-primary text-primary-foreground text-right"
+                      : "bg-muted/50 text-foreground text-left")
+                  }
+                >
+                  {m.loading ? <TypingDots /> : m.content}
+                </div>
+              </div>
+
+              {/* User on the right */}
+              {m.role === "user" && (
+                <div
+                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm bg-muted text-foreground"
+                  aria-hidden
+                >
+                  🧑
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {/* Composer */}
