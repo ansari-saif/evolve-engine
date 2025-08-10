@@ -1,0 +1,133 @@
+<context>
+# Overview  
+The Evolve Engine app has a beautiful UI with mock data and only one API integration (chat). We need to integrate all available API services from the generated OpenAPI client to replace mock data with real backend functionality.
+
+# Core Features  
+1. **TasksService Integration**
+   - What it does: Task management with CRUD operations
+   - Why it's important: Core productivity feature
+   - How it works: Create useTasks hook for task operations
+
+2. **GoalsService Integration**
+   - What it does: Goal tracking and management
+   - Why it's important: Provides long-term vision
+   - How it works: Create useGoals hook for goal operations
+
+3. **ProgressLogsService Integration**
+   - What it does: Daily progress tracking
+   - Why it's important: Enables progress monitoring
+   - How it works: Create useProgressLogs hook
+
+4. **DayLogsService Integration**
+   - What it does: Daily diary entries
+   - Why it's important: Enables reflection
+   - How it works: Create useDayLogs hook
+
+5. **AiServiceService Integration**
+   - What it does: AI-powered features
+   - Why it's important: Provides insights and motivation
+   - How it works: Create useAiService hook
+
+6. **JobMetricsService Integration**
+   - What it does: Financial tracking
+   - Why it's important: Career transition insights
+   - How it works: Create useJobMetrics hook
+
+# User Experience  
+**Key User Flows:**
+1. View and manage tasks
+2. Set and track goals
+3. Log daily progress
+4. Write diary entries
+5. View AI insights
+6. Track financial metrics
+
+**UI/UX Considerations:**
+- Replace mock data with real API calls
+- Add loading states and error handling
+- Maintain existing UI components
+- Follow existing useChat hook pattern
+</context>
+<PRD>
+# Technical Architecture  
+**System Components:**
+1. API Client Layer (src/client/): Generated OpenAPI client
+2. Feature Hooks Layer (src/hooks/): React Query-based hooks
+3. Component Layer (src/components/): UI components
+4. Page Layer (src/pages/): Page components
+
+**APIs to Integrate:**
+- TasksService: Task CRUD operations
+- GoalsService: Goal CRUD operations
+- ProgressLogsService: Progress tracking
+- DayLogsService: Diary entries
+- AiServiceService: AI features
+- JobMetricsService: Financial tracking
+
+**Infrastructure Requirements:**
+- Environment-based API configuration (VITE_API_BASE)
+- React Query for state management
+- Error handling and loading states
+- Follow existing useChat hook pattern
+
+# Development Roadmap  
+**Phase 1: Tasks & Goals**
+Scope: Core productivity features
+- Create useTasks hook for TasksService
+- Create useGoals hook for GoalsService
+- Update Tasks page with real data
+- Update Goals page with real data
+Deliverables: Task management, Goal management
+
+**Phase 2: Progress & Diary**
+Scope: Daily tracking features
+- Create useProgressLogs hook
+- Create useDayLogs hook
+- Update Diary page with real data
+- Update Dashboard with progress data
+Deliverables: Progress tracking, Diary interface
+
+**Phase 3: AI & Analytics**
+Scope: AI features and analytics
+- Create useAiService hook
+- Create useJobMetrics hook
+- Update Statistics page with real data
+- Update Dashboard with AI insights
+Deliverables: AI features, Analytics dashboard
+
+# Logical Dependency Chain
+**Phase 1 (Tasks & Goals):**
+- Core features that provide immediate value
+- Can be built independently
+
+**Phase 2 (Progress & Diary):**
+- Data collection features
+- Depend on user context but independent of each other
+
+**Phase 3 (AI & Analytics):**
+- Advanced features that provide insights
+- Build on collected data
+
+**Getting to Usable Frontend Quickly:**
+- Start with tasks and goals for immediate value
+- Add progress and diary for data collection
+- Build AI and analytics on collected data
+
+# Risks and Mitigations  
+**Technical Challenges:**
+- Risk: Complex API integration
+- Mitigation: Follow existing useChat hook pattern
+
+- Risk: API errors
+- Mitigation: Implement error handling
+
+**Scope Management:**
+- Risk: Too many services at once
+- Mitigation: Focus on one service at a time
+
+# Appendix  
+**Integration Pattern:**
+- Follow existing useChat hook pattern
+- Use React Query for caching and loading states
+- Implement hooks in src/hooks/ directory
+- Replace mock data with API calls

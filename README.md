@@ -60,6 +60,37 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Configuration
+
+### Global User ID Configuration
+
+The application uses a global userId configuration that can be set via environment variables or defaults to a fallback value.
+
+**Environment Variables:**
+Create a `.env` file in the project root with:
+```
+VITE_USER_ID=your_user_id_here
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+**Default Configuration:**
+If no environment variables are set, the app defaults to:
+- `userId`: "5976080378"
+- `apiBaseUrl`: "http://localhost:8000"
+
+**Usage in Components:**
+```typescript
+import { useUserId } from '@/contexts/AppContext';
+
+const MyComponent = () => {
+  const userId = useUserId();
+  // Use userId in your component
+};
+```
+
+**Configuration File:**
+The configuration is centralized in `src/config/app.ts` and provided through React Context in `src/contexts/AppContext.tsx`.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/8ffc98c0-a90c-491f-9776-8c860105fe47) and click on Share -> Publish.

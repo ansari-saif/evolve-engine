@@ -1,220 +1,240 @@
-import { motion } from "framer-motion";
-import { CheckCircle, Circle, Clock, Plus, Flame } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { LiquidCard } from "../ui/liquid-card";
-import { LiquidButton } from "../ui/liquid-button";
-import { useState } from "react";
-import confetti from "canvas-confetti";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { LoadingSpinner, ErrorMessage } from '../ui';
+import { useGetUserTodayTasks, useCompleteTask } from '../../hooks/useTasks';
+import { useUserId } from '../../contexts/AppContext';
+import confetti from 'canvas-confetti';
+import type { TaskResponse } from '../../client/models';
+import { 
+  CheckCircle2, 
+  Clock, 
+  Calendar, 
+  Target, 
+  CheckCircle,
+  AlertCircle,
+  Zap,
+  Sparkles
+} from 'lucide-react';
 
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-  priority: "Low" | "Medium" | "High";
-  deadline?: string;
-}
+const TodaysTasks: React.FC = () => {
+  const userId = useUserId();
+  const [completedTasks, setCompletedTasks] = useState<Set<number>>(new Set());
+  const { data: tasks, isLoading, error } = useGetUserTodayTasks(userId);
+  const completeTaskMutation = useCompleteTask();
 
-const mockTasks: Task[] = [
-  {
-    id: 1,
-    title: "MVP Feature Definition",
-    description: "Define core features for the minimum viable product",
-    completed: false,
-    priority: "High",
-    deadline: "2:00 PM"
-  },
-  {
-    id: 2,
-    title: "Competitor Analysis",
-    description: "Research top 5 competitors and their strategies",
-    completed: true,
-    priority: "Medium"
-  },
-  {
-    id: 3,
-    title: "Landing Page Wireframes",
-    description: "Create initial wireframes for marketing site",
-    completed: false,
-    priority: "Medium",
-    deadline: "5:00 PM"
-  },
-  {
-    id: 4,
-    title: "Team Meeting",
-    description: "Weekly sync with development team",
-    completed: false,
-    priority: "Low",
-    deadline: "3:30 PM"
-  }
-];
-
-const TodaysTasks = () => {
-  const [tasks, setTasks] = useState<Task[]>(mockTasks);
-  
-  const completedTasks = tasks.filter(task => task.completed).length;
-  const totalTasks = tasks.length;
-  const completionRate = (completedTasks / totalTasks) * 100;
-
-  const handleToggleTask = (taskId: number) => {
-    setTasks(prevTasks => 
-      prevTasks.map(task => {
-        if (task.id === taskId && !task.completed) {
-          // Trigger confetti for completion
-          confetti({
-            particleCount: 50,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#6366f1', '#ec4899', '#10b981']
-          });
-          return { ...task, completed: true };
-        }
-        return task;
-      })
-    );
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "High": return "text-danger";
-      case "Medium": return "text-warning";
-      default: return "text-text-muted";
+  const handleCompleteTask = async (taskId: number) => {
+    try {
+      await completeTaskMutation.mutateAsync(taskId);
+      setCompletedTasks(prev => new Set(prev).add(taskId));
+      
+      // Trigger confetti effect with brand colors
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#6366F1', '#EC4899', '#22C55E', '#8B5CF6']
+      });
+    } catch (error) {
+      console.error('Failed to complete task:', error);
     }
   };
 
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'High':
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
+      case 'Medium':
+        return <Target className="w-4 h-4 text-warning" />;
+      case 'Low':
+        return <Clock className="w-4 h-4 text-primary" />;
+      default:
+        return <Target className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
+
+  const getPriorityVariant = (priority: string) => {
+    switch (priority) {
+      case 'High':
+        return 'destructive';
+      case 'Medium':
+        return 'secondary';
+      case 'Low':
+        return 'outline';
+      default:
+        return 'secondary';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Target className="w-5 h-5 text-primary" />
+            Today's Tasks
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <LoadingSpinner message="Loading tasks..." />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-card">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Target className="w-5 h-5 text-primary" />
+            Today's Tasks
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ErrorMessage message="Failed to load today's tasks" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const pendingTasks = tasks?.filter((task: TaskResponse) => 
+    task.completion_status !== 'Completed' && !completedTasks.has(task.task_id)
+  ) || [];
+
+  const completedTasksList = tasks?.filter((task: TaskResponse) => 
+    task.completion_status === 'Completed' || completedTasks.has(task.task_id)
+  ) || [];
+
   return (
-    <LiquidCard
-      variant="default"
-      hoverEffect="glow"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="p-6"
-    >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-            <CheckCircle className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-text-primary">Today's Tasks</h2>
-            <p className="text-text-secondary text-sm">
-              {completedTasks} of {totalTasks} completed ({completionRate.toFixed(0)}%)
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          {completionRate >= 50 && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="flex items-center space-x-1 text-warning"
-            >
-              <Flame className="w-4 h-4" />
-              <span className="text-xs font-semibold">On Fire!</span>
-            </motion.div>
-          )}
-          <LiquidButton size="sm" variant="primary" icon={<Plus className="w-4 h-4" />}>
-            Add
-          </LiquidButton>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="mb-6">
-        <div className="w-full bg-surface-light rounded-full h-2 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${completionRate}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="h-full bg-gradient-success"
-          />
-        </div>
-      </div>
-
-      {/* Tasks list */}
-      <div className="space-y-3">
-        {tasks.map((task, index) => (
-          <motion.div
-            key={task.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.01, x: 4 }}
-            className={`
-              p-4 rounded-xl border transition-all duration-200 cursor-pointer group
-              ${task.completed 
-                ? "bg-success/5 border-success/20" 
-                : "bg-surface/50 border-border hover:border-primary/50 hover:bg-surface"
-              }
-            `}
-            onClick={() => handleToggleTask(task.id)}
-          >
-            <div className="flex items-start space-x-3">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                className={`
-                  mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
-                  ${task.completed 
-                    ? 'bg-success border-success text-white' 
-                    : 'border-border hover:border-primary group-hover:border-primary'
-                  }
-                `}
-              >
-                {task.completed && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+    <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-card">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+          <Target className="w-5 h-5 text-primary" />
+          Today's Tasks
+          <Badge variant="secondary" className="ml-auto text-xs bg-primary/10 text-primary border-primary/20">
+            {pendingTasks.length} pending
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          {/* Pending Tasks */}
+          {pendingTasks.length > 0 && (
+            <div>
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+                <Clock className="w-4 h-4 text-warning" />
+                Pending Tasks
+                <span className="text-xs text-muted-foreground font-normal">({pendingTasks.length})</span>
+              </h3>
+              <div className="space-y-3">
+                {pendingTasks.map((task: TaskResponse) => (
+                  <div
+                    key={task.task_id}
+                    className="group flex items-center justify-between p-4 rounded-xl border border-border/50 bg-surface/50 backdrop-blur-sm transition-all duration-300 hover:bg-surface/70 hover:border-border hover:shadow-elegant"
                   >
-                    <CheckCircle className="w-3 h-3" />
-                  </motion.div>
-                )}
-              </motion.button>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className={`
-                    font-semibold text-sm transition-colors
-                    ${task.completed 
-                      ? 'text-text-secondary line-through' 
-                      : 'text-text-primary group-hover:text-primary'
-                    }
-                  `}>
-                    {task.title}
-                  </h4>
-                  <div className="flex items-center space-x-2">
-                    {task.deadline && !task.completed && (
-                      <div className="flex items-center space-x-1 text-text-muted">
-                        <Clock className="w-3 h-3" />
-                        <span className="text-xs">{task.deadline}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          {getPriorityIcon(task.priority)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground leading-relaxed">
+                            {task.description}
+                          </p>
+                          <div className="flex items-center gap-3 mt-2">
+                            <Badge 
+                              variant={getPriorityVariant(task.priority)}
+                              className="text-xs font-medium"
+                            >
+                              {task.priority}
+                            </Badge>
+                            {task.deadline && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Calendar className="w-3 h-3" />
+                                <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    <div className={`w-2 h-2 rounded-full ${
-                      task.priority === "High" ? "bg-danger" :
-                      task.priority === "Medium" ? "bg-warning" : "bg-text-muted"
-                    }`} />
+                    </div>
+                    <Button
+                      onClick={() => handleCompleteTask(task.task_id)}
+                      disabled={completeTaskMutation.isPending}
+                      size="sm"
+                      variant="outline"
+                      className="ml-4 flex-shrink-0 bg-surface/80 backdrop-blur-sm border-border hover:bg-success/10 hover:border-success/30 hover:text-success transition-all duration-300"
+                    >
+                      {completeTaskMutation.isPending ? (
+                        <LoadingSpinner size="small" />
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 mr-1" />
+                          Complete
+                        </>
+                      )}
+                    </Button>
                   </div>
-                </div>
-                <p className={`
-                  text-xs leading-relaxed
-                  ${task.completed ? 'text-text-muted' : 'text-text-secondary'}
-                `}>
-                  {task.description}
-                </p>
+                ))}
               </div>
             </div>
-          </motion.div>
-        ))}
-      </div>
-      
-      {tasks.length === 0 && (
-        <div className="text-center py-8 text-text-muted">
-          <Circle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>No tasks for today. Add one to get started!</p>
+          )}
+
+          {/* Completed Tasks */}
+          {completedTasksList.length > 0 && (
+            <div>
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+                <CheckCircle className="w-4 h-4 text-success" />
+                Completed Tasks
+                <span className="text-xs text-muted-foreground font-normal">({completedTasksList.length})</span>
+              </h3>
+              <div className="space-y-3">
+                {completedTasksList.map((task: TaskResponse) => (
+                  <div
+                    key={task.task_id}
+                    className="group flex items-center justify-between p-4 bg-gradient-to-r from-success/10 to-success/5 rounded-xl border border-success/20 transition-all duration-300"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <CheckCircle className="w-4 h-4 text-success" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium line-through text-success/80 leading-relaxed">
+                            {task.description}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="default" className="bg-success text-success-foreground text-xs font-medium">
+                              <Sparkles className="w-3 h-3 mr-1" />
+                              Completed
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {pendingTasks.length === 0 && completedTasksList.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center">
+                <Target className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">No tasks for today!</h3>
+              <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+                You're all caught up. Great job staying on top of your tasks!
+              </p>
+            </div>
+          )}
         </div>
-      )}
-    </LiquidCard>
+      </CardContent>
+    </Card>
   );
 };
 

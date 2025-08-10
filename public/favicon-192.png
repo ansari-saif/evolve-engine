@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 32 32" fill="none">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F1F5F9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E2E8F0;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main background circle -->
+  <circle cx="16" cy="16" r="15" fill="url(#bgGradient)" stroke="#4F46E5" stroke-width="1"/>
+  
+  <!-- Target/evolution symbol -->
+  <g filter="url(#glow)">
+    <!-- Outer ring -->
+    <circle cx="16" cy="16" r="10" fill="none" stroke="url(#iconGradient)" stroke-width="1.5" opacity="0.8"/>
+    
+    <!-- Middle ring -->
+    <circle cx="16" cy="16" r="6.5" fill="none" stroke="url(#iconGradient)" stroke-width="1.2" opacity="0.9"/>
+    
+    <!-- Inner circle -->
+    <circle cx="16" cy="16" r="3" fill="url(#iconGradient)"/>
+    
+    <!-- Center dot -->
+    <circle cx="16" cy="16" r="1" fill="#6366F1"/>
+  </g>
+  
+  <!-- Evolution arrows -->
+  <g opacity="0.9">
+    <!-- Top arrow -->
+    <path d="M16 4 L18 8 L16 7 L14 8 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Right arrow -->
+    <path d="M28 16 L24 18 L25 16 L24 14 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Bottom arrow -->
+    <path d="M16 28 L18 24 L16 25 L14 24 Z" fill="url(#iconGradient)"/>
+    
+    <!-- Left arrow -->
+    <path d="M4 16 L8 18 L7 16 L8 14 Z" fill="url(#iconGradient)"/>
+  </g>
+  
+  <!-- Sparkle effect -->
+  <g opacity="0.7">
+    <circle cx="8" cy="8" r="0.5" fill="#EC4899"/>
+    <circle cx="24" cy="8" r="0.5" fill="#22C55E"/>
+    <circle cx="8" cy="24" r="0.5" fill="#F59E0B"/>
+    <circle cx="24" cy="24" r="0.5" fill="#06B6D4"/>
+  </g>
+</svg>

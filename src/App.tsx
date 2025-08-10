@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
+import { AppProvider } from "@/contexts/AppContext";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
@@ -15,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
 import BottomTabBar from "@/components/layout/BottomTabBar";
 import Header from "@/components/layout/Header";
+import MenuBar from "@/components/navigation/MenuBar";
 
 const queryClient = new QueryClient();
 
@@ -26,28 +28,31 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <div className="min-h-screen bg-background p-8 pb-24 pt-28">
-            <Header />
-            <Routes>
-              <Route path="/welcome" element={<Index />} />
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/goals" element={<Goals />} />
-              <Route path="/diary" element={<Diary />} />
-              <Route path="/statistics" element={<Statistics />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/chat" element={<Chat />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <BottomTabBar />
-          </div>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AppProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="min-h-screen bg-background p-8 pb-24 pt-28">
+              <MenuBar />
+              <Header />
+              <Routes>
+                <Route path="/welcome" element={<Index />} />
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/goals" element={<Goals />} />
+                <Route path="/diary" element={<Diary />} />
+                <Route path="/statistics" element={<Statistics />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/chat" element={<Chat />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <BottomTabBar />
+            </div>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AppProvider>
     </QueryClientProvider>
   );
 };
