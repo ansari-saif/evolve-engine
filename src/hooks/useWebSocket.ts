@@ -76,10 +76,35 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
   // Auto-connect on mount if enabled (defaults to true)
   useEffect(() => {
     if ((options?.autoConnect ?? true) && config) {
-      const cleanup = connect();
-      return cleanup;
+      console.log('Auto-connecting WebSocket...', config);
+      
+      // Set notification hook
+      webSocketService.setNotificationHook(notification);
+      
+      // Connect
+      webSocketService.connect(config);
+      
+      // Add message listener
+      if (listenerRef.current) {
+        webSocketService.removeEventListener(listenerRef.current);
+      }
+      listenerRef.current = messageListener;
+      webSocketService.addEventListener(messageListener);
+
+      // Update connection status immediately and set up polling
+      updateConnectionStatus();
+      const statusInterval = setInterval(updateConnectionStatus, 1000);
+      
+      // Cleanup function
+      return () => {
+        clearInterval(statusInterval);
+        if (listenerRef.current) {
+          webSocketService.removeEventListener(listenerRef.current);
+          listenerRef.current = null;
+        }
+      };
     }
-  }, [config, options?.autoConnect, connect]);
+  }, [config, options?.autoConnect]); // Removed connect dependency to prevent re-renders
 
   // Handle connection state changes
   useEffect(() => {

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { AppProvider } from "@/contexts/AppContext";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
@@ -21,6 +22,24 @@ import MenuBar from "@/components/navigation/MenuBar";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Global WebSocket connection
+  const { isConnected, lastMessage } = useWebSocket({
+    url: 'ws://localhost:8000/api/v1/ws',
+    userId: '123456789',
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 10
+  }, {
+    onMessage: (message) => {
+      console.log('🔔 Global WebSocket message received:', message);
+    },
+    onConnect: () => {
+      console.log('🟢 Global WebSocket connected successfully');
+    },
+    onDisconnect: () => {
+      console.log('🔴 Global WebSocket disconnected');
+    }
+  });
+
   // Force dark mode
   useEffect(() => {
     document.documentElement.classList.add('dark');

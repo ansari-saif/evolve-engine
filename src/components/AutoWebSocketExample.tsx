@@ -23,7 +23,7 @@ export function AutoWebSocketExample() {
   }, {
     onMessage: (message) => {
       setMessages(prev => [message, ...prev].slice(0, 10)); // Keep last 10 messages
-      console.log('New message received:', message);
+      console.log('🟢 New message received:', message);
     },
     onConnect: () => {
       console.log('🟢 WebSocket connected automatically!');
@@ -31,7 +31,7 @@ export function AutoWebSocketExample() {
     onDisconnect: () => {
       console.log('🔴 WebSocket disconnected!');
     },
-    // autoConnect defaults to true, so WebSocket will connect automatically
+    autoConnect: true // Explicitly set to true to ensure auto-connect
   });
 
   const requestNotificationPermission = async () => {

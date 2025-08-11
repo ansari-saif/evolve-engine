@@ -94,7 +94,7 @@ export class WebSocketService {
    * Handle WebSocket connection open
    */
   private handleOpen(): void {
-    console.log('Connected to WebSocket (receive-only mode)');
+    console.log('✅ Connected to WebSocket (receive-only mode)');
     this.isConnected = true;
     this.reconnectAttempts = 0;
 
@@ -133,7 +133,7 @@ export class WebSocketService {
    * Handle WebSocket connection close
    */
   private handleClose(): void {
-    console.log('Disconnected from WebSocket');
+    console.log('❌ Disconnected from WebSocket');
     this.isConnected = false;
     this.ws = null;
 
