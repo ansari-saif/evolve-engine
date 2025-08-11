@@ -1,17 +1,22 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { SkeletonLoader, ErrorMessage } from '../components/ui';
-import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, type CreateTaskDialogRef } from '../components/tasks';
-import { useGetUserTasks, useCreateTask, useUpdateTask, useCompleteTask, useDeleteTask } from '../hooks/useTasks';
+import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, GenerateDailyTasksDialog, type CreateTaskDialogRef } from '../components/tasks';
+import { useGetUserTasks, useCreateTask, useUpdateTask, useCompleteTask, useDeleteTask, useCreateBulkTasks } from '../hooks/useTasks';
 import { useGetUserGoals } from '../hooks/useGoals';
 import { useUserId } from '../contexts/AppContext';
 import { formatDateIST, getCurrentISOStringIST } from '../utils/timeUtils';
-import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../client/models';
+import { Button } from '../components/ui/button';
+import { Sparkles } from 'lucide-react';
+import { useAiService } from '../hooks/useAiService';
+import { useToast } from '../hooks/use-toast';
+import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum, PhaseEnum } from '../client/models';
 import type { TaskFilter } from '../types/app';
 
 const Tasks: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'in-progress' | 'completed'>('all');
   const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
   const [filters, setFilters] = useState<TaskFilter>({
     status: 'All',
     priority: 'All',
@@ -32,6 +37,11 @@ const Tasks: React.FC = () => {
   const updateTaskMutation = useUpdateTask();
   const completeTaskMutation = useCompleteTask();
   const deleteTaskMutation = useDeleteTask();
+  const createBulkTasksMutation = useCreateBulkTasks();
+  
+  // AI Service
+  const { generateDailyTasks } = useAiService();
+  const { toast } = useToast();
 
   // Filtered and sorted tasks
   const filteredTasks = useMemo(() => {
@@ -81,7 +91,11 @@ const Tasks: React.FC = () => {
         user_id: userId,
       });
     } catch (error) {
-      console.error('Failed to create task:', error);
+      try {
+        console.error('Failed to create task:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to create task: (Error logging failed)');
+      }
     }
   };
 
@@ -95,7 +109,11 @@ const Tasks: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to create bulk tasks:', error);
+      try {
+        console.error('Failed to create bulk tasks:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to create bulk tasks: (Error logging failed)');
+      }
     }
   };
 
@@ -104,7 +122,11 @@ const Tasks: React.FC = () => {
       await updateTaskMutation.mutateAsync({ id: taskId, data: updates });
       setEditingTask(null);
     } catch (error) {
-      console.error('Failed to update task:', error);
+      try {
+        console.error('Failed to update task:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to update task: (Error logging failed)');
+      }
     }
   };
 
@@ -124,7 +146,11 @@ const Tasks: React.FC = () => {
     try {
       await completeTaskMutation.mutateAsync(taskId);
     } catch (error) {
-      console.error('Failed to complete task:', error);
+      try {
+        console.error('Failed to complete task:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to complete task: (Error logging failed)');
+      }
     }
   };
 
@@ -132,7 +158,75 @@ const Tasks: React.FC = () => {
     try {
       await deleteTaskMutation.mutateAsync(taskId);
     } catch (error) {
-      console.error('Failed to delete task:', error);
+      try {
+        console.error('Failed to delete task:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to delete task: (Error logging failed)');
+      }
+    }
+  };
+
+  const handleOpenGenerateDialog = () => {
+    setGenerateDialogOpen(true);
+  };
+
+  const handleGenerateTasks = async (params: { energyLevel: number; currentPhase: PhaseEnum | null }) => {
+    try {
+      // Call the AI service to generate tasks
+      const response = await generateDailyTasks.mutateAsync({
+        user_id: userId,
+        energy_level: params.energyLevel,
+        current_phase: params.currentPhase || undefined
+      });
+
+      // Convert the AI response to TaskCreate objects
+      const taskCreateObjects: TaskCreate[] = response.map((taskData: Record<string, unknown>) => {
+        // Map AI response fields to TaskCreate structure
+        const description = String(taskData.description || taskData.title || 'Generated Task');
+        const priority = taskData.priority ? String(taskData.priority) : 'Medium';
+        const energyRequired = taskData.energy_required ? String(taskData.energy_required) : 'Medium';
+        const estimatedDuration = taskData.estimated_duration ? Number(taskData.estimated_duration) : null;
+        const scheduledForDate = taskData.scheduled_for_date ? String(taskData.scheduled_for_date) : null;
+
+        return {
+          description,
+          priority: priority as TaskPriorityEnum,
+          completion_status: 'Pending',
+          energy_required: energyRequired as EnergyRequiredEnum,
+          estimated_duration: estimatedDuration,
+          scheduled_for_date: scheduledForDate,
+          user_id: userId,
+          goal_id: null,
+          ai_generated: true
+        };
+      });
+
+      // Use bulk create to save the generated tasks
+      await createBulkTasksMutation.mutateAsync({
+        tasks: taskCreateObjects
+      });
+
+      // Show success notification
+      toast({
+        title: "Tasks Generated Successfully",
+        description: `Generated ${taskCreateObjects.length} daily tasks based on your energy level and phase.`,
+      });
+
+      // Close the dialog
+      setGenerateDialogOpen(false);
+    } catch (error) {
+      // Log error safely
+      try {
+        console.error('Failed to generate daily tasks:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to generate daily tasks: (Error logging failed)');
+      }
+      
+      toast({
+        title: "Failed to Generate Tasks",
+        description: "There was an error generating your daily tasks. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -208,6 +302,24 @@ const Tasks: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Tasks</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleOpenGenerateDialog}
+            disabled={generateDailyTasks.isPending || createBulkTasksMutation.isPending}
+            className="flex items-center gap-2"
+          >
+            {generateDailyTasks.isPending || createBulkTasksMutation.isPending ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                Generate Daily Tasks
+              </>
+            )}
+          </Button>
           <BulkCreateDialog
             goals={goals}
             onCreateTasks={handleBulkCreateTasks}
@@ -279,6 +391,14 @@ const Tasks: React.FC = () => {
           isLoading={updateTaskMutation.isPending}
         />
       )}
+
+      {/* Generate Daily Tasks Dialog */}
+      <GenerateDailyTasksDialog
+        open={generateDialogOpen}
+        onClose={() => setGenerateDialogOpen(false)}
+        onGenerate={handleGenerateTasks}
+        isLoading={generateDailyTasks.isPending || createBulkTasksMutation.isPending}
+      />
     </div>
   );
 };

@@ -20,16 +20,7 @@ export const getTodayDateIST = (): string => {
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
   const dateString = `${year}-${month}-${day}`;
-  
-  // Debug logging
-  console.log('getTodayDateIST debug:', {
-    today: today.toISOString(),
-    year,
-    month,
-    day,
-    dateString,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-  });
+
   
   return dateString;
 };
@@ -63,35 +54,6 @@ export const formatDateIST = (dateString: string | null): string | null => {
   const yesterday = new Date(todayDate.getTime() - 24 * 60 * 60 * 1000);
   const tomorrow = new Date(todayDate.getTime() + 24 * 60 * 60 * 1000);
   
-  // Debug logging
-  console.log('formatDateIST debug:', {
-    dateString,
-    year,
-    month,
-    day,
-    taskDate: taskDate.toISOString(),
-    today: today.toISOString(),
-    todayDate: todayDate.toISOString(),
-    yesterday: yesterday.toISOString(),
-    tomorrow: tomorrow.toISOString(),
-    taskDateTime: taskDate.getTime(),
-    todayDateTime: todayDate.getTime(),
-    yesterdayTime: yesterday.getTime(),
-    tomorrowTime: tomorrow.getTime(),
-    isToday: taskDate.getTime() === todayDate.getTime(),
-    isTomorrow: taskDate.getTime() === tomorrow.getTime(),
-    isYesterday: taskDate.getTime() === yesterday.getTime(),
-    // Add date comparison by components
-    taskYear: taskDate.getFullYear(),
-    taskMonth: taskDate.getMonth(),
-    taskDay: taskDate.getDate(),
-    todayYear: todayDate.getFullYear(),
-    todayMonth: todayDate.getMonth(),
-    todayDay: todayDate.getDate(),
-    isTodayByComponents: taskDate.getFullYear() === todayDate.getFullYear() && 
-                        taskDate.getMonth() === todayDate.getMonth() && 
-                        taskDate.getDate() === todayDate.getDate()
-  });
   
   // Compare dates by components (year, month, day) instead of timestamps
   if (taskDate.getFullYear() === todayDate.getFullYear() && 

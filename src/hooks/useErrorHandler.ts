@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useToast } from './use-toast';
 import { getErrorMessage, isNetworkError, isServerError, isClientError } from '../utils/errorHandling';
 
@@ -11,7 +12,7 @@ export interface ErrorHandlerOptions {
 export const useErrorHandler = () => {
   const { toast } = useToast();
 
-  const handleError = (
+  const handleError = useCallback((
     error: unknown, 
     options: ErrorHandlerOptions = {}
   ) => {
@@ -24,8 +25,15 @@ export const useErrorHandler = () => {
 
     const errorMessage = getErrorMessage(error);
     
-    // Log error for debugging
-    console.error(`${toastTitle}:`, errorMessage, error);
+    // Log error for debugging (safely)
+    try {
+      console.error(`${toastTitle}:`, errorMessage);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
+    } catch (logError) {
+      console.error(`${toastTitle}:`, errorMessage, '(Error logging failed)');
+    }
 
     // Show toast notification if enabled
     if (showToast) {
@@ -44,7 +52,7 @@ export const useErrorHandler = () => {
       retryCount,
       retryDelay
     };
-  };
+  }, [toast]);
 
   const createRetryConfig = (retryCount: number = 2, retryDelay: number = 1000) => ({
     retry: retryCount,
