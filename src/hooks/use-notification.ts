@@ -49,7 +49,7 @@ export function useNotification() {
         return false;
       }
 
-      const icon = options?.icon ?? '/favicon.ico';
+      const icon = options?.icon ?? '/favicon-192.png';
       try {
         const n = new Notification(title, { icon, ...options });
         n.onclick = () => {

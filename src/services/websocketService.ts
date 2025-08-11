@@ -180,7 +180,7 @@ export class WebSocketService {
   }
 
   /**
-   * Send browser notification
+   * Send browser notification with sound and app icon
    */
   private async sendNotification(message: WebSocketMessage): Promise<void> {
     if (!this.notificationHook) return;
@@ -191,22 +191,68 @@ export class WebSocketService {
         await this.notificationHook.requestPermission();
       }
 
-      // Send notification
+      // Send notification with app icon and sound
       const success = await this.notificationHook.notify(
         message.message,
         {
           body: message.data ? JSON.stringify(message.data) : undefined,
           tag: message.type || 'websocket-notification',
+          icon: '/favicon-192.png', // Use app icon instead of default favicon
+          badge: '/favicon.svg', // Badge icon for mobile
           requireInteraction: false,
-          silent: false
+          silent: false // Enable sound
         }
       );
 
       if (success) {
-        console.log('Browser notification sent successfully');
+        console.log('🔔 Browser notification sent with sound');
+        // Play additional notification sound
+        this.playNotificationSound();
+        // Trigger vibration on mobile devices
+        this.triggerVibration();
       }
     } catch (error) {
       console.error('Failed to send browser notification:', error);
+    }
+  }
+
+  /**
+   * Play notification sound
+   */
+  private playNotificationSound(): void {
+    try {
+      // Create audio context for notification sound
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioContext = new AudioContextClass();
+      
+      // Create a short beep sound
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz tone
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.warn('Could not play notification sound:', error);
+    }
+  }
+
+  /**
+   * Trigger vibration on mobile devices
+   */
+  private triggerVibration(): void {
+    try {
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]); // Vibration pattern: vibrate 200ms, pause 100ms, vibrate 200ms
+      }
+    } catch (error) {
+      console.warn('Could not trigger vibration:', error);
     }
   }
 

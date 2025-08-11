@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { webSocketService, WebSocketMessage, WebSocketConfig, WebSocketEventListener } from '../services/websocketService';
 import { useNotification } from './use-notification';
 
@@ -15,6 +15,7 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
   const [connectionStatus, setConnectionStatus] = useState(webSocketService.getConnectionStatus());
   const listenerRef = useRef<WebSocketEventListener | null>(null);
   const notification = useNotification();
+  const initializedRef = useRef(false);
 
   // Set up message listener
   const messageListener = useCallback((message: WebSocketMessage) => {
@@ -75,8 +76,9 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
 
   // Auto-connect on mount if enabled (defaults to true)
   useEffect(() => {
-    if ((options?.autoConnect ?? true) && config) {
-      console.log('Auto-connecting WebSocket...', config);
+    if ((options?.autoConnect ?? true) && config && !initializedRef.current) {
+      console.log('🔌 Initializing WebSocket connection...', config);
+      initializedRef.current = true;
       
       // Set notification hook
       webSocketService.setNotificationHook(notification);
@@ -102,9 +104,10 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
           webSocketService.removeEventListener(listenerRef.current);
           listenerRef.current = null;
         }
+        initializedRef.current = false;
       };
     }
-  }, [config, options?.autoConnect]); // Removed connect dependency to prevent re-renders
+  }, [config, options, messageListener, notification, updateConnectionStatus]); // Stable dependencies
 
   // Handle connection state changes
   useEffect(() => {

@@ -3,9 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AppProvider } from "@/contexts/AppContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { WebSocketMessage } from "@/services/websocketService";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
@@ -22,14 +23,16 @@ import MenuBar from "@/components/navigation/MenuBar";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Global WebSocket connection
-  const { isConnected, lastMessage } = useWebSocket({
+  // Stable WebSocket config and options (don't recreate on every render)
+  const webSocketConfig = useMemo(() => ({
     url: 'ws://localhost:8000/api/v1/ws',
     userId: '123456789',
     reconnectInterval: 5000,
     maxReconnectAttempts: 10
-  }, {
-    onMessage: (message) => {
+  }), []);
+
+  const webSocketOptions = useMemo(() => ({
+    onMessage: (message: WebSocketMessage) => {
       console.log('🔔 Global WebSocket message received:', message);
     },
     onConnect: () => {
@@ -38,7 +41,10 @@ const App = () => {
     onDisconnect: () => {
       console.log('🔴 Global WebSocket disconnected');
     }
-  });
+  }), []);
+
+  // Global WebSocket connection
+  const { isConnected, lastMessage } = useWebSocket(webSocketConfig, webSocketOptions);
 
   // Force dark mode
   useEffect(() => {
