@@ -73,9 +73,9 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
     updateConnectionStatus();
   }, [updateConnectionStatus]);
 
-  // Auto-connect on mount if enabled
+  // Auto-connect on mount if enabled (defaults to true)
   useEffect(() => {
-    if (options?.autoConnect !== false && config) {
+    if ((options?.autoConnect ?? true) && config) {
       const cleanup = connect();
       return cleanup;
     }

@@ -49,6 +49,19 @@ export class WebSocketService {
   }
 
   /**
+   * Initialize WebSocket with default configuration and auto-connect
+   * Useful for quick setup with sensible defaults
+   */
+  public initialize(userId: string, url: string = 'ws://localhost:8000/api/v1/ws'): void {
+    this.connect({
+      url,
+      userId,
+      reconnectInterval: 5000,
+      maxReconnectAttempts: 10
+    });
+  }
+
+  /**
    * Set notification hook for sending browser notifications
    */
   public setNotificationHook(notificationHook: ReturnType<typeof useNotification>): void {

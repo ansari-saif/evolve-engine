@@ -6,12 +6,11 @@
 import { webSocketService } from '../services/websocketService';
 import { useNotification } from '../hooks/use-notification';
 
-// Example 1: Basic usage
+// Example 1: Basic usage with auto-connect
 export function basicWebSocketExample() {
   const userId = "123456789";
-  const wsUrl = "ws://localhost:8000/api/v1/ws";
 
-  // Add message listener
+  // Add message listener BEFORE connecting
   webSocketService.addEventListener((message) => {
     console.log('Received message:', message);
     
@@ -31,13 +30,11 @@ export function basicWebSocketExample() {
     }
   });
 
-  // Connect to WebSocket
-  webSocketService.connect({
-    url: wsUrl,
-    userId: userId,
-    reconnectInterval: 5000,
-    maxReconnectAttempts: 10
-  });
+  // Initialize and auto-connect with sensible defaults
+  webSocketService.initialize(userId);
+
+  // Or use custom URL:
+  // webSocketService.initialize(userId, 'ws://your-server.com/ws');
 
   // Check connection status
   console.log('Connection status:', webSocketService.getConnectionStatus());

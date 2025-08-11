@@ -19,7 +19,12 @@ export function WebSocketExample() {
     connect, 
     disconnect,
     notification 
-  } = useWebSocket(undefined, {
+  } = useWebSocket({
+    url: wsUrl,
+    userId: userId,
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 10
+  }, {
     onMessage: (message) => {
       setMessages(prev => [message, ...prev].slice(0, 10)); // Keep last 10 messages
     },
@@ -29,7 +34,7 @@ export function WebSocketExample() {
     onDisconnect: () => {
       console.log('WebSocket disconnected!');
     },
-    autoConnect: false
+    autoConnect: false // Set to true to auto-connect on component mount
   });
 
   const handleConnect = () => {
