@@ -21,20 +21,7 @@ import {
 } from './DialogStateManager';
 import { useDialogKeyboard } from './useDialogKeyboard';
 import type { PhaseEnum } from '../../client/models';
-
-interface GeneratedTask {
-  description: string;
-  priority: string;
-  energy_required: string;
-  estimated_duration?: number;
-  scheduled_for_date?: string;
-  errors?: {
-    description?: string;
-    priority?: string;
-    energy_required?: string;
-    estimated_duration?: string;
-  };
-}
+import type { GeneratedTask, EditableGeneratedTask } from './DialogStateManager';
 
 interface GenerateDailyTasksDialogProps {
   open: boolean;
@@ -88,7 +75,9 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
     dispatch({ type: 'SET_CREATION_ERROR', payload: null });
     dispatch({ type: 'SET_CREATING', payload: true });
     try {
-      await onCreateTasks(state.editedTasks);
+      // Convert EditableGeneratedTask[] to GeneratedTask[] by removing errors
+      const tasksToCreate: GeneratedTask[] = state.editedTasks.map(({ errors, ...task }) => task);
+      await onCreateTasks(tasksToCreate);
       dispatch({ type: 'GO_TO_SUCCESS' });
       setTimeout(() => {
         handleClose();
@@ -100,11 +89,11 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
     }
   };
 
-  const hasValidationErrors = state.editedTasks.some(task => 
+    const hasValidationErrors = state.editedTasks.some(task => 
     task.errors && Object.keys(task.errors).length > 0
   );
 
-  const handleTasksChange = (tasks: GeneratedTask[]) => {
+  const handleTasksChange = (tasks: EditableGeneratedTask[]) => {
     dispatch({ type: 'SET_EDITED_TASKS', payload: tasks });
   };
 
@@ -137,10 +126,10 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
 
   const renderInitialContent = () => (
     <>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Energy Level Slider */}
-        <div className="space-y-3">
-          <Label htmlFor="energy-level">
+        <div className="space-y-2 sm:space-y-3">
+          <Label htmlFor="energy-level" className="text-sm sm:text-base">
             Energy Level: {state.energyLevel}/10 ({getEnergyLabel(state.energyLevel)})
           </Label>
           <Slider
@@ -159,14 +148,14 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         </div>
 
         {/* Phase Selection */}
-        <div className="space-y-3">
-          <Label htmlFor="current-phase">Current Phase (Optional)</Label>
+        <div className="space-y-2 sm:space-y-3">
+          <Label htmlFor="current-phase" className="text-sm sm:text-base">Current Phase (Optional)</Label>
           <Select
             value={state.currentPhase || 'none'}
             onValueChange={(value) => dispatch({ type: 'SET_CURRENT_PHASE', payload: value === 'none' ? null : value })}
             disabled={state.isGenerating}
           >
-            <SelectTrigger className={state.formErrors.phase ? "border-destructive" : ""}>
+            <SelectTrigger className={`${state.formErrors.phase ? "border-destructive" : ""} h-10 sm:h-10`}>
               <SelectValue placeholder="Select your current phase" />
             </SelectTrigger>
             <SelectContent>
@@ -179,7 +168,7 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
             </SelectContent>
           </Select>
           {state.formErrors.phase && (
-            <p className="text-sm text-destructive">{state.formErrors.phase}</p>
+            <p className="text-xs sm:text-sm text-destructive">{state.formErrors.phase}</p>
           )}
         </div>
 
@@ -206,18 +195,19 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         />
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2">
           <Button
             variant="outline"
             onClick={handleClose}
             disabled={state.isGenerating}
+            className="w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
             Cancel
           </Button>
           <Button
             onClick={handleGenerate}
             disabled={state.isGenerating}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
             {state.isGenerating ? (
               <>
@@ -238,15 +228,15 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
 
   const renderPreviewContent = () => (
     <>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Review and Edit Tasks</h3>
+          <h3 className="text-base sm:text-lg font-semibold">Review and Edit Tasks</h3>
           <Button
             variant="outline"
             size="sm"
             onClick={handleBack}
             disabled={state.isCreating}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[36px] sm:min-h-[36px]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -266,18 +256,19 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         />
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-2">
           <Button
             variant="outline"
             onClick={handleClose}
             disabled={state.isCreating}
+            className="w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
             Cancel
           </Button>
           <Button
             onClick={handleCreateTasks}
             disabled={state.isCreating || state.editedTasks.length === 0 || hasValidationErrors}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
             {state.isCreating ? (
               <>
@@ -298,16 +289,16 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
 
   const renderSuccessContent = () => (
     <>
-      <div className="space-y-6 text-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-            <Check className="h-8 w-8 text-green-600" />
+      <div className="space-y-4 sm:space-y-6 text-center">
+        <div className="flex flex-col items-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <Check className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-green-600">
+            <h3 className="text-base sm:text-lg font-semibold text-green-600">
               Tasks Created Successfully!
             </h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               {state.editedTasks.length} task{state.editedTasks.length !== 1 ? 's' : ''} have been created and added to your task list.
             </p>
           </div>
@@ -338,7 +329,7 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-black/80 backdrop-blur-sm"
@@ -346,12 +337,12 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
       />
       
       {/* Dialog */}
-      <div className="relative bg-background rounded-lg shadow-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden">
+      <div className="relative bg-background rounded-lg shadow-lg w-full max-w-4xl mx-auto max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            <h2 className="text-lg font-semibold">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+            <h2 className="text-base sm:text-lg font-semibold">
               {getStateTitle(state.currentState)}
             </h2>
           </div>
@@ -359,15 +350,15 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleClose}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 min-h-[32px] sm:min-h-[32px]"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
         
         {/* Description */}
-        <div className="px-6 pt-2 pb-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="px-4 sm:px-6 pt-2 pb-3 sm:pb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {state.currentState === DialogState.INITIAL && "Configure your energy level and phase to generate personalized daily tasks."}
             {state.currentState === DialogState.PREVIEW && "Review and edit the generated tasks before creating them."}
             {state.currentState === DialogState.SUCCESS && "Your tasks have been successfully created!"}
@@ -375,19 +366,19 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         </div>
         
         {/* Workflow Progress */}
-        <div className="px-6">
+        <div className="px-4 sm:px-6">
           <WorkflowProgress 
             currentStep={getCurrentStep(state.currentState)} 
           />
         </div>
         
-        {/* Keyboard Shortcuts */}
-        <div className="px-6 mt-2">
+        {/* Keyboard Shortcuts - Hidden on Mobile */}
+        <div className="hidden sm:block px-4 sm:px-6 mt-2">
           <KeyboardShortcutsDisplay shortcuts={keyboardShortcuts} />
         </div>
         
         {/* Content */}
-        <div className="p-6 pt-4 relative">
+        <div className="p-4 sm:p-6 pt-3 sm:pt-4 relative">
           {state.currentState === DialogState.SUCCESS
             ? renderSuccessContent() 
             : state.currentState === DialogState.PREVIEW

@@ -6,12 +6,34 @@ export enum DialogState {
   SUCCESS = 'success'
 }
 
+// Type-safe enums for better type safety
+export type TaskPriority = 'Urgent' | 'High' | 'Medium' | 'Low';
+export type EnergyLevel = 'High' | 'Medium' | 'Low';
+
+export interface GeneratedTask {
+  description: string;
+  priority: TaskPriority;
+  energy_required: EnergyLevel;
+  estimated_duration?: number;
+  scheduled_for_date?: string;
+}
+
+// Interface for tasks with validation errors
+export interface EditableGeneratedTask extends GeneratedTask {
+  errors?: {
+    description?: string;
+    priority?: string;
+    energy_required?: string;
+    estimated_duration?: string;
+  };
+}
+
 export interface DialogStateData {
   currentState: DialogState;
   energyLevel: number;
   currentPhase: string | null;
-  generatedTasks: any[];
-  editedTasks: any[];
+  generatedTasks: GeneratedTask[];
+  editedTasks: EditableGeneratedTask[];
   isGenerating: boolean;
   isCreating: boolean;
   isSuccess: boolean;
@@ -24,8 +46,8 @@ export type DialogAction =
   | { type: 'SET_STATE'; payload: DialogState }
   | { type: 'SET_ENERGY_LEVEL'; payload: number }
   | { type: 'SET_CURRENT_PHASE'; payload: string | null }
-  | { type: 'SET_GENERATED_TASKS'; payload: any[] }
-  | { type: 'SET_EDITED_TASKS'; payload: any[] }
+  | { type: 'SET_GENERATED_TASKS'; payload: GeneratedTask[] }
+  | { type: 'SET_EDITED_TASKS'; payload: EditableGeneratedTask[] }
   | { type: 'SET_GENERATING'; payload: boolean }
   | { type: 'SET_CREATING'; payload: boolean }
   | { type: 'SET_SUCCESS'; payload: boolean }

@@ -3,13 +3,15 @@ import { format, differenceInDays } from "date-fns";
 import { useState, useEffect } from "react";
 import { ShinyProgressHeader } from "../ui/shiny-progress-header";
 import { Button } from "../ui/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Menu } from "lucide-react";
 
 interface HeaderProps {
   onVisibilityChange?: (visible: boolean) => void;
+  sidebarOpen?: boolean;
+  setSidebarOpen?: (open: boolean) => void;
 }
 
-const Header = ({ onVisibilityChange }: HeaderProps) => {
+const Header = ({ onVisibilityChange, sidebarOpen, setSidebarOpen }: HeaderProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
   // Mock user's startup journey start date (birthday)
@@ -38,19 +40,35 @@ const Header = ({ onVisibilityChange }: HeaderProps) => {
 
   return (
     <>
+      {/* Mobile Menu Button */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="fixed top-2 left-2 sm:top-4 sm:left-4 z-50 lg:hidden"
+      >
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setSidebarOpen?.(!sidebarOpen)}
+          className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 h-8 w-8 sm:h-10 sm:w-10"
+        >
+          <Menu className="h-3 w-3 sm:h-4 sm:w-4" />
+        </Button>
+      </motion.div>
+
       {/* Toggle Button - Always visible */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="fixed top-4 right-4 z-50"
+        className="fixed top-2 right-2 sm:top-4 sm:right-4 z-50"
       >
         <Button
           variant="outline"
           size="icon"
           onClick={toggleHeader}
-          className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90"
+          className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 h-8 w-8 sm:h-10 sm:w-10"
         >
-          {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {isVisible ? <EyeOff className="h-3 w-3 sm:h-4 sm:w-4" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
         </Button>
       </motion.div>
 
@@ -67,7 +85,7 @@ const Header = ({ onVisibilityChange }: HeaderProps) => {
           isVisible ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="px-6 py-4">
+        <div className="px-4 py-3 sm:px-6 sm:py-4">
           <ShinyProgressHeader
             title="Startup Journey"
             subtitle={`${format(today, "EEEE, MMMM do")} • ${daysRemaining} days left`}

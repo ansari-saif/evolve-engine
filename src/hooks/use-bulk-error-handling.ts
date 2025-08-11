@@ -50,7 +50,7 @@ export function useBulkErrorHandling(config: Partial<RetryConfig> = {}): BulkErr
   const retryTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const retryConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
 
-  const classifyError = (error: any): ErrorType => {
+  const classifyError = (error: Error & { status?: number; name?: string }): ErrorType => {
     if (error.name === 'NetworkError' || error.message?.includes('network')) {
       return 'network';
     }
@@ -95,7 +95,7 @@ export function useBulkErrorHandling(config: Partial<RetryConfig> = {}): BulkErr
     };
 
     setErrors(prev => [...prev, newError]);
-  }, []);
+  }, [canRetryError]);
 
   const removeError = useCallback((errorId: string) => {
     // Clear any pending retry timeout
@@ -155,7 +155,7 @@ export function useBulkErrorHandling(config: Partial<RetryConfig> = {}): BulkErr
         retryTimeouts.current.set(errorId, timeout);
       }
     }
-  }, [errors, removeError]);
+  }, [errors, removeError, calculateRetryDelay, canRetryError]);
 
   const retryAllErrors = useCallback(async (retryFunction: (taskData: TaskCreate) => Promise<void>) => {
     const retryableErrors = errors.filter(error => error.canRetry && error.taskData);

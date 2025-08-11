@@ -157,6 +157,22 @@ All colors MUST be HSL.
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground;
   }
+
+  /* iPhone Safe Area Support */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .pb-safe {
+    padding-bottom: calc(0.375rem + env(safe-area-inset-bottom));
+  }
+
+  /* Prevent horizontal scrolling on mobile */
+  html, body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+  }
 }
 
 @layer components {

@@ -87,7 +87,7 @@ export const validateDuration = (value: number | string): ValidationResult => {
 };
 
 // Validate a complete task
-export const validateTask = (task: any): Record<string, string> => {
+export const validateTask = (task: Record<string, unknown>): Record<string, string> => {
   const errors: Record<string, string> = {};
   
   const titleValidation = validateTitle(task.description || '');
@@ -120,7 +120,7 @@ export const validateTask = (task: any): Record<string, string> => {
 };
 
 // Check if any tasks have validation errors
-export const hasValidationErrors = (tasks: any[]): boolean => {
+export const hasValidationErrors = (tasks: Record<string, unknown>[]): boolean => {
   return tasks.some(task => {
     const errors = validateTask(task);
     return Object.keys(errors).length > 0;
@@ -128,7 +128,7 @@ export const hasValidationErrors = (tasks: any[]): boolean => {
 };
 
 // Get validation error count
-export const getValidationErrorCount = (tasks: any[]): number => {
+export const getValidationErrorCount = (tasks: Record<string, unknown>[]): number => {
   return tasks.reduce((count, task) => {
     const errors = validateTask(task);
     return count + Object.keys(errors).length;

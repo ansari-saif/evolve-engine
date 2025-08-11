@@ -16,7 +16,7 @@ const MenuToggleButton: React.FC<MenuToggleButtonProps> = ({
   return (
     <button
       className={cn(
-        "fixed top-4 left-4 z-[60] p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-lg transition-all duration-200 hover:bg-background/90 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        "fixed top-2 left-2 sm:top-4 sm:left-4 z-[60] p-1.5 sm:p-2 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-lg transition-all duration-200 hover:bg-background/90 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
         className
       )}
       onClick={onClick}
@@ -25,9 +25,9 @@ const MenuToggleButton: React.FC<MenuToggleButtonProps> = ({
       aria-label={isOpen ? "Close menu" : "Open menu"}
     >
       {isOpen ? (
-        <X className="h-5 w-5 text-foreground transition-transform duration-200" />
+        <X className="h-4 w-4 sm:h-5 sm:w-5 text-foreground transition-transform duration-200" />
       ) : (
-        <Menu className="h-5 w-5 text-foreground transition-transform duration-200" />
+        <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-foreground transition-transform duration-200" />
       )}
     </button>
   );

@@ -329,26 +329,28 @@ const Tasks: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-4 lg:py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Tasks</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-6">
+        <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold">Tasks</h1>
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={handleOpenGenerateDialog}
             disabled={generateDailyTasks.isPending || createBulkTasksMutation.isPending}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 flex-1 sm:flex-initial min-h-[36px] sm:min-h-[40px]"
           >
             {generateDailyTasks.isPending || createBulkTasksMutation.isPending ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Generating...
+                <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <span className="hidden sm:inline">Generating...</span>
+                <span className="sm:hidden">Gen...</span>
               </>
             ) : (
               <>
-                <Sparkles className="h-4 w-4" />
-                Generate Daily Tasks
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Generate Daily Tasks</span>
+                <span className="sm:hidden">Generate</span>
               </>
             )}
           </Button>
@@ -367,25 +369,53 @@ const Tasks: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <TaskFilters
-        filters={filters}
-        setFilters={setFilters}
-        goals={goals}
-      />
-
       {/* Task Tabs */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'pending' | 'in-progress' | 'completed')}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">All ({taskGroups.all.length})</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({taskGroups.pending.length})</TabsTrigger>
-          <TabsTrigger value="in-progress">In Progress ({taskGroups['in-progress'].length})</TabsTrigger>
-          <TabsTrigger value="completed">Completed ({taskGroups.completed.length})</TabsTrigger>
-        </TabsList>
+        <div className="flex overflow-x-auto scrollbar-hide mb-3 sm:mb-6">
+          <TabsList className="flex bg-muted/50 p-1 rounded-lg min-w-full sm:min-w-0">
+            <TabsTrigger 
+              value="all" 
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+            >
+              <span className="hidden sm:inline">All ({taskGroups.all.length})</span>
+              <span className="sm:hidden">All</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="pending" 
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+            >
+              <span className="hidden sm:inline">Pending ({taskGroups.pending.length})</span>
+              <span className="sm:hidden">Pending</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="in-progress" 
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+            >
+              <span className="hidden sm:inline">In Progress ({taskGroups['in-progress'].length})</span>
+              <span className="sm:hidden">Progress</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="completed" 
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+            >
+              <span className="hidden sm:inline">Completed ({taskGroups.completed.length})</span>
+              <span className="sm:hidden">Done</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-3 sm:mb-6">
+          <TaskFilters
+            filters={filters}
+            setFilters={setFilters}
+            goals={goals}
+          />
+        </div>
 
         {(['all', 'pending', 'in-progress', 'completed'] as const).map((tab) => (
           <TabsContent key={tab} value={tab}>
-            <div className="grid gap-4">
+            <div className="grid gap-2 sm:gap-4">
               {taskGroups[tab].length > 0 ? (
                 taskGroups[tab].map((task: TaskResponse) => (
                   <TaskCard
@@ -405,8 +435,8 @@ const Tasks: React.FC = () => {
                   />
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No tasks found. Create your first task above!</p>
+                <div className="text-center py-4 sm:py-8">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">No tasks found. Create your first task above!</p>
                 </div>
               )}
             </div>

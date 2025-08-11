@@ -68,11 +68,11 @@ const MotivationCard = () => {
 
   return (
     <LiquidGlass
-      intensity={8}
+      intensity={6}
       color={getGradientByType(currentMessage.type)}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="p-6 text-white relative cursor-pointer"
+      className="p-4 sm:p-5 lg:p-6 text-white relative cursor-pointer"
     >
       {/* Animated background elements */}
       <motion.div
@@ -109,11 +109,11 @@ const MotivationCard = () => {
           <div className="flex items-center space-x-2">
             <motion.div
               whileHover={{ scale: 1.1, rotate: 15 }}
-              className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center"
+              className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white/20 rounded-lg flex items-center justify-center"
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
             </motion.div>
-            <h3 className="text-lg font-semibold">AI Coach</h3>
+            <h3 className="text-base sm:text-lg font-semibold">AI Coach</h3>
           </div>
           <motion.div
             animate={{ opacity: [0.5, 1, 0.5] }}
@@ -141,7 +141,7 @@ const MotivationCard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-sm leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm leading-relaxed font-medium">
               {currentMessage.message}
             </p>
             
