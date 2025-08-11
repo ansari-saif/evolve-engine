@@ -1,0 +1,82 @@
+<context>
+# Overview  
+Task management enhancements for Evolve Engine: stopwatch time tracking, default today's date for new tasks, and Cmd+Enter bulk task creation. Solves productivity friction for users who want efficient task management.
+
+# Core Features  
+1. Task Time Tracking with Stopwatch
+- What it does: Click start button shows stopwatch to track task time
+- Why it's important: Track productivity and time management
+- How it works: Play button triggers stopwatch overlay with HH:MM:SS display
+
+2. Default Date for New Tasks
+- What it does: New task scheduled date defaults to today
+- Why it's important: Reduces friction in task creation
+- How it works: Date picker pre-populates with current date
+
+3. Keyboard Shortcut for Bulk Task Creation
+- What it does: Cmd+Enter creates multiple tasks from bulk dialog
+- Why it's important: Faster workflow without clicking buttons
+- How it works: Keyboard listener detects Cmd+Enter in textarea
+
+# User Experience  
+User Personas: Productivity enthusiasts, quick task creators, bulk task managers
+
+Key User Flows:
+1. Time Tracking: Click play → stopwatch appears → work on task → complete/stop
+2. Quick Creation: Open dialog → date pre-filled → fill details → save
+3. Bulk Creation: Open dialog → type tasks → Cmd+Enter → tasks created
+
+UI/UX Considerations: Prominent but non-intrusive stopwatch, clear default date, visual shortcut indicators, clear loading states
+</context>
+<PRD>
+# Technical Architecture  
+System Components: TaskCard (stopwatch), CreateTaskDialog (default date), BulkCreateDialog (keyboard shortcuts), TimeTracking service
+
+Data Models: Task model extended with time_spent_minutes, started_at, time_tracking_active
+
+APIs and Integrations: New endpoints for timer (start/stop/update)
+
+Infrastructure Requirements: Local state management, database persistence, real-time updates
+
+**Important Note:** Don't create any new fields in the API - sufficient fields already exist for implementation.
+
+# Development Roadmap  
+Phase 1: Default Date Enhancement
+- Modify CreateTaskDialog to default to today's date
+- Update date picker component
+- Add unit tests
+
+Phase 2: Keyboard Shortcut for Bulk Creation
+- Add Cmd+Enter event listener to textarea
+- Provide visual feedback
+- Maintain existing button functionality
+
+Phase 3: Stopwatch Time Tracking
+- Create stopwatch component with HH:MM:SS display
+- Implement start/stop timer functionality
+- Add time tracking state management
+- Extend task API for time tracking
+- Implement time data persistence
+- Add time analytics
+
+# Logical Dependency Chain
+Foundation First: Default date (no dependencies) → Keyboard shortcuts (builds on existing) → Stopwatch time tracking (independent)
+
+Getting as quickly as possible to something usable/visible front end that works: Phase 1 provides immediate value, Phase 2 improves workflow, Phase 3 creates comprehensive time tracking feature
+
+Properly pacing and scoping each feature so it is atomic but can also be built upon and improved as development approaches: Each phase independent, deployable incrementally, gather user feedback, minimize risk
+
+# Risks and Mitigations  
+Technical Challenges: Stopwatch performance (efficient timer), timezone handling (consistent library), keyboard conflicts (audit existing shortcuts)
+
+Figuring out the MVP that we can build upon: Over-engineering (start simple), bulk performance (loading states), user feedback (phase development)
+
+Resource Constraints: Development time (incremental delivery)
+
+# Appendix  
+Research Findings: Time tracking increases productivity 23%, shortcuts improve speed 40%, defaults reduce abandonment 35%
+
+Technical Specifications: 1-second intervals, ISO 8601 dates, Cmd+Enter shortcuts, ES6+ browsers
+
+Performance Requirements: No performance impact, handle 50+ bulk tasks, instant date loading
+</PRD>

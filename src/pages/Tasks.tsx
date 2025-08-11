@@ -1,13 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { SkeletonLoader, ErrorMessage } from '../components/ui';
-import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters } from '../components/tasks';
+import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, type CreateTaskDialogRef } from '../components/tasks';
 import { useGetUserTasks, useCreateTask, useUpdateTask, useCompleteTask, useDeleteTask } from '../hooks/useTasks';
 import { useGetUserGoals } from '../hooks/useGoals';
 import { useUserId } from '../contexts/AppContext';
-import { format, isToday, isTomorrow, isYesterday } from 'date-fns';
+import { formatDateIST, getCurrentISOStringIST } from '../utils/timeUtils';
 import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../client/models';
-import type { GoalResponse } from '../client/models';
 import type { TaskFilter } from '../types/app';
 
 const Tasks: React.FC = () => {
@@ -19,6 +18,8 @@ const Tasks: React.FC = () => {
     energy: 'All',
     goal: 'All'
   });
+
+  const createTaskDialogRef = useRef<CreateTaskDialogRef>(null);
 
   const userId = useUserId();
 
@@ -111,9 +112,9 @@ const Tasks: React.FC = () => {
     const updates: TaskUpdate = { completion_status: status };
     
     if (status === 'In Progress') {
-      updates.started_at = new Date().toISOString();
+      updates.started_at = getCurrentISOStringIST();
     } else if (status === 'Completed') {
-      updates.completed_at = new Date().toISOString();
+      updates.completed_at = getCurrentISOStringIST();
     }
 
     await handleUpdateTask(taskId, updates);
@@ -165,12 +166,7 @@ const Tasks: React.FC = () => {
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    if (isToday(date)) return 'Today';
-    if (isTomorrow(date)) return 'Tomorrow';
-    if (isYesterday(date)) return 'Yesterday';
-    return format(date, 'MMM dd, yyyy');
+    return formatDateIST(dateString);
   };
 
   const formatDuration = (minutes: number | null) => {
@@ -218,6 +214,7 @@ const Tasks: React.FC = () => {
             isLoading={createTaskMutation.isPending}
           />
           <CreateTaskDialog
+            ref={createTaskDialogRef}
             goals={goals}
             onCreateTask={handleCreateTask}
             isLoading={createTaskMutation.isPending}

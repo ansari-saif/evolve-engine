@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -10,6 +10,7 @@ import { Separator } from '../ui/separator';
 import { LoadingSpinner } from '../ui';
 import { CalendarIcon, Upload, Copy } from 'lucide-react';
 import { format } from 'date-fns';
+import { getTodayDateIST, dateToISTString } from '../../utils/timeUtils';
 import type { TaskCreate, TaskPriorityEnum, EnergyRequiredEnum } from '../../client/models';
 import type { GoalResponse } from '../../client/models';
 
@@ -26,12 +27,20 @@ const BulkCreateDialog: React.FC<BulkCreateDialogProps> = ({
 }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [bulkTasksText, setBulkTasksText] = useState('');
+  const [showShortcutFeedback, setShowShortcutFeedback] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Get today's date in YYYY-MM-DD format for default (IST)
+  const getTodayDate = () => {
+    return getTodayDateIST();
+  };
+
   const [bulkTaskDefaults, setBulkTaskDefaults] = useState<Partial<TaskCreate>>({
     priority: 'Medium',
     completion_status: 'Pending',
     energy_required: 'Medium',
     estimated_duration: null,
-    scheduled_for_date: null,
+    scheduled_for_date: getTodayDate(), // Default to today's date
     goal_id: null
   });
 
@@ -59,7 +68,7 @@ const BulkCreateDialog: React.FC<BulkCreateDialogProps> = ({
         completion_status: 'Pending',
         energy_required: 'Medium',
         estimated_duration: null,
-        scheduled_for_date: null,
+        scheduled_for_date: getTodayDate(), // Reset to today's date
         goal_id: null
       });
       setShowDialog(false);
@@ -68,6 +77,8 @@ const BulkCreateDialog: React.FC<BulkCreateDialogProps> = ({
     }
   };
 
+
+
   const handleCopyBulkTemplate = () => {
     const template = `Task 1 description
 Task 2 description
@@ -75,6 +86,24 @@ Task 3 description
 Another important task
 Quick task to complete`;
     setBulkTasksText(template);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      
+      // Show visual feedback
+      setShowShortcutFeedback(true);
+      
+      // Hide feedback after animation
+      setTimeout(() => {
+        setShowShortcutFeedback(false);
+      }, 300);
+      
+      // Trigger task creation
+      handleBulkCreateTasks();
+    }
   };
 
   return (
@@ -105,18 +134,34 @@ Quick task to complete`;
               <span className="text-xs text-muted-foreground">
                 {bulkTasksText.split('\n').filter(line => line.trim().length > 0).length} tasks ready
               </span>
+              <span className="text-xs text-muted-foreground ml-auto">
+                💡 Press {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}+Enter to create tasks
+              </span>
             </div>
-            <Textarea
-              placeholder="Enter task descriptions, one per line...
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                placeholder="Enter task descriptions, one per line...
 Example:
 Review project requirements
 Set up development environment
 Create initial database schema
 Write API documentation"
-              value={bulkTasksText}
-              onChange={(e) => setBulkTasksText(e.target.value)}
-              className="min-h-[200px] font-mono text-sm"
-            />
+                value={bulkTasksText}
+                onChange={(e) => setBulkTasksText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className={`min-h-[200px] font-mono text-sm transition-all duration-200 ${
+                  showShortcutFeedback ? 'ring-2 ring-green-500 ring-opacity-50 bg-green-50' : ''
+                }`}
+              />
+              {showShortcutFeedback && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-md text-sm font-medium animate-pulse">
+                    Creating tasks...
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <Separator />
@@ -196,12 +241,21 @@ Write API documentation"
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={bulkTaskDefaults.scheduled_for_date ? new Date(bulkTaskDefaults.scheduled_for_date) : undefined}
-                    onSelect={(date) => setBulkTaskDefaults({ ...bulkTaskDefaults, scheduled_for_date: date?.toISOString().split('T')[0] || null })}
-                    initialFocus
-                  />
+                                  <Calendar
+                  mode="single"
+                  selected={bulkTaskDefaults.scheduled_for_date ? (() => {
+                    const [year, month, day] = bulkTaskDefaults.scheduled_for_date.split('-').map(Number);
+                    return new Date(year, month - 1, day);
+                  })() : undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      setBulkTaskDefaults({ ...bulkTaskDefaults, scheduled_for_date: dateToISTString(date) });
+                    } else {
+                      setBulkTaskDefaults({ ...bulkTaskDefaults, scheduled_for_date: null });
+                    }
+                  }}
+                  initialFocus
+                />
                 </PopoverContent>
               </Popover>
             </div>

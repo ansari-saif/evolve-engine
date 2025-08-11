@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, FormEvent } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { LoadingSpinner } from '../ui';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { dateToISTString } from '../../utils/timeUtils';
 import type { TaskResponse, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../../client/models';
 import type { GoalResponse } from '../../client/models';
 
@@ -40,18 +41,26 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
     onSave(task.task_id, updates as TaskUpdate);
   };
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSave();
+  };
+
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Description</label>
+            <label htmlFor="edit-task-description" className="text-sm font-medium">Description</label>
             <Input
+              id="edit-task-description"
+              name="description"
               value={updates.description || ''}
               onChange={(e) => setUpdates({ ...updates, description: e.target.value })}
+              required
             />
           </div>
           
@@ -140,29 +149,38 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={updates.scheduled_for_date ? new Date(updates.scheduled_for_date) : undefined}
-                    onSelect={(date) => setUpdates({ ...updates, scheduled_for_date: date?.toISOString().split('T')[0] || null })}
-                    initialFocus
-                  />
+                                  <Calendar
+                  mode="single"
+                  selected={updates.scheduled_for_date ? (() => {
+                    const [year, month, day] = updates.scheduled_for_date.split('-').map(Number);
+                    return new Date(year, month - 1, day);
+                  })() : undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      setUpdates({ ...updates, scheduled_for_date: dateToISTString(date) });
+                    } else {
+                      setUpdates({ ...updates, scheduled_for_date: null });
+                    }
+                  }}
+                  initialFocus
+                />
                 </PopoverContent>
               </Popover>
             </div>
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
             <Button 
-              onClick={handleSave}
+              type="submit"
               disabled={isLoading}
             >
               {isLoading ? <LoadingSpinner size="small" /> : 'Save Changes'}
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
