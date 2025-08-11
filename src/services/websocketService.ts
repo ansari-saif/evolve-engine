@@ -26,7 +26,14 @@ export class WebSocketService {
   private reconnectTimeout: number | null = null;
   private notificationHook: ReturnType<typeof useNotification> | null = null;
 
-  private constructor() {}
+  private constructor() {
+    // Global cleanup on page unload
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', () => {
+        this.cleanup();
+      });
+    }
+  }
 
   public static getInstance(): WebSocketService {
     if (!WebSocketService.instance) {
@@ -39,6 +46,20 @@ export class WebSocketService {
    * Initialize WebSocket connection
    */
   public connect(config: WebSocketConfig): void {
+    // Prevent multiple connections with same config
+    if (this.isConnected && this.config && 
+        this.config.url === config.url && 
+        this.config.userId === config.userId) {
+      console.log('🔄 WebSocket already connected with same config, skipping...');
+      return;
+    }
+
+    // Disconnect existing connection if different config
+    if (this.ws) {
+      console.log('🔄 Disconnecting existing WebSocket before new connection...');
+      this.disconnect();
+    }
+
     this.config = {
       reconnectInterval: 5000,
       maxReconnectAttempts: 10,

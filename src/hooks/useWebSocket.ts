@@ -83,7 +83,7 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
       // Set notification hook
       webSocketService.setNotificationHook(notification);
       
-      // Connect
+      // Connect (service will prevent duplicates)
       webSocketService.connect(config);
       
       // Add message listener
@@ -99,15 +99,24 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
       
       // Cleanup function
       return () => {
+        console.log('🧹 Cleaning up WebSocket hook...');
         clearInterval(statusInterval);
         if (listenerRef.current) {
           webSocketService.removeEventListener(listenerRef.current);
           listenerRef.current = null;
         }
-        initializedRef.current = false;
+        // Don't reset initializedRef to prevent re-initialization on every cleanup
       };
     }
-  }, [config, options, messageListener, notification, updateConnectionStatus]); // Stable dependencies
+  }, []); // Empty deps - run only once on mount
+
+  // Separate effect for config changes
+  useEffect(() => {
+    if (config && initializedRef.current) {
+      console.log('🔄 WebSocket config changed, reconnecting...', config);
+      webSocketService.connect(config);
+    }
+  }, [config?.url, config?.userId]); // Only reconnect if URL or userId changes
 
   // Handle connection state changes
   useEffect(() => {
