@@ -197,8 +197,8 @@ export class WebSocketService {
         {
           body: message.data ? JSON.stringify(message.data) : undefined,
           tag: message.type || 'websocket-notification',
-          icon: '/favicon-192.png', // Use app icon instead of default favicon
-          badge: '/favicon.svg', // Badge icon for mobile
+          icon: '/favicon.svg', // Use FAB app icon
+          badge: '/favicon-192.png', // Badge icon for mobile
           requireInteraction: false,
           silent: false // Enable sound
         }

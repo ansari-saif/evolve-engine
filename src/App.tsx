@@ -7,6 +7,7 @@ import { useEffect, useMemo } from "react";
 import { AppProvider } from "@/contexts/AppContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { WebSocketMessage } from "@/services/websocketService";
+import { useAppContext } from "@/contexts/AppContext";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
@@ -22,14 +23,17 @@ import MenuBar from "@/components/navigation/MenuBar";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+// Inner App component that has access to AppContext
+const AppContent = () => {
+  const { userId, config } = useAppContext();
+
   // Stable WebSocket config and options (don't recreate on every render)
   const webSocketConfig = useMemo(() => ({
-    url: 'ws://localhost:8000/api/v1/ws',
-    userId: '123456789',
+    url: config.webSocketUrl + '/api/v1/ws',
+    userId: userId,
     reconnectInterval: 5000,
     maxReconnectAttempts: 10
-  }), []);
+  }), [config.webSocketUrl, userId]);
 
   const webSocketOptions = useMemo(() => ({
     onMessage: (message: WebSocketMessage) => {
@@ -46,6 +50,28 @@ const App = () => {
   // Global WebSocket connection
   const { isConnected, lastMessage } = useWebSocket(webSocketConfig, webSocketOptions);
 
+  return (
+    <div className="min-h-screen bg-background p-8 pb-24 pt-28">
+      <MenuBar />
+      <Header />
+      <Routes>
+        <Route path="/welcome" element={<Index />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/goals" element={<Goals />} />
+        <Route path="/diary" element={<Diary />} />
+        <Route path="/statistics" element={<Statistics />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/chat" element={<Chat />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <BottomTabBar />
+    </div>
+  );
+};
+
+const App = () => {
   // Force dark mode
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -58,23 +84,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen bg-background p-8 pb-24 pt-28">
-              <MenuBar />
-              <Header />
-              <Routes>
-                <Route path="/welcome" element={<Index />} />
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/goals" element={<Goals />} />
-                <Route path="/diary" element={<Diary />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/chat" element={<Chat />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <BottomTabBar />
-            </div>
+            <AppContent />
           </BrowserRouter>
         </TooltipProvider>
       </AppProvider>
