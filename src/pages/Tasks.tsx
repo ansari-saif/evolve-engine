@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { SkeletonLoader, ErrorMessage } from '../components/ui';
 import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, GenerateDailyTasksDialog, type CreateTaskDialogRef } from '../components/tasks';
@@ -26,7 +26,9 @@ const Tasks: React.FC = () => {
 
   const createTaskDialogRef = useRef<CreateTaskDialogRef>(null);
 
-  const userId = useUserId();
+      const userId = useUserId();
+
+
 
   // Data fetching
   const { data: tasks, isLoading, error } = useGetUserTasks(userId);
@@ -179,9 +181,8 @@ const Tasks: React.FC = () => {
         current_phase: params.currentPhase || undefined
       });
 
-      // Convert the AI response to TaskCreate objects
-      const taskCreateObjects: TaskCreate[] = response.map((taskData: Record<string, unknown>) => {
-        // Map AI response fields to TaskCreate structure
+      // Convert the AI response to GeneratedTask objects for preview
+      const generatedTasks = response.map((taskData: Record<string, unknown>) => {
         const description = String(taskData.description || taskData.title || 'Generated Task');
         const priority = taskData.priority ? String(taskData.priority) : 'Medium';
         const energyRequired = taskData.energy_required ? String(taskData.energy_required) : 'Medium';
@@ -190,11 +191,43 @@ const Tasks: React.FC = () => {
 
         return {
           description,
-          priority: priority as TaskPriorityEnum,
-          completion_status: 'Pending',
-          energy_required: energyRequired as EnergyRequiredEnum,
+          priority,
+          energy_required: energyRequired,
           estimated_duration: estimatedDuration,
-          scheduled_for_date: scheduledForDate,
+          scheduled_for_date: scheduledForDate
+        };
+      });
+
+      return generatedTasks;
+    } catch (error) {
+      // Log error safely
+      try {
+        console.error('Failed to generate daily tasks:', error instanceof Error ? error.message : 'Unknown error');
+      } catch (logError) {
+        console.error('Failed to generate daily tasks: (Error logging failed)');
+      }
+      
+      throw error;
+    }
+  };
+
+  const handleCreateGeneratedTasks = async (generatedTasks: {
+    description: string;
+    priority: string;
+    energy_required: string;
+    estimated_duration?: number;
+    scheduled_for_date?: string;
+  }[]) => {
+    try {
+      // Convert the generated tasks to TaskCreate objects
+      const taskCreateObjects: TaskCreate[] = generatedTasks.map((taskData) => {
+        return {
+          description: taskData.description,
+          priority: taskData.priority as TaskPriorityEnum,
+          completion_status: 'Pending',
+          energy_required: taskData.energy_required as EnergyRequiredEnum,
+          estimated_duration: taskData.estimated_duration,
+          scheduled_for_date: taskData.scheduled_for_date,
           user_id: userId,
           goal_id: null,
           ai_generated: true
@@ -208,25 +241,24 @@ const Tasks: React.FC = () => {
 
       // Show success notification
       toast({
-        title: "Tasks Generated Successfully",
-        description: `Generated ${taskCreateObjects.length} daily tasks based on your energy level and phase.`,
+        title: "Tasks Created Successfully",
+        description: `Created ${taskCreateObjects.length} daily tasks based on your energy level and phase.`,
       });
-
-      // Close the dialog
-      setGenerateDialogOpen(false);
     } catch (error) {
       // Log error safely
       try {
-        console.error('Failed to generate daily tasks:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('Failed to create generated tasks:', error instanceof Error ? error.message : 'Unknown error');
       } catch (logError) {
-        console.error('Failed to generate daily tasks: (Error logging failed)');
+        console.error('Failed to create generated tasks: (Error logging failed)');
       }
       
       toast({
-        title: "Failed to Generate Tasks",
-        description: "There was an error generating your daily tasks. Please try again.",
+        title: "Failed to Create Tasks",
+        description: "There was an error creating your daily tasks. Please try again.",
         variant: "destructive",
       });
+      
+      throw error;
     }
   };
 
@@ -320,6 +352,7 @@ const Tasks: React.FC = () => {
               </>
             )}
           </Button>
+
           <BulkCreateDialog
             goals={goals}
             onCreateTasks={handleBulkCreateTasks}
@@ -397,6 +430,7 @@ const Tasks: React.FC = () => {
         open={generateDialogOpen}
         onClose={() => setGenerateDialogOpen(false)}
         onGenerate={handleGenerateTasks}
+        onCreateTasks={handleCreateGeneratedTasks}
         isLoading={generateDailyTasks.isPending || createBulkTasksMutation.isPending}
       />
     </div>

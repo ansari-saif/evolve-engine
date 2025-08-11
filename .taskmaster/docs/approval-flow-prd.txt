@@ -1,0 +1,47 @@
+<context>
+# Overview  
+Add approval flow to GenerateDailyTasksDialog allowing users to review, edit, and approve AI-generated tasks before creation.
+
+# Core Features  
+- **Task Preview**: Display generated tasks in editable list after API call
+- **Task Editing**: Allow modification of task details before creation  
+- **Approval Workflow**: Two-step process: generate → review/edit → create
+- **Bulk Creation**: Create all approved tasks at once
+
+# User Experience  
+- User opens dialog, sets energy/phase, clicks "Generate Tasks"
+- Generated tasks appear in editable list view
+- User edits task titles, descriptions, priorities
+- User clicks "Create Tasks" to bulk create all tasks
+- Dialog closes, tasks appear in main list
+</context>
+<PRD>
+# Technical Architecture  
+- Extend GenerateDailyTasksDialog with preview/edit state
+- Add task editing form components  
+- Modify workflow: generateDailyTasks → preview/edit → createBulkTasksMutation
+- Add loading states for each step
+
+# Development Roadmap  
+## Phase 1: Complete Approval Flow
+- Add preview state to dialog after generateDailyTasks call
+- Display generated tasks in editable list
+- Add inline editing for task fields with validation
+- Add "Create Tasks" button connecting to createBulkTasksMutation
+- Handle success/error states and loading indicators
+
+# Logical Dependency Chain
+1. Preview state implementation
+2. Task editing functionality  
+3. Approval workflow integration
+4. Error handling and validation
+
+# Risks and Mitigations  
+- **API Response Changes**: Validate response structure
+- **User Experience**: Keep dialog simple and intuitive
+- **Performance**: Handle large task lists efficiently
+
+# Appendix  
+- Current workflow: generateDailyTasks → createBulkTasksMutation
+- Target workflow: generateDailyTasks → preview/edit → createBulkTasksMutation
+</PRD>
