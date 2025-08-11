@@ -256,25 +256,25 @@ export default function Chat() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] flex flex-col">
+    <div className="mx-auto max-w-3xl h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] flex flex-col px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
       {/* Header */}
-      <div className="pb-2">
-        <h1 className="text-xl font-semibold">Chat</h1>
-        <p className="text-sm text-muted-foreground">ChatGPT-like interface</p>
+      <div className="pb-2 sm:pb-3">
+        <h1 className="text-lg sm:text-xl font-semibold">Chat</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">ChatGPT-like interface</p>
         {isSupported ? (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground">Permission: {permission}</span>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="text-[10px] sm:text-xs text-muted-foreground">Permission: {permission}</span>
             {permission !== "granted" ? (
               <>
                 <button
                   type="button"
                   onClick={handleEnableNotifications}
-                  className="px-2 py-1 text-xs rounded-md border bg-background hover:bg-muted"
+                  className="px-1.5 sm:px-2 py-1 text-[10px] sm:text-xs rounded-md border bg-background hover:bg-muted min-h-[28px] sm:min-h-[32px]"
                 >
                   Enable notifications
                 </button>
                 {permission === "denied" && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
                     Unblock in browser site settings (lock icon → Site settings → Notifications → Allow).
                   </span>
                 )}
@@ -283,27 +283,27 @@ export default function Chat() {
               <button
                 type="button"
                 onClick={handleTestNotification}
-                className="px-2 py-1 text-xs rounded-md border bg-background hover:bg-muted"
+                className="px-1.5 sm:px-2 py-1 text-[10px] sm:text-xs rounded-md border bg-background hover:bg-muted min-h-[28px] sm:min-h-[32px]"
               >
                 Test notification
               </button>
             )}
           </div>
         ) : (
-          <p className="mt-2 text-xs text-muted-foreground">Notifications not supported in this browser.</p>
+          <p className="mt-2 text-[10px] sm:text-xs text-muted-foreground">Notifications not supported in this browser.</p>
         )}
       </div>
 
       {/* Messages */}
       <div
         ref={listRef}
-        className="flex-1 overflow-auto rounded-lg border bg-background/50 p-4 space-y-4"
+        className="flex-1 overflow-auto rounded-lg border bg-background/50 p-2 sm:p-4 space-y-3 sm:space-y-4"
       >
         {isLoadingPrompts ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-6 sm:py-8">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              <span>Loading previous messages...</span>
+              <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-primary"></div>
+              <span className="text-xs sm:text-sm">Loading previous messages...</span>
             </div>
           </div>
         ) : (
@@ -311,23 +311,23 @@ export default function Chat() {
             <div
               key={m.id}
               className={
-                "flex gap-3 items-end " + (m.role === "user" ? "justify-end" : "justify-start")
+                "flex gap-2 sm:gap-3 items-end " + (m.role === "user" ? "justify-end" : "justify-start")
               }
             >
               {/* Assistant on the left */}
               {m.role === "assistant" && (
                 <div
-                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm bg-primary/10 text-primary"
+                  className="h-6 w-6 sm:h-8 sm:w-8 shrink-0 rounded-full flex items-center justify-center text-xs sm:text-sm bg-primary/10 text-primary"
                   aria-hidden
                 >
                   🤖
                 </div>
               )}
 
-              <div className="min-w-0 max-w-[80%]">
+              <div className="min-w-0 max-w-[85%] sm:max-w-[80%]">
                 <div
                   className={
-                    "rounded-lg px-3 py-2 whitespace-pre-wrap leading-relaxed " +
+                    "rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 whitespace-pre-wrap leading-relaxed text-xs sm:text-sm " +
                     (m.role === "user"
                       ? "bg-primary text-primary-foreground text-right"
                       : "bg-muted/50 text-foreground text-left")
@@ -340,7 +340,7 @@ export default function Chat() {
               {/* User on the right */}
               {m.role === "user" && (
                 <div
-                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm bg-muted text-foreground"
+                  className="h-6 w-6 sm:h-8 sm:w-8 shrink-0 rounded-full flex items-center justify-center text-xs sm:text-sm bg-muted text-foreground"
                   aria-hidden
                 >
                   🧑
@@ -352,7 +352,7 @@ export default function Chat() {
       </div>
 
       {/* Composer */}
-      <div className="mt-4">
+      <div className="mt-3 sm:mt-4">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -361,26 +361,27 @@ export default function Chat() {
             onKeyDown={onKeyDown}
             placeholder="Send a message…"
             rows={2}
-            className="flex-1 resize-none rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 resize-none rounded-md border bg-background px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
           <GlassIconButton
             onClick={sendMessage}
             ariaLabel="Send message"
             title="Send"
             disabled={!canSend}
+            className="min-h-[36px] sm:min-h-[40px] min-w-[36px] sm:min-w-[40px]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="h-5 w-5"
+              className="h-4 w-4 sm:h-5 sm:w-5"
               aria-hidden
             >
               <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2 .01 7z" />
             </svg>
           </GlassIconButton>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">Press Enter to send, Shift+Enter for a new line.</p>
+        <p className="mt-1 text-[10px] sm:text-xs text-muted-foreground">Press Enter to send, Shift+Enter for a new line.</p>
       </div>
       {/* Add bottom padding so the fixed tab bar doesn't overlap */}
       <div className="h-16" />
