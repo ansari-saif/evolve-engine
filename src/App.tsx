@@ -14,7 +14,9 @@ import BottomTabBar from "@/components/layout/BottomTabBar";
 import Header from "@/components/layout/Header";
 import MenuBar from "@/components/navigation/MenuBar";
 import { initPerformanceMonitoring } from "@/utils/performance";
+import { performanceMonitor } from "@/utils/performance-monitoring";
 import { useAiPreloading } from "@/hooks/use-ai-preloading";
+import { useAdvancedCaching } from "@/hooks/use-advanced-caching";
 import { createSkipLink } from "@/utils/accessibility";
 
 // Lazy load pages for better performance
@@ -71,6 +73,14 @@ const AppContent = () => {
     preloadGoals: true,
   });
 
+  // Initialize advanced caching
+  useAdvancedCaching({
+    prefetchRelated: true,
+    keepFrequent: true,
+    preloadNextPage: true,
+    cachePreferences: true,
+  });
+
   // Stable WebSocket config and options (don't recreate on every render)
   const webSocketConfig = useMemo(() => ({
     url: config.webSocketUrl + '/api/v1/ws',
@@ -125,6 +135,7 @@ const App = () => {
   // Initialize performance monitoring
   useEffect(() => {
     initPerformanceMonitoring();
+    performanceMonitor.trackWebVitals();
   }, []);
 
   return (
