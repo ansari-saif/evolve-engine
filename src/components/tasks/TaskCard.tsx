@@ -10,7 +10,8 @@ import { format } from 'date-fns';
 import type { TaskResponse, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../../client/models';
 import type { GoalResponse } from '../../client/models';
 
-import { fadeInUp, scaleIn } from '../../utils/animations';
+import { cardHover, buttonScale, ANIMATION_DURATIONS, ANIMATION_EASING } from '../../utils/animations';
+import { performanceMetrics } from '../../utils/performance';
 
 interface TaskCardProps {
   task: TaskResponse;
@@ -92,15 +93,22 @@ const TaskCard = React.memo(({
     }
   };
 
+  const handleAction = (action: string, callback: () => void) => {
+    const startTime = performance.now();
+    callback();
+    performanceMetrics.userInteraction(action, startTime);
+  };
+
   return (
     <motion.div
-      animate={{
-        scale: 1,
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-      }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      variants={cardHover}
+      initial="initial"
+      animate="animate"
+      whileHover="hover"
+      whileTap="tap"
+      style={{ willChange: 'transform, opacity' }}
     >
-      <Card className={`hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')}`}>
+      <Card className={`hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80`}>
         <CardContent className="p-3 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-3 sm:space-y-4">
@@ -109,47 +117,52 @@ const TaskCard = React.memo(({
                 <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                   {task.completion_status !== 'Completed' && (
                     <>
-                      <Button
-                        onClick={() => {
-                          // Start the task
-                          onStatusChange(task.task_id, 'In Progress');
-                        }}
-                        disabled={isLoading || task.completion_status === 'In Progress'}
-                        variant="ghost"
-                        size="sm"
-                        className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
-                        title="Start task"
-                      >
-                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => onComplete(task.task_id)}
-                        disabled={isLoading}
-                        variant="ghost"
-                        size="sm"
-                        className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      </Button>
+                      <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
+                        <Button
+                          onClick={() => handleAction('start-task', () => onStatusChange(task.task_id, 'In Progress'))}
+                          disabled={isLoading || task.completion_status === 'In Progress'}
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                          title="Start task"
+                        >
+                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </motion.div>
+                      <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
+                        <Button
+                          onClick={() => handleAction('complete-task', () => onComplete(task.task_id))}
+                          disabled={isLoading}
+                          variant="ghost"
+                          size="sm"
+                          className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </motion.div>
                     </>
                   )}
-                  <Button
-                    onClick={() => onEdit(task)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
-                  >
-                    <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </Button>
-                  <Button
-                    onClick={() => onDelete(task.task_id)}
-                    disabled={isLoading}
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </Button>
+                  <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
+                    <Button
+                      onClick={() => handleAction('edit-task', () => onEdit(task))}
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                    >
+                      <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </Button>
+                  </motion.div>
+                  <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
+                    <Button
+                      onClick={() => handleAction('delete-task', () => onDelete(task.task_id))}
+                      disabled={isLoading}
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    </Button>
+                  </motion.div>
                 </div>
               </div>
 
