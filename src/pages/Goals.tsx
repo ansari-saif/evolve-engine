@@ -147,7 +147,7 @@ const Goals: React.FC = () => {
             >
               {createGoalMutation.isPending ? (
                 <div className="flex items-center gap-2">
-                  <LoadingSpinner size="small" />
+                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   <span>Creating...</span>
                 </div>
               ) : (

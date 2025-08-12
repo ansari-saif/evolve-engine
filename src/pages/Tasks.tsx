@@ -18,6 +18,7 @@ const Tasks: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'in-progress' | 'completed'>('all');
   const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [loadingTaskId, setLoadingTaskId] = useState<number | null>(null);
   const [filters, setFilters] = useState<TaskFilter>({
     status: 'All',
     priority: 'All',
@@ -104,19 +105,33 @@ const Tasks: React.FC = () => {
 
   const handleBulkCreateTasks = async (tasks: TaskCreate[]) => {
     try {
-      // Create tasks sequentially to avoid overwhelming the API
-      for (const task of tasks) {
-        await createTaskMutation.mutateAsync({
-          ...task,
-          user_id: userId,
-        });
-      }
+      // Use bulk API to create all tasks in a single request
+      const tasksWithUserId = tasks.map(task => ({
+        ...task,
+        user_id: userId,
+      }));
+      
+      await createBulkTasksMutation.mutateAsync({
+        tasks: tasksWithUserId
+      });
+
+      // Show success notification
+      toast({
+        title: "Tasks Created Successfully",
+        description: `Created ${tasks.length} tasks in bulk.`,
+      });
     } catch (error) {
       try {
         console.error('Failed to create bulk tasks:', error instanceof Error ? error.message : 'Unknown error');
       } catch (logError) {
         console.error('Failed to create bulk tasks: (Error logging failed)');
       }
+      
+      toast({
+        title: "Failed to Create Tasks",
+        description: "There was an error creating your tasks. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -134,18 +149,24 @@ const Tasks: React.FC = () => {
   };
 
   const handleStatusChange = async (taskId: number, status: CompletionStatusEnum) => {
-    const updates: TaskUpdate = { completion_status: status };
-    
-    if (status === 'In Progress') {
-      updates.started_at = getCurrentISOStringIST();
-    } else if (status === 'Completed') {
-      updates.completed_at = getCurrentISOStringIST();
-    }
+    setLoadingTaskId(taskId);
+    try {
+      const updates: TaskUpdate = { completion_status: status };
+      
+      if (status === 'In Progress') {
+        updates.started_at = getCurrentISOStringIST();
+      } else if (status === 'Completed') {
+        updates.completed_at = getCurrentISOStringIST();
+      }
 
-    await handleUpdateTask(taskId, updates);
+      await handleUpdateTask(taskId, updates);
+    } finally {
+      setLoadingTaskId(null);
+    }
   };
 
   const handleCompleteTask = async (taskId: number) => {
+    setLoadingTaskId(taskId);
     try {
       await completeTaskMutation.mutateAsync(taskId);
     } catch (error) {
@@ -154,10 +175,13 @@ const Tasks: React.FC = () => {
       } catch (logError) {
         console.error('Failed to complete task: (Error logging failed)');
       }
+    } finally {
+      setLoadingTaskId(null);
     }
   };
 
   const handleDeleteTask = async (taskId: number) => {
+    setLoadingTaskId(taskId);
     try {
       await deleteTaskMutation.mutateAsync(taskId);
     } catch (error) {
@@ -166,6 +190,8 @@ const Tasks: React.FC = () => {
       } catch (logError) {
         console.error('Failed to delete task: (Error logging failed)');
       }
+    } finally {
+      setLoadingTaskId(null);
     }
   };
 
@@ -359,7 +385,7 @@ const Tasks: React.FC = () => {
           <BulkCreateDialog
             goals={goals}
             onCreateTasks={handleBulkCreateTasks}
-            isLoading={createTaskMutation.isPending}
+            isLoading={createBulkTasksMutation.isPending}
           />
           <CreateTaskDialog
             ref={createTaskDialogRef}
@@ -432,7 +458,7 @@ const Tasks: React.FC = () => {
                     getEnergyColor={getEnergyColor}
                     formatDate={formatDate}
                     formatDuration={formatDuration}
-                    isLoading={completeTaskMutation.isPending || deleteTaskMutation.isPending}
+                    loadingTaskId={loadingTaskId}
                   />
                 ))
               ) : (

@@ -177,7 +177,11 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? <LoadingSpinner size="small" /> : 'Save Changes'}
+              {isLoading ? (
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                'Save Changes'
+              )}
             </Button>
           </div>
         </form>

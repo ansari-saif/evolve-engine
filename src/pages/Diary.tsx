@@ -105,7 +105,11 @@ const Diary: React.FC = () => {
               disabled={createDayLogMutation.isPending || !newLogContent.trim()}
               className="w-full text-xs sm:text-sm py-2 sm:py-3 min-h-[36px]"
             >
-              {createDayLogMutation.isPending ? <LoadingSpinner size="small" /> : 'Save Entry'}
+              {createDayLogMutation.isPending ? (
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                'Save Entry'
+              )}
             </Button>
           </div>
         </CardContent>

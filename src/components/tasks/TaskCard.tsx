@@ -24,7 +24,7 @@ interface TaskCardProps {
   getEnergyColor: (energy: EnergyRequiredEnum) => "destructive" | "secondary" | "outline" | "default";
   formatDate: (date: string | null) => string | null;
   formatDuration: (duration: number | null) => string | null;
-  isLoading: boolean;
+  loadingTaskId: number | null;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
@@ -39,7 +39,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   getEnergyColor,
   formatDate,
   formatDuration,
-  isLoading
+  loadingTaskId
 }) => {
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   const [showStopwatch, setShowStopwatch] = useState(false);
@@ -103,23 +103,31 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             onStatusChange(task.task_id, 'In Progress');
                             setShowStopwatch(true);
                           }}
-                          disabled={isLoading || task.completion_status === 'In Progress'}
+                          disabled={loadingTaskId === task.task_id || task.completion_status === 'In Progress'}
                           variant="ghost"
                           size="sm"
                           className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 transition-all duration-200"
                           title="Start task"
                         >
-                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          {loadingTaskId === task.task_id ? (
+                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          )}
                         </Button>
                       </motion.div>
                       <Button
                         onClick={() => onComplete(task.task_id)}
-                        disabled={isLoading}
+                        disabled={loadingTaskId === task.task_id}
                         variant="ghost"
                         size="sm"
                         className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
                       >
-                        <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        {loadingTaskId === task.task_id ? (
+                          <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        )}
                       </Button>
                     </>
                   )}
@@ -133,12 +141,16 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   </Button>
                   <Button
                     onClick={() => onDelete(task.task_id)}
-                    disabled={isLoading}
+                    disabled={loadingTaskId === task.task_id}
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
                   >
-                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    {loadingTaskId === task.task_id ? (
+                      <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    )}
                   </Button>
                 </div>
               </div>

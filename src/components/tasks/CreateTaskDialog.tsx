@@ -213,7 +213,11 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
               type="submit"
               disabled={isLoading || !newTask.description?.trim()}
             >
-              {isLoading ? <LoadingSpinner size="small" /> : 'Create Task'}
+              {isLoading ? (
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                'Create Task'
+              )}
             </Button>
           </div>
         </form>

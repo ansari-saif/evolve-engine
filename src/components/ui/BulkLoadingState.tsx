@@ -102,7 +102,7 @@ export const BulkLoadingState: React.FC<BulkLoadingStateProps> = ({
       <div className="flex items-center gap-3">
         <div className={cn('flex-shrink-0', config.color)}>
           {isProcessing ? (
-            <LoadingSpinner size="small" message="" />
+            <div className="w-6 h-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : (
             <IconComponent className="w-6 h-6" />
           )}
