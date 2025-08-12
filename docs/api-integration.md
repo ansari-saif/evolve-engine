@@ -63,13 +63,27 @@ Follow these steps to add or integrate new APIs consistently.
    }
    ```
 
-## Existing example: Chat
+## Existing examples
+
+### Chat Integration
 - Hook: `src/hooks/useChat.ts`
 - Usage: `src/pages/Chat.tsx`
 
 `useChatCompletion(baseUrl)` configures `OpenAPI.BASE` and calls the generated `DefaultService.post151586B8443e48EaBe1eC664Fdb2E9A0(...)` under the hood, exposing a simple `ask({ prompt })` API to the UI.
 
+### Weekly Goals Integration
+- Hook: `src/hooks/useWeeklyGoals.ts`
+- Usage: `src/components/dashboard/WeeklyRoadmap.tsx`
+
+`useWeeklyGoals(userId)` and `useWeeklyMilestones(userId)` fetch weekly goals from `GoalsService.getUserGoalsGoalsUserUserIdGet()` and provide:
+- Progress calculation with completion percentages
+- UI-friendly milestone formatting
+- Error handling with fallback data
+- Loading states for better UX
+
 ## Tips
 - Prefer centralizing base URL logic (env/read once) and pass it to hooks.
 - Keep hooks thin: convert UI args -> API payload, handle response typing, surface a clean API.
 - Do not place custom hooks inside `src/client/`.
+- Include fallback data for better error resilience.
+- Use React Query for caching and state management.
