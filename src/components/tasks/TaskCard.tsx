@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -26,7 +26,7 @@ interface TaskCardProps {
   getEnergyColor: (energy: EnergyRequiredEnum) => "destructive" | "secondary" | "outline" | "default";
   formatDate: (date: string | null) => string | null;
   formatDuration: (duration: number | null) => string | null;
-  isLoading: boolean;
+  loadingTaskId: number | null;
 }
 
 const TaskCard = React.memo(({
@@ -41,7 +41,7 @@ const TaskCard = React.memo(({
   getEnergyColor,
   formatDate,
   formatDuration,
-  isLoading
+  loadingTaskId
 }: TaskCardProps) => {
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   
@@ -51,8 +51,6 @@ const TaskCard = React.memo(({
     completionStatus: task.completion_status,
     startedAt: task.started_at,
   };
-  
-  console.log('TaskCard stopwatch props:', stopwatchProps);
   
   const { showStopwatch, formattedTime } = useTaskStopwatch(stopwatchProps);
 
@@ -79,18 +77,26 @@ const TaskCard = React.memo(({
                     <>
                       <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
                         <Button
-                          onClick={() => handleAction('start-task', () => onStatusChange(task.task_id, 'In Progress'))}
+                          onClick={() => {
+                            handleAction('start-task', () => {
+                              onStatusChange(task.task_id, 'In Progress');
+                            });
+                          }}
                           onTouchStart={handleTouchStart}
                           onTouchEnd={handleTouchEnd}
                           onMouseDown={handleMouseDown}
                           onMouseUp={handleMouseUp}
-                          disabled={isLoading || task.completion_status === 'In Progress'}
+                          disabled={loadingTaskId === task.task_id || task.completion_status === 'In Progress'}
                           variant="ghost"
                           size="sm"
                           className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                           title="Start task"
                         >
-                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          {loadingTaskId === task.task_id ? (
+                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          )}
                         </Button>
                       </motion.div>
                       <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
@@ -100,12 +106,16 @@ const TaskCard = React.memo(({
                           onTouchEnd={handleTouchEnd}
                           onMouseDown={handleMouseDown}
                           onMouseUp={handleMouseUp}
-                          disabled={isLoading}
+                          disabled={loadingTaskId === task.task_id}
                           variant="ghost"
                           size="sm"
                           className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                         >
-                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          {loadingTaskId === task.task_id ? (
+                            <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          ) : (
+                            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          )}
                         </Button>
                       </motion.div>
                     </>
@@ -131,26 +141,54 @@ const TaskCard = React.memo(({
                       onTouchEnd={handleTouchEnd}
                       onMouseDown={handleMouseDown}
                       onMouseUp={handleMouseUp}
-                      disabled={isLoading}
+                      disabled={loadingTaskId === task.task_id}
                       variant="ghost"
                       size="sm"
                       className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                     >
-                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      {loadingTaskId === task.task_id ? (
+                        <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      )}
                     </Button>
                   </motion.div>
                 </div>
               </div>
 
-              {/* SOLID: Single Responsibility - Extract stopwatch display */}
-              {showStopwatch && (
-                <>
-                  {console.log('Rendering stopwatch with time:', formattedTime)}
-                  <TaskStopwatch formattedTime={formattedTime} />
-                </>
-              )}
-
-
+              {/* Stopwatch for tasks in progress */}
+              <AnimatePresence mode="wait">
+                {showStopwatch && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ 
+                      duration: 0.3, 
+                      ease: "easeOut",
+                      opacity: { duration: 0.2 },
+                      scale: { duration: 0.25 }
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 p-2 sm:p-3 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-lg border border-primary/20 shadow-sm">
+                      <motion.div 
+                        className="w-2 h-2 bg-primary rounded-full mr-2"
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          opacity: [0.7, 1, 0.7]
+                        }}
+                        transition={{ 
+                          duration: 1.5, 
+                          repeat: Infinity, 
+                          ease: "easeInOut" 
+                        }}
+                      />
+                      <TaskStopwatch formattedTime={formattedTime} />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 <Badge 
@@ -207,7 +245,6 @@ const TaskCard = React.memo(({
                 )}
               </div>
 
-
             </div>
           </div>
         </CardContent>
@@ -218,7 +255,7 @@ const TaskCard = React.memo(({
   return prevProps.task.task_id === nextProps.task.task_id &&
          prevProps.task.completion_status === nextProps.task.completion_status &&
          prevProps.task.started_at === nextProps.task.started_at &&
-         prevProps.isLoading === nextProps.isLoading;
+         prevProps.loadingTaskId === nextProps.loadingTaskId;
 });
 
 export default TaskCard;

@@ -272,7 +272,11 @@ Write API documentation"
               onClick={handleBulkCreateTasks}
               disabled={isLoading || !bulkTasksText.trim()}
             >
-              {isLoading ? <LoadingSpinner size="small" /> : `Create ${bulkTasksText.split('\n').filter(line => line.trim().length > 0).length} Tasks`}
+              {isLoading ? (
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                `Create ${bulkTasksText.split('\n').filter(line => line.trim().length > 0).length} Tasks`
+              )}
             </Button>
           </div>
         </div>

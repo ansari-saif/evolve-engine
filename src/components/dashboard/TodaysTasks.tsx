@@ -173,7 +173,7 @@ const TodaysTasks: React.FC = () => {
                       className="ml-2 sm:ml-3 lg:ml-4 flex-shrink-0 bg-surface/80 backdrop-blur-sm border-border hover:bg-success/10 hover:border-success/30 hover:text-success transition-all duration-300 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs"
                     >
                       {loadingTaskId === task.task_id ? (
-                        <LoadingSpinner size="small" />
+                        <div className="w-3 h-3 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                       ) : (
                         <>
                           <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4 mr-0.5 sm:mr-1" />
