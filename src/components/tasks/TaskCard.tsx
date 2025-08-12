@@ -108,12 +108,25 @@ const TaskCard = React.memo(({
     performanceMetrics.userInteraction(action, startTime);
   };
 
-  // Touch-friendly interaction handlers
+  // Touch-friendly interaction handlers - prevent cursor movement
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent default touch behavior
     (e.currentTarget as HTMLElement).style.transform = 'scale(0.98)';
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent default touch behavior
+    (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+  };
+
+  // Mouse interaction handlers - prevent cursor movement
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default mouse behavior
+    (e.currentTarget as HTMLElement).style.transform = 'scale(0.98)';
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default mouse behavior
     (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
   };
 
@@ -126,7 +139,7 @@ const TaskCard = React.memo(({
       whileTap="tap"
       style={{ willChange: 'transform, opacity' }}
     >
-      <Card className={`bg-card shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80 border border-border/50`}>
+      <Card className={`bg-card shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80 border border-border/50 select-none`}>
         <CardContent className="p-3 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-3 sm:space-y-4">
@@ -140,10 +153,12 @@ const TaskCard = React.memo(({
                           onClick={() => handleAction('start-task', () => onStatusChange(task.task_id, 'In Progress'))}
                           onTouchStart={handleTouchStart}
                           onTouchEnd={handleTouchEnd}
+                          onMouseDown={handleMouseDown}
+                          onMouseUp={handleMouseUp}
                           disabled={isLoading || task.completion_status === 'In Progress'}
                           variant="ghost"
                           size="sm"
-                          className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
+                          className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                           title="Start task"
                         >
                           <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -154,10 +169,12 @@ const TaskCard = React.memo(({
                           onClick={() => handleAction('complete-task', () => onComplete(task.task_id))}
                           onTouchStart={handleTouchStart}
                           onTouchEnd={handleTouchEnd}
+                          onMouseDown={handleMouseDown}
+                          onMouseUp={handleMouseUp}
                           disabled={isLoading}
                           variant="ghost"
                           size="sm"
-                          className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
+                          className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                         >
                           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
@@ -169,9 +186,11 @@ const TaskCard = React.memo(({
                       onClick={() => handleAction('edit-task', () => onEdit(task))}
                       onTouchStart={handleTouchStart}
                       onTouchEnd={handleTouchEnd}
+                      onMouseDown={handleMouseDown}
+                      onMouseUp={handleMouseUp}
                       variant="ghost"
                       size="sm"
-                      className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                     >
                       <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
@@ -181,10 +200,12 @@ const TaskCard = React.memo(({
                       onClick={() => handleAction('delete-task', () => onDelete(task.task_id))}
                       onTouchStart={handleTouchStart}
                       onTouchEnd={handleTouchEnd}
+                      onMouseDown={handleMouseDown}
+                      onMouseUp={handleMouseUp}
                       disabled={isLoading}
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
+                      className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation select-none"
                     >
                       <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
