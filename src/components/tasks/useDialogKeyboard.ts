@@ -139,7 +139,8 @@ export const useDialogKeyboard = ({
       console.log('🎹 Removing keyboard event listener');
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleKeyDown, currentState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleKeyDown]);
 
   // Return keyboard shortcuts info for UI display
   const getKeyboardShortcuts = () => {
