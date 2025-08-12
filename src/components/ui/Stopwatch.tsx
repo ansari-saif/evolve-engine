@@ -43,7 +43,6 @@ export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
   displayOnly = false,
   timeFormat = 'MM:SS:MS'
 }) => {
-  console.log('initialTime', initialTime);
   const [time, setTime] = useState(initialTime);
   const [isRunning, setIsRunning] = useState(autoStart && !displayOnly);
   const [startTime, setStartTime] = useState<number | null>((autoStart && !displayOnly) ? Date.now() : null);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -55,7 +55,11 @@ const TaskCard: React.FC<TaskCardProps> = ({
   // Show stopwatch when task is in progress
   useEffect(() => {
     if (task.completion_status === 'In Progress') {
-      setShowStopwatch(true);
+      // Small delay to make the transition smoother
+      const timer = setTimeout(() => {
+        setShowStopwatch(true);
+      }, 150);
+      return () => clearTimeout(timer);
     } else {
       setShowStopwatch(false);
     }
@@ -79,7 +83,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
     >
-      <Card className={`hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')}`}>
+      <Card className={`hover:shadow-lg transition-all duration-300 ease-out border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')}`}>
         <CardContent className="p-3 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-3 sm:space-y-4">
@@ -88,19 +92,26 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                   {task.completion_status !== 'Completed' && (
                     <>
-                      <Button
-                        onClick={() => {
-                          // Start the task
-                          onStatusChange(task.task_id, 'In Progress');
-                        }}
-                        disabled={isLoading || task.completion_status === 'In Progress'}
-                        variant="ghost"
-                        size="sm"
-                        className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
-                        title="Start task"
+                      <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.1 }}
                       >
-                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      </Button>
+                        <Button
+                          onClick={() => {
+                            // Start the task
+                            onStatusChange(task.task_id, 'In Progress');
+                            setShowStopwatch(true);
+                          }}
+                          disabled={isLoading || task.completion_status === 'In Progress'}
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 transition-all duration-200"
+                          title="Start task"
+                        >
+                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Button>
+                      </motion.div>
                       <Button
                         onClick={() => onComplete(task.task_id)}
                         disabled={isLoading}
@@ -133,18 +144,45 @@ const TaskCard: React.FC<TaskCardProps> = ({
               </div>
 
               {/* Stopwatch for tasks in progress */}
-              {showStopwatch && (
-                <div className="flex items-center gap-2 p-2 sm:p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <Stopwatch
-                    initialTime={initialTime}
-                    displayOnly={false}
-                    size="small"
-                    timeFormat="HH:MM:SS:MS"
-                    className="text-primary font-mono text-xs sm:text-sm"
-                    autoStart={true}
-                  />
-                </div>
-              )}
+              <AnimatePresence mode="wait">
+                {showStopwatch && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, height: "auto", scale: 1 }}
+                    exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                    transition={{ 
+                      duration: 0.3, 
+                      ease: "easeOut",
+                      opacity: { duration: 0.2 },
+                      scale: { duration: 0.25 }
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex items-center gap-2 p-2 sm:p-3 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-lg border border-primary/20 shadow-sm">
+                      <motion.div 
+                        className="w-2 h-2 bg-primary rounded-full mr-2"
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          opacity: [0.7, 1, 0.7]
+                        }}
+                        transition={{ 
+                          duration: 1.5, 
+                          repeat: Infinity, 
+                          ease: "easeInOut" 
+                        }}
+                      />
+                      <Stopwatch
+                        initialTime={initialTime}
+                        displayOnly={false}
+                        size="small"
+                        timeFormat="HH:MM:SS:MS"
+                        className="text-primary font-mono text-xs sm:text-sm"
+                        autoStart={true}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
 
 
