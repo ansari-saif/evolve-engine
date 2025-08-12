@@ -101,84 +101,110 @@ const calculateTrend = (currentValue: number, previousValue: number = 0): { tren
   }
 };
 
-export const useDashboardStats = (userId: string): UseQueryResult<DashboardStats, Error> => {
-  const { data: todayTasks } = useGetUserTodayTasks(userId);
-  const { data: allTasks } = useGetUserTasks(userId);
-  const { data: userGoals } = useGetUserGoals(userId);
-  const { data: dayLogStats } = useGetUserDayLogStats(userId);
-  const { analyzeGoals } = useAiService();
+export const useDashboardStats = (userId: string) => {
+  const { data: todayTasks, isLoading: isLoadingTodayTasks, error: todayTasksError } = useGetUserTodayTasks(userId);
+  const { data: allTasks, isLoading: isLoadingAllTasks, error: allTasksError } = useGetUserTasks(userId);
+  const { data: userGoals, isLoading: isLoadingGoals, error: goalsError } = useGetUserGoals(userId);
+  const { data: dayLogStats, isLoading: isLoadingDayLogs, error: dayLogsError } = useGetUserDayLogStats(userId);
 
-  return useQuery({
-    queryKey: ['dashboard-stats', userId],
-    queryFn: async (): Promise<DashboardStats> => {
-      // Ensure we have valid data
-      const tasks = todayTasks || [];
-      const allUserTasks = allTasks || [];
-      const goals = userGoals || [];
+  // Check if any queries are still loading
+  const isLoading = isLoadingTodayTasks || isLoadingAllTasks || isLoadingGoals || isLoadingDayLogs;
+  
+  // Check if any queries have errors
+  const error = todayTasksError || allTasksError || goalsError || dayLogsError;
 
-      // Calculate tasks completed today
-      const completedToday = tasks.filter(task => 
-        task.completion_status === 'Completed'
-      ).length;
+  // Calculate stats only when all data is available
+  const stats: DashboardStats | null = !isLoading && !error && todayTasks && allTasks && userGoals ? (() => {
+    // Debug logging
+    console.log('Dashboard Stats Debug:', {
+      todayTasks: todayTasks?.length || 0,
+      allTasks: allTasks?.length || 0,
+      userGoals: userGoals?.length || 0,
+      todayTasksData: todayTasks,
+      allTasksData: allTasks,
+      userGoalsData: userGoals
+    });
 
-      // Calculate weekly streak
-      const completedTasks = allUserTasks.filter(task => 
-        task.completion_status === 'Completed'
-      );
-      const { streakWeeks, status: streakStatus, changeType: streakChangeType } = calculateWeeklyStreak(completedTasks);
+    // Ensure we have valid data
+    const tasks = todayTasks || [];
+    const allUserTasks = allTasks || [];
+    const goals = userGoals || [];
 
-      // Calculate goals progress
-      const totalGoals = goals.length;
-      const completedGoals = goals.filter(goal => 
-        goal.status === 'Completed'
-      ).length;
-      const goalsProgressPercentage = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+    // Calculate tasks completed today
+    const completedToday = tasks.filter(task => 
+      task.completion_status === 'Completed'
+    ).length;
 
-      // Calculate focus time (sum of actual durations for today's completed tasks)
-      const todayFocusTimeMinutes = tasks.reduce((total, task) => {
-        if (task.completion_status === 'Completed' && task.actual_duration) {
-          return total + task.actual_duration;
-        }
-        return total;
-      }, 0);
-      
-      const focusTimeHours = Math.round((todayFocusTimeMinutes / 60) * 10) / 10; // Round to 1 decimal
+    console.log('Tasks completed today:', completedToday, 'from', tasks.length, 'total today tasks');
 
-      // Calculate trends (simplified - in real app you'd compare with previous periods)
-      const tasksTrendData = calculateTrend(completedToday);
-      const goalsTrendData = calculateTrend(goalsProgressPercentage, 50); // Compare with 50% baseline
-      const focusTrendData = calculateTrend(focusTimeHours, 4); // Compare with 4h baseline
+    // Calculate weekly streak
+    const completedTasks = allUserTasks.filter(task => 
+      task.completion_status === 'Completed'
+    );
+    const { streakWeeks, status: streakStatus, changeType: streakChangeType } = calculateWeeklyStreak(completedTasks);
 
-      return {
-        tasksCompleted: {
-          value: completedToday,
-          timeframe: 'Today',
-          trend: tasksTrendData.trend,
-          changeType: tasksTrendData.changeType
-        },
-        weeklyStreak: {
-          value: streakWeeks,
-          unit: 'Weeks',
-          status: streakStatus,
-          changeType: streakChangeType
-        },
-        goalsProgress: {
-          value: goalsProgressPercentage,
-          unit: '%',
-          status: 'Complete',
-          trend: goalsTrendData.trend,
-          changeType: goalsTrendData.changeType
-        },
-        focusTime: {
-          value: focusTimeHours,
-          unit: 'h',
-          timeframe: 'Today',
-          trend: focusTrendData.trend,
-          changeType: focusTrendData.changeType
-        }
-      };
-    },
-    enabled: !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-  });
+    // Calculate goals progress
+    const totalGoals = goals.length;
+    const completedGoals = goals.filter(goal => 
+      goal.status === 'Completed'
+    ).length;
+    const goalsProgressPercentage = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+
+    // Calculate focus time (sum of actual durations for today's completed tasks)
+    const todayFocusTimeMinutes = tasks.reduce((total, task) => {
+      if (task.completion_status === 'Completed' && task.actual_duration) {
+        return total + task.actual_duration;
+      }
+      return total;
+    }, 0);
+    
+    const focusTimeHours = Math.round((todayFocusTimeMinutes / 60) * 10) / 10; // Round to 1 decimal
+
+    console.log('Calculated stats:', {
+      completedToday,
+      streakWeeks,
+      goalsProgressPercentage,
+      focusTimeHours
+    });
+
+    // Calculate trends (simplified - in real app you'd compare with previous periods)
+    const tasksTrendData = calculateTrend(completedToday);
+    const goalsTrendData = calculateTrend(goalsProgressPercentage, 50); // Compare with 50% baseline
+    const focusTrendData = calculateTrend(focusTimeHours, 4); // Compare with 4h baseline
+
+    return {
+      tasksCompleted: {
+        value: completedToday,
+        timeframe: 'Today',
+        trend: tasksTrendData.trend,
+        changeType: tasksTrendData.changeType
+      },
+      weeklyStreak: {
+        value: streakWeeks,
+        unit: 'Weeks',
+        status: streakStatus,
+        changeType: streakChangeType
+      },
+      goalsProgress: {
+        value: goalsProgressPercentage,
+        unit: '%',
+        status: 'Complete',
+        trend: goalsTrendData.trend,
+        changeType: goalsTrendData.changeType
+      },
+      focusTime: {
+        value: focusTimeHours,
+        unit: 'h',
+        timeframe: 'Today',
+        trend: focusTrendData.trend,
+        changeType: focusTrendData.changeType
+      }
+    };
+  })() : null;
+
+  return {
+    data: stats,
+    isLoading,
+    error,
+  };
 };
