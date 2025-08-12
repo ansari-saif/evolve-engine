@@ -67,7 +67,7 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
         listenerRef.current = null;
       }
     };
-  }, [config, messageListener, notification, updateConnectionStatus]);
+  }, [config.url, config.userId, messageListener, notification, updateConnectionStatus]);
 
   // Disconnect function
   const disconnect = useCallback(() => {

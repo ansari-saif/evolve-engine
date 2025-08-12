@@ -5,7 +5,7 @@ import { ShinyProgressHeader } from "../ui/shiny-progress-header";
 import { Button } from "../ui/button";
 import { ThemeSelector } from "../ui/theme-selector";
 import { Eye, EyeOff, Menu } from "lucide-react";
-import { useUserId } from "../../contexts/AppContext";
+import { useUserId } from "../../hooks/redux/useAppConfig";
 import { useGetUserProgressStats, useGetUserRecentProgressLogs } from "../../hooks";
 import { extractProgressData } from "../../utils/progress";
 

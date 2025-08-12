@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
@@ -10,18 +10,11 @@ import LoadingOverlay from './LoadingOverlay';
 import ErrorDisplay from './ErrorDisplay';
 import KeyboardShortcutsDisplay from './KeyboardShortcutsDisplay';
 import { validateGenerationParams } from './validation';
-import { 
-  DialogState, 
-  dialogReducer, 
-  initialState, 
-  getCurrentStep, 
-  getStateTitle,
-  canGoBack,
-  canClose
-} from './DialogStateManager';
+import { useDialogs } from '../../hooks/redux/useDialogs';
 import { useDialogKeyboard } from './useDialogKeyboard';
 import type { PhaseEnum } from '../../client/models';
-import type { GeneratedTask, EditableGeneratedTask } from './DialogStateManager';
+import type { GeneratedTask, EditableGeneratedTask } from '../../store/types';
+import { DialogStateEnum } from '../../store/types';
 
 interface GenerateDailyTasksDialogProps {
   open: boolean;
@@ -38,74 +31,104 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
   onCreateTasks,
   isLoading = false
 }) => {
-  const [state, dispatch] = useReducer(dialogReducer, initialState);
+  const {
+    currentState,
+    energyLevel,
+    currentPhase,
+    generatedTasks,
+    editedTasks,
+    isGenerating,
+    isCreating,
+    isSuccess,
+    generationError,
+    creationError,
+    formErrors,
+    updateDialogState,
+    updateEnergyLevel,
+    updateCurrentPhase,
+    updateGeneratedTasks,
+    updateEditedTasks,
+    updateGenerating,
+    updateCreating,
+    updateSuccess,
+    updateGenerationError,
+    updateCreationError,
+    updateFormErrors,
+    resetDialog,
+    handleGoBack,
+    handleGoToPreview,
+    handleGoToSuccess,
+    handleUpdateEditedTask,
+    handleRemoveEditedTask,
+  } = useDialogs();
   
   // Reset state when dialog opens
   useEffect(() => {
     if (open) {
-      dispatch({ type: 'RESET_STATE' });
+      resetDialog();
     }
-  }, [open]);
+  }, [open, resetDialog]);
 
   const handleGenerate = async () => {
-    dispatch({ type: 'SET_GENERATION_ERROR', payload: null });
-    dispatch({ type: 'SET_FORM_ERRORS', payload: {} });
+    updateGenerationError(null);
+    updateFormErrors({});
     
-    const validationErrors = validateGenerationParams(state.energyLevel.toString(), state.currentPhase || '');
+    const validationErrors = validateGenerationParams(energyLevel.toString(), currentPhase || '');
     
     if (Object.keys(validationErrors).length > 0) {
-      dispatch({ type: 'SET_FORM_ERRORS', payload: validationErrors });
+      updateFormErrors(validationErrors);
       return;
     }
     
-    dispatch({ type: 'SET_GENERATING', payload: true });
+    updateGenerating(true);
     try {
-      const tasks = await onGenerate({ energyLevel: state.energyLevel, currentPhase: state.currentPhase as PhaseEnum | null });
-      dispatch({ type: 'SET_GENERATED_TASKS', payload: tasks });
-      dispatch({ type: 'SET_EDITED_TASKS', payload: tasks });
-      dispatch({ type: 'GO_TO_PREVIEW' });
+      const tasks = await onGenerate({ energyLevel, currentPhase: currentPhase as PhaseEnum | null });
+      updateGeneratedTasks(tasks);
+      // Convert GeneratedTask[] to EditableGeneratedTask[] by adding id
+      const editableTasks: EditableGeneratedTask[] = tasks.map((task, index) => ({
+        ...task,
+        id: `generated-${index}`,
+      }));
+      updateEditedTasks(editableTasks);
+      handleGoToPreview();
     } catch (err) {
-      dispatch({ type: 'SET_GENERATION_ERROR', payload: err instanceof Error ? err.message : 'Failed to generate tasks' });
+      updateGenerationError(err instanceof Error ? err.message : 'Failed to generate tasks');
     } finally {
-      dispatch({ type: 'SET_GENERATING', payload: false });
+      updateGenerating(false);
     }
   };
 
   const handleCreateTasks = async () => {
-    dispatch({ type: 'SET_CREATION_ERROR', payload: null });
-    dispatch({ type: 'SET_CREATING', payload: true });
+    updateCreationError(null);
+    updateCreating(true);
     try {
-      // Convert EditableGeneratedTask[] to GeneratedTask[] by removing errors
-      const tasksToCreate: GeneratedTask[] = state.editedTasks.map(({ errors, ...task }) => task);
+      // Convert EditableGeneratedTask[] to GeneratedTask[] by removing id
+      const tasksToCreate: GeneratedTask[] = editedTasks.map(({ id, ...task }) => task);
       await onCreateTasks(tasksToCreate);
-      dispatch({ type: 'GO_TO_SUCCESS' });
+      handleGoToSuccess();
       setTimeout(() => {
         handleClose();
       }, 2000);
     } catch (err) {
-      dispatch({ type: 'SET_CREATION_ERROR', payload: err instanceof Error ? err.message : 'Failed to create tasks' });
+      updateCreationError(err instanceof Error ? err.message : 'Failed to create tasks' );
     } finally {
-      dispatch({ type: 'SET_CREATING', payload: false });
+      updateCreating(false);
     }
   };
 
-    const hasValidationErrors = state.editedTasks.some(task => 
-    task.errors && Object.keys(task.errors).length > 0
-  );
+    const hasValidationErrors = false; // TODO: Implement validation errors in Redux
 
   const handleTasksChange = (tasks: EditableGeneratedTask[]) => {
-    dispatch({ type: 'SET_EDITED_TASKS', payload: tasks });
+    updateEditedTasks(tasks);
   };
 
   const handleBack = () => {
-    dispatch({ type: 'GO_BACK' });
+    handleGoBack();
   };
 
   const handleClose = () => {
-    if (canClose(state)) {
-      dispatch({ type: 'RESET_STATE' });
-      onClose();
-    }
+    resetDialog();
+    onClose();
   };
 
   const phases: { value: PhaseEnum; label: string }[] = [
@@ -130,12 +153,12 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         {/* Energy Level Slider */}
         <div className="space-y-2 sm:space-y-3">
           <Label htmlFor="energy-level" className="text-sm sm:text-base">
-            Energy Level: {state.energyLevel}/10 ({getEnergyLabel(state.energyLevel)})
+            Energy Level: {energyLevel}/10 ({getEnergyLabel(energyLevel)})
           </Label>
           <Slider
             id="energy-level"
-            value={[state.energyLevel]}
-            onValueChange={(value) => dispatch({ type: 'SET_ENERGY_LEVEL', payload: value[0] })}
+            value={[energyLevel]}
+            onValueChange={(value) => updateEnergyLevel(value[0])}
             max={10}
             min={1}
             step={1}
@@ -151,11 +174,11 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         <div className="space-y-2 sm:space-y-3">
           <Label htmlFor="current-phase" className="text-sm sm:text-base">Current Phase (Optional)</Label>
           <Select
-            value={state.currentPhase || 'none'}
-            onValueChange={(value) => dispatch({ type: 'SET_CURRENT_PHASE', payload: value === 'none' ? null : value })}
-            disabled={state.isGenerating}
+            value={currentPhase || 'none'}
+            onValueChange={(value) => updateCurrentPhase(value === 'none' ? null : value)}
+            disabled={isGenerating}
           >
-            <SelectTrigger className={`${state.formErrors.phase ? "border-destructive" : ""} h-10 sm:h-10`}>
+            <SelectTrigger className={`${formErrors.phase ? "border-destructive" : ""} h-10 sm:h-10`}>
               <SelectValue placeholder="Select your current phase" />
             </SelectTrigger>
             <SelectContent>
@@ -167,22 +190,22 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
               ))}
             </SelectContent>
           </Select>
-          {state.formErrors.phase && (
-            <p className="text-xs sm:text-sm text-destructive">{state.formErrors.phase}</p>
+          {formErrors.phase && (
+            <p className="text-xs sm:text-sm text-destructive">{formErrors.phase}</p>
           )}
         </div>
 
         {/* Form Errors */}
-        {(state.formErrors.energy || state.formErrors.phase) && (
+        {(formErrors.energy || formErrors.phase) && (
           <div className="space-y-2">
-            {state.formErrors.energy && (
+            {formErrors.energy && (
               <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                <p className="text-sm text-destructive">{state.formErrors.energy}</p>
+                <p className="text-sm text-destructive">{formErrors.energy}</p>
               </div>
             )}
-            {state.formErrors.phase && (
+            {formErrors.phase && (
               <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                <p className="text-sm text-destructive">{state.formErrors.phase}</p>
+                <p className="text-sm text-destructive">{formErrors.phase}</p>
               </div>
             )}
           </div>
@@ -190,8 +213,8 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
 
         {/* Generation Error */}
         <ErrorDisplay 
-          error={state.generationError} 
-          onDismiss={() => dispatch({ type: 'SET_GENERATION_ERROR', payload: null })}
+          error={generationError} 
+          onDismiss={() => updateGenerationError(null)}
         />
 
         {/* Action Buttons */}
@@ -199,17 +222,17 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
           <Button
             variant="outline"
             onClick={handleClose}
-            disabled={state.isGenerating}
+            disabled={isGenerating}
             className="w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
             Cancel
           </Button>
           <Button
             onClick={handleGenerate}
-            disabled={state.isGenerating}
+            disabled={isGenerating}
             className="flex items-center gap-2 w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
-            {state.isGenerating ? (
+            {isGenerating ? (
               <>
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 Generating Tasks...
@@ -235,7 +258,7 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
             variant="outline"
             size="sm"
             onClick={handleBack}
-            disabled={state.isCreating}
+            disabled={isCreating}
             className="flex items-center gap-2 min-h-[36px] sm:min-h-[36px]"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -245,14 +268,14 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
 
         {/* Editable Task List */}
         <EditableTaskList
-          tasks={state.editedTasks}
+          tasks={editedTasks}
           onTasksChange={handleTasksChange}
         />
 
         {/* Creation Error */}
         <ErrorDisplay 
-          error={state.creationError} 
-          onDismiss={() => dispatch({ type: 'SET_CREATION_ERROR', payload: null })}
+          error={creationError} 
+          onDismiss={() => updateCreationError(null)}
         />
 
         {/* Action Buttons */}
@@ -260,17 +283,17 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
           <Button
             variant="outline"
             onClick={handleClose}
-            disabled={state.isCreating}
+            disabled={isCreating}
             className="w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
             Cancel
           </Button>
           <Button
             onClick={handleCreateTasks}
-            disabled={state.isCreating || state.editedTasks.length === 0 || hasValidationErrors}
+            disabled={isCreating || editedTasks.length === 0 || hasValidationErrors}
             className="flex items-center gap-2 w-full sm:w-auto h-10 sm:h-10 text-sm sm:text-sm"
           >
-            {state.isCreating ? (
+            {isCreating ? (
               <>
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 Creating Tasks...
@@ -278,7 +301,7 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
             ) : (
               <>
                 <Check className="h-4 w-4" />
-                Create {state.editedTasks.length} Tasks
+                Create {editedTasks.length} Tasks
               </>
             )}
           </Button>
@@ -299,7 +322,7 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
               Tasks Created Successfully!
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              {state.editedTasks.length} task{state.editedTasks.length !== 1 ? 's' : ''} have been created and added to your task list.
+              {editedTasks.length} task{editedTasks.length !== 1 ? 's' : ''} have been created and added to your task list.
             </p>
           </div>
         </div>
@@ -313,18 +336,45 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
 
   // Add keyboard shortcuts
   const { getKeyboardShortcuts } = useDialogKeyboard({
-    currentState: state.currentState,
+    currentState: currentState,
     onClose: handleClose,
     onBack: handleBack,
     onGenerate: handleGenerate,
     onCreate: handleCreateTasks,
-    isGenerating: state.isGenerating,
-    isCreating: state.isCreating,
+    isGenerating: isGenerating,
+    isCreating: isCreating,
     hasValidationErrors,
-    canCreate: state.editedTasks.length > 0 && !hasValidationErrors
+    canCreate: editedTasks.length > 0 && !hasValidationErrors
   });
 
   const keyboardShortcuts = getKeyboardShortcuts();
+
+  // Helper functions for state management
+  const getStateTitle = (state: DialogStateEnum): string => {
+    switch (state) {
+      case DialogStateEnum.INITIAL:
+        return 'Generate Daily Tasks';
+      case DialogStateEnum.PREVIEW:
+        return 'Review Tasks';
+      case DialogStateEnum.SUCCESS:
+        return 'Success!';
+      default:
+        return 'Generate Daily Tasks';
+    }
+  };
+
+  const getCurrentStep = (state: DialogStateEnum): number => {
+    switch (state) {
+      case DialogStateEnum.INITIAL:
+        return 1;
+      case DialogStateEnum.PREVIEW:
+        return 2;
+      case DialogStateEnum.SUCCESS:
+        return 3;
+      default:
+        return 1;
+    }
+  };
 
   if (!open) return null;
 
@@ -343,7 +393,7 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             <h2 className="text-base sm:text-lg font-semibold">
-              {getStateTitle(state.currentState)}
+              {getStateTitle(currentState)}
             </h2>
           </div>
           <Button
@@ -359,16 +409,16 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         {/* Description */}
         <div className="px-4 sm:px-6 pt-2 pb-3 sm:pb-4">
           <p className="text-xs sm:text-sm text-muted-foreground">
-            {state.currentState === DialogState.INITIAL && "Configure your energy level and phase to generate personalized daily tasks."}
-            {state.currentState === DialogState.PREVIEW && "Review and edit the generated tasks before creating them."}
-            {state.currentState === DialogState.SUCCESS && "Your tasks have been successfully created!"}
+            {currentState === DialogStateEnum.INITIAL && "Configure your energy level and phase to generate personalized daily tasks."}
+            {currentState === DialogStateEnum.PREVIEW && "Review and edit the generated tasks before creating them."}
+            {currentState === DialogStateEnum.SUCCESS && "Your tasks have been successfully created!"}
           </p>
         </div>
         
         {/* Workflow Progress */}
         <div className="px-4 sm:px-6">
           <WorkflowProgress 
-            currentStep={getCurrentStep(state.currentState)} 
+            currentStep={getCurrentStep(currentState)} 
           />
         </div>
         
@@ -379,17 +429,17 @@ const GenerateDailyTasksDialog: React.FC<GenerateDailyTasksDialogProps> = ({
         
         {/* Content */}
         <div className="p-4 sm:p-6 pt-3 sm:pt-4 relative">
-          {state.currentState === DialogState.SUCCESS
+          {currentState === DialogStateEnum.SUCCESS
             ? renderSuccessContent() 
-            : state.currentState === DialogState.PREVIEW
+            : currentState === DialogStateEnum.PREVIEW
             ? renderPreviewContent() 
             : renderInitialContent()
           }
           
           {/* Loading Overlay */}
           <LoadingOverlay
-            isVisible={state.isGenerating || state.isCreating}
-            message={state.isGenerating ? 'Generating tasks...' : 'Creating tasks...'}
+            isVisible={isGenerating || isCreating}
+            message={isGenerating ? 'Generating tasks...' : 'Creating tasks...'}
           />
         </div>
       </div>

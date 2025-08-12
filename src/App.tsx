@@ -4,11 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useMemo, Suspense, lazy } from "react";
-import { AppProvider } from "@/contexts/AppContext";
-import { ThemeProvider } from "@/providers/ThemeProvider";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { WebSocketMessage } from "@/services/websocketService";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppConfig } from "@/hooks/redux/useAppConfig";
 import { Skeleton } from "@/components/ui/skeleton";
 import BottomTabBar from "@/components/layout/BottomTabBar";
 import Header from "@/components/layout/Header";
@@ -18,6 +16,7 @@ import { performanceMonitor } from "@/utils/performance-monitoring";
 import { useAiPreloading } from "@/hooks/use-ai-preloading";
 import { useAdvancedCaching } from "@/hooks/use-advanced-caching";
 import { createSkipLink } from "@/utils/accessibility";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 // Lazy load pages for better performance
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -47,7 +46,11 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
       retry: (failureCount, error: unknown) => {
-        if (error?.response?.status >= 400 && error?.response?.status < 500) return false;
+        if (error && typeof error === 'object' && 'response' in error && 
+            error.response && typeof error.response === 'object' && 'status' in error.response) {
+          const status = (error.response as { status: number }).status;
+          if (status >= 400 && status < 500) return false;
+        }
         return failureCount < 2;
       },
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -61,9 +64,9 @@ const queryClient = new QueryClient({
   },
 });
 
-// Inner App component that has access to AppContext
+// Inner App component that has access to Redux store
 const AppContent = () => {
-  const { userId, config } = useAppContext();
+  const { userId, webSocketUrl } = useAppConfig();
 
   // Initialize AI preloading
   useAiPreloading({
@@ -83,11 +86,11 @@ const AppContent = () => {
 
   // Stable WebSocket config and options (don't recreate on every render)
   const webSocketConfig = useMemo(() => ({
-    url: config.webSocketUrl + '/api/v1/ws',
+    url: webSocketUrl + '/api/v1/ws',
     userId: userId,
     reconnectInterval: 5000,
     maxReconnectAttempts: 10
-  }), [config.webSocketUrl, userId]);
+  }), [webSocketUrl, userId]);
 
   const webSocketOptions = useMemo(() => ({
     onMessage: (message: WebSocketMessage) => {
@@ -140,17 +143,15 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        <ThemeProvider defaultTheme="dark">
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </ThemeProvider>
-      </AppProvider>
+      <ThemeProvider defaultTheme="dark">
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

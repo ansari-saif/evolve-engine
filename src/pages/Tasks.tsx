@@ -4,12 +4,12 @@ import { SkeletonLoader, ErrorMessage } from '../components/ui';
 import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, GenerateDailyTasksDialog, type CreateTaskDialogRef } from '../components/tasks';
 import { useGetUserTasks, useCreateTask, useUpdateTask, useCompleteTask, useDeleteTask, useCreateBulkTasks } from '../hooks/useTasks';
 import { useGetUserGoals } from '../hooks/useGoals';
-import { useUserId } from '../contexts/AppContext';
+import { useUserId } from '../hooks/redux/useAppConfig';
+import { useToasts } from '../hooks/redux/useToasts';
 import { formatDateIST, getCurrentISOStringIST } from '../utils/timeUtils';
 import { Button } from '../components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { useAiService } from '../hooks/useAiService';
-import { useToast } from '../hooks/use-toast';
 import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum, PhaseEnum } from '../client/models';
 import type { TaskFilter } from '../types/app';
 import type { TaskPriority, EnergyLevel } from '../components/tasks/DialogStateManager';
@@ -45,7 +45,7 @@ const Tasks: React.FC = () => {
   
   // AI Service
   const { generateDailyTasks } = useAiService();
-  const { toast } = useToast();
+  const { showSuccessToast, showErrorToast } = useToasts();
 
   // Filtered and sorted tasks
   const filteredTasks = useMemo(() => {
@@ -267,10 +267,7 @@ const Tasks: React.FC = () => {
       });
 
       // Show success notification
-      toast({
-        title: "Tasks Created Successfully",
-        description: `Created ${taskCreateObjects.length} daily tasks based on your energy level and phase.`,
-      });
+      showSuccessToast("Tasks Created Successfully", `Created ${taskCreateObjects.length} daily tasks based on your energy level and phase.`);
     } catch (error) {
       // Log error safely
       try {
@@ -279,11 +276,7 @@ const Tasks: React.FC = () => {
         console.error('Failed to create generated tasks: (Error logging failed)');
       }
       
-      toast({
-        title: "Failed to Create Tasks",
-        description: "There was an error creating your daily tasks. Please try again.",
-        variant: "destructive",
-      });
+      showErrorToast("Failed to Create Tasks", "There was an error creating your daily tasks. Please try again.");
       
       throw error;
     }

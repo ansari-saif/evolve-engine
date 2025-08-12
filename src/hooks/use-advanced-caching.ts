@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppConfig } from './redux/useAppConfig';
 import { performanceMetrics } from '../utils/performance';
 
 interface CacheStrategy {
@@ -20,7 +20,7 @@ export const useAdvancedCaching = (strategy: CacheStrategy = {
   preloadNextPage: true,
   cachePreferences: true,
 }) => {
-  const { userId } = useAppContext();
+  const { userId } = useAppConfig();
   const queryClient = useQueryClient();
   const accessCountRef = useRef<Map<string, number>>(new Map());
   const lastAccessRef = useRef<Map<string, number>>(new Map());

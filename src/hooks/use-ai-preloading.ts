@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAppContext } from '../contexts/AppContext';
+import { useAppConfig } from './redux/useAppConfig';
 import { performanceMetrics } from '../utils/performance';
 
 interface PreloadConfig {
@@ -16,7 +16,7 @@ export const useAiPreloading = (config: PreloadConfig = {
   preloadTasks: true,
   preloadGoals: false,
 }) => {
-  const { userId } = useAppContext();
+  const { userId } = useAppConfig();
   const queryClient = useQueryClient();
   const idleTimeoutRef = useRef<NodeJS.Timeout>();
   const isPreloadingRef = useRef(false);

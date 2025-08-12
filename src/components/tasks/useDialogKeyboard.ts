@@ -1,8 +1,8 @@
 import { useEffect, useCallback } from 'react';
-import { DialogState } from './DialogStateManager';
+import { DialogStateEnum } from '../../store/types';
 
 interface UseDialogKeyboardProps {
-  currentState: DialogState;
+  currentState: DialogStateEnum;
   onClose: () => void;
   onBack: () => void;
   onGenerate?: () => void;
@@ -26,6 +26,9 @@ export const useDialogKeyboard = ({
 }: UseDialogKeyboardProps) => {
   
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    // Debug logging
+    console.log('🔍 Keyboard event:', event.key, 'Ctrl:', event.ctrlKey, 'Meta:', event.metaKey, 'Current state:', currentState);
+    
     // Prevent keyboard shortcuts when user is typing in input fields
     const activeElement = document.activeElement;
     const isInputField = activeElement?.tagName === 'INPUT' || 
@@ -34,6 +37,7 @@ export const useDialogKeyboard = ({
                         activeElement?.getAttribute('contenteditable') === 'true';
     
     if (isInputField) {
+      console.log('🚫 Keyboard shortcut blocked - user is typing in input field');
       return;
     }
 
@@ -48,7 +52,7 @@ export const useDialogKeyboard = ({
         
       case 'Backspace':
         // Backspace to go back (only in preview state)
-        if (currentState === DialogState.PREVIEW && !isCreating) {
+        if (currentState === DialogStateEnum.PREVIEW && !isCreating) {
           event.preventDefault();
           onBack();
         }
@@ -60,17 +64,17 @@ export const useDialogKeyboard = ({
           event.preventDefault();
           
           switch (currentState) {
-            case DialogState.INITIAL:
+            case DialogStateEnum.INITIAL:
               if (onGenerate && !isGenerating) {
                 onGenerate();
               }
               break;
-            case DialogState.PREVIEW:
+            case DialogStateEnum.PREVIEW:
               if (onCreate && !isCreating && canCreate && !hasValidationErrors) {
                 onCreate();
               }
               break;
-            case DialogState.SUCCESS:
+            case DialogStateEnum.SUCCESS:
               onClose();
               break;
           }
@@ -80,7 +84,14 @@ export const useDialogKeyboard = ({
       case 'g':
       case 'G':
         // Ctrl/Cmd + G to generate tasks (only in initial state)
-        if ((event.ctrlKey || event.metaKey) && currentState === DialogState.INITIAL && !isGenerating) {
+        console.log('🔍 G key pressed - checking conditions:', {
+          ctrlOrMeta: event.ctrlKey || event.metaKey,
+          currentState,
+          isInitial: currentState === DialogStateEnum.INITIAL,
+          notGenerating: !isGenerating
+        });
+        if ((event.ctrlKey || event.metaKey) && currentState === DialogStateEnum.INITIAL && !isGenerating) {
+          console.log('✅ Ctrl/Cmd + G shortcut triggered!');
           event.preventDefault();
           if (onGenerate) {
             onGenerate();
@@ -91,7 +102,7 @@ export const useDialogKeyboard = ({
       case 'c':
       case 'C':
         // Ctrl/Cmd + C to create tasks (only in preview state)
-        if ((event.ctrlKey || event.metaKey) && currentState === DialogState.PREVIEW && !isCreating && canCreate && !hasValidationErrors) {
+        if ((event.ctrlKey || event.metaKey) && currentState === DialogStateEnum.PREVIEW && !isCreating && canCreate && !hasValidationErrors) {
           event.preventDefault();
           if (onCreate) {
             onCreate();
@@ -102,7 +113,7 @@ export const useDialogKeyboard = ({
       case 'b':
       case 'B':
         // Ctrl/Cmd + B to go back (only in preview state)
-        if ((event.ctrlKey || event.metaKey) && currentState === DialogState.PREVIEW && !isCreating) {
+        if ((event.ctrlKey || event.metaKey) && currentState === DialogStateEnum.PREVIEW && !isCreating) {
           event.preventDefault();
           onBack();
         }
@@ -121,9 +132,11 @@ export const useDialogKeyboard = ({
   ]);
 
   useEffect(() => {
+    console.log('🎹 Attaching keyboard event listener for state:', currentState);
     document.addEventListener('keydown', handleKeyDown);
     
     return () => {
+      console.log('🎹 Removing keyboard event listener');
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleKeyDown]);
@@ -133,14 +146,14 @@ export const useDialogKeyboard = ({
     const shortcuts = [];
     
     switch (currentState) {
-      case DialogState.INITIAL:
+      case DialogStateEnum.INITIAL:
         if (!isGenerating) {
           shortcuts.push({ key: 'Ctrl/Cmd + G', action: 'Generate Tasks' });
         }
         shortcuts.push({ key: 'ESC', action: 'Close Dialog' });
         break;
         
-      case DialogState.PREVIEW:
+      case DialogStateEnum.PREVIEW:
         if (!isCreating && canCreate && !hasValidationErrors) {
           shortcuts.push({ key: 'Ctrl/Cmd + C', action: 'Create Tasks' });
         }
@@ -150,7 +163,7 @@ export const useDialogKeyboard = ({
         shortcuts.push({ key: 'ESC', action: 'Close Dialog' });
         break;
         
-      case DialogState.SUCCESS:
+      case DialogStateEnum.SUCCESS:
         shortcuts.push({ key: 'Enter', action: 'Close Dialog' });
         shortcuts.push({ key: 'ESC', action: 'Close Dialog' });
         break;
