@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -43,44 +43,23 @@ const TaskCard: React.FC<TaskCardProps> = ({
 }) => {
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   const [showStopwatch, setShowStopwatch] = useState(false);
-  const [stopwatchTime, setStopwatchTime] = useState(0);
+
+  // Memoize the initial time calculation to prevent infinite re-renders
+  const initialTime = useMemo(() => {
+    if (task.started_at) {
+      return Math.floor((Date.now() - new Date(task.started_at).getTime()) / 1000);
+    }
+    return 0;
+  }, [task.started_at]);
 
   // Show stopwatch when task is in progress
   useEffect(() => {
     if (task.completion_status === 'In Progress') {
       setShowStopwatch(true);
-      // Calculate elapsed time if task has started_at
-      if (task.started_at) {
-        const startTime = new Date(task.started_at).getTime();
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        setStopwatchTime(elapsed);
-      } else {
-        setStopwatchTime(0);
-      }
     } else {
       setShowStopwatch(false);
-      setStopwatchTime(0);
     }
-  }, [task.completion_status, task.started_at]);
-
-  // Update stopwatch time every second when task is in progress
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (showStopwatch && task.started_at) {
-      interval = setInterval(() => {
-        const startTime = new Date(task.started_at).getTime();
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        setStopwatchTime(elapsed);
-      }, 1000);
-    }
-    
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [showStopwatch, task.started_at]);
+  }, [task.completion_status]);
 
   const getPriorityBorderColor = (priority: TaskPriorityEnum) => {
     switch (priority) {
@@ -157,14 +136,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
               {showStopwatch && (
                 <div className="flex items-center gap-2 p-2 sm:p-3 bg-primary/5 rounded-lg border border-primary/20">
                   <Stopwatch
-                    initialTime={stopwatchTime}
-                    displayOnly={true}
-                    showControls={false}
+                    initialTime={initialTime}
+                    displayOnly={false}
                     size="small"
-                    timeFormat="HH:MM:SS"
+                    timeFormat="HH:MM:SS:MS"
                     className="text-primary font-mono text-xs sm:text-sm"
+                    autoStart={true}
                   />
-                  <span className="text-xs sm:text-sm text-primary font-medium">Task in progress</span>
                 </div>
               )}
 
