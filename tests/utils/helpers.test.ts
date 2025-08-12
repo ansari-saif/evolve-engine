@@ -21,7 +21,7 @@ test.describe('Helper Functions', () => {
 
     test('should generate strong password', () => {
       const password = DataHelpers.generateRandomPassword();
-      expect(password).toMatch(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{}|;:,.<>?]{12,}$/);
+      expect(password).toMatch(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{}|;:,.<>?])[A-Za-z\d!@#$%^&*()_+\-=[\]{}|;:,.<>?]{12,}$/);
     });
 
     test('should generate random task', () => {

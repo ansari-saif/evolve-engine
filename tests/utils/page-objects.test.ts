@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { DashboardPage, AuthPage, TasksPage, SettingsPage } from './page-objects';
 
 test.describe('Page Objects', () => {
@@ -221,7 +221,7 @@ test.describe('Page Objects', () => {
     test('should have common functionality', async ({ page }) => {
       // Create a simple page object that extends BasePage
       class TestPage extends (await import('./page-objects/base-page')).BasePage {
-        constructor(page: any) {
+        constructor(page: Page) {
           super(page);
         }
       }

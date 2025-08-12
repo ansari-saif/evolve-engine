@@ -249,6 +249,6 @@ export function getScenariosForCategory(category: keyof typeof UserScenarios) {
 /**
  * Helper function to validate scenario data
  */
-export function validateScenarioData(scenario: any) {
+export function validateScenarioData(scenario: Record<string, unknown>) {
   return scenario && scenario.description && scenario.steps && scenario.data;
 }

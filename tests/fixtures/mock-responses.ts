@@ -220,7 +220,7 @@ export const MockResponses = {
 /**
  * Helper function to create mock response with custom data
  */
-export function createMockResponse(baseResponse: any, customData: any = {}) {
+export function createMockResponse(baseResponse: Record<string, unknown>, customData: Record<string, unknown> = {}) {
   return {
     ...baseResponse,
     body: {

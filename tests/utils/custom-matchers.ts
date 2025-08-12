@@ -79,7 +79,7 @@ export class CustomMatchers {
   static async toContainStrongPassword(locator: Locator): Promise<void> {
     const text = await locator.textContent();
     // Password must have at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{}|;:,.<>?]{8,}$/;
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{}|;:,.<>?])[A-Za-z\d!@#$%^&*()_+\-=[\]{}|;:,.<>?]{8,}$/;
     expect(text).toMatch(strongPasswordRegex);
   }
 

@@ -76,6 +76,7 @@ export const persistor = persistStore(store);
 // Export types
 export type AppDispatch = typeof store.dispatch;
 export type AppStore = typeof store;
+export type { RootState } from './types';
 
 // Export selectors
 export const selectAppConfig = (state: RootState) => state.appConfig;

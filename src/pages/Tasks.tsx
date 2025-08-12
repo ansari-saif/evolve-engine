@@ -116,10 +116,7 @@ const Tasks: React.FC = () => {
       });
 
       // Show success notification
-      toast({
-        title: "Tasks Created Successfully",
-        description: `Created ${tasks.length} tasks in bulk.`,
-      });
+      showSuccessToast("Tasks Created Successfully", `Created ${tasks.length} tasks in bulk.`);
     } catch (error) {
       try {
         console.error('Failed to create bulk tasks:', error instanceof Error ? error.message : 'Unknown error');
@@ -127,11 +124,7 @@ const Tasks: React.FC = () => {
         console.error('Failed to create bulk tasks: (Error logging failed)');
       }
       
-      toast({
-        title: "Failed to Create Tasks",
-        description: "There was an error creating your tasks. Please try again.",
-        variant: "destructive",
-      });
+      showErrorToast("Failed to Create Tasks", "There was an error creating your tasks. Please try again.");
     }
   };
 

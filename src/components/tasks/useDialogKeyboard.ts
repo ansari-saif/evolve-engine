@@ -139,7 +139,7 @@ export const useDialogKeyboard = ({
       console.log('🎹 Removing keyboard event listener');
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleKeyDown]);
+  }, [handleKeyDown, currentState]);
 
   // Return keyboard shortcuts info for UI display
   const getKeyboardShortcuts = () => {

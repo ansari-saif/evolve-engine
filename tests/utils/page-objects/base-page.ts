@@ -324,7 +324,7 @@ export abstract class BasePage {
   /**
    * Execute JavaScript in page context
    */
-  async executeScript(script: string, ...args: any[]): Promise<any> {
+  async executeScript(script: string, ...args: unknown[]): Promise<unknown> {
     return await this.page.evaluate(script, ...args);
   }
 
