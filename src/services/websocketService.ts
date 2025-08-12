@@ -211,13 +211,14 @@ export class WebSocketService {
       if (this.notificationHook.permission !== 'granted') {
         await this.notificationHook.requestPermission();
       }
+      console.log("Sending notification", message);
 
       // Send notification with app icon and sound
       const success = await this.notificationHook.notify(
-        message.message,
+        "Evolve Engine",
         {
-          body: message.data ? JSON.stringify(message.data) : undefined,
-          tag: message.type || 'websocket-notification',
+          body: message.message,
+          tag: 'websocket-notification',
           icon: '/favicon.svg', // Use FAB app icon
           badge: '/favicon-192.png', // Badge icon for mobile
           requireInteraction: false,

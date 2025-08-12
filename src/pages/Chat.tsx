@@ -203,7 +203,7 @@ export default function Chat() {
       if (canNotify) {
         void notify("Reply received", {
           body: answer ? "The assistant has responded." : "No content returned.",
-          icon: "/favicon.ico",
+          icon: "/favicon.svg",
         });
         // Fallback cue in case OS delivers quietly
         playBeep();
