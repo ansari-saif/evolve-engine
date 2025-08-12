@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { ShinyProgressHeader } from "../ui/shiny-progress-header";
 import { Button } from "../ui/button";
 import { Eye, EyeOff, Menu } from "lucide-react";
+import { useUserId } from "../../contexts/AppContext";
+import { useGetUserProgressStats, useGetUserRecentProgressLogs } from "../../hooks";
+import { extractProgressData } from "../../utils/progress";
 
 interface HeaderProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -13,8 +16,13 @@ interface HeaderProps {
 
 const Header = ({ onVisibilityChange, sidebarOpen, setSidebarOpen }: HeaderProps) => {
   const [isVisible, setIsVisible] = useState(true);
+  const userId = useUserId();
 
-  // Mock user's startup journey start date (birthday)
+  // Fetch progress data from API
+  const { data: progressStats, isLoading: isLoadingStats } = useGetUserProgressStats(userId, 30);
+  const { data: recentLogs, isLoading: isLoadingLogs } = useGetUserRecentProgressLogs(userId, 7);
+
+  // Mock user's startup journey start date (birthday) - this could be fetched from user profile later
   const startDate = new Date("2024-01-01");
   const endDate = new Date("2024-12-31");
   const today = new Date();
@@ -22,12 +30,12 @@ const Header = ({ onVisibilityChange, sidebarOpen, setSidebarOpen }: HeaderProps
   const totalDays = differenceInDays(endDate, startDate);
   const progress = ((totalDays - daysRemaining) / totalDays) * 100;
 
-  // Placeholder progreLog-style signals (replace with real state when available)
-  const tasksCompleted = Math.round((progress / 100) * 10);
-  const tasksPlanned = 10;
-  const moodScore = 72; // 0-100
-  const energyLevel = 65;
-  const focusScore = 78;
+  // Calculate progress data from API or use defaults
+  const getProgressData = () => {
+    return extractProgressData(progressStats, recentLogs, progress);
+  };
+
+  const { tasksCompleted, tasksPlanned, moodScore, energyLevel, focusScore } = getProgressData();
 
   const toggleHeader = () => {
     setIsVisible(!isVisible);

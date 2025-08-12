@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { clampPct } from '@/utils/progress';
 
 export type ShinyProgressHeaderProps = {
   className?: string;
@@ -11,11 +12,6 @@ export type ShinyProgressHeaderProps = {
   title?: string;
   subtitle?: string;
 };
-
-function clampPct(n: number) {
-  if (Number.isNaN(n) || !Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(100, n));
-}
 
 export function ShinyProgressHeader({
   className,

@@ -1,0 +1,39 @@
+<context>
+# Overview  
+Connect existing progress tracking APIs to React frontend for mood/energy/focus tracking.
+
+# Core Features  
+**Progress Logging**: ProgressLogsService.createProgressLogProgressLogsPost()
+**Statistics**: ProgressLogsService.getUserProgressStatsProgressLogsUserUserIdStatsGet()
+**Recent Display**: ProgressLogsService.getUserRecentProgressLogsProgressLogsUserUserIdRecentGet()
+
+# User Experience  
+**Flows**: Log progress → API saves → UI updates. View stats → API fetches → UI displays.
+**UI**: Use Header.tsx, convert 1-10 scores to percentages.
+</context>
+<PRD>
+# Technical Architecture  
+**APIs**: ProgressLogsService.createProgressLogProgressLogsPost(), getUserProgressStatsProgressLogsUserUserIdStatsGet(), getUserRecentProgressLogsProgressLogsUserUserIdRecentGet(), AiService.generateMotivationAiMotivationPost()
+
+**Data**: ProgressLogCreate {user_id, mood_score, energy_level, focus_score}, ProgressLogResponse {log_id, user_id, mood_score, energy_level, focus_score}
+
+**Integration**: Header.tsx, ProgressLogForm, StatisticsDashboard, useProgressLogs/useProgressStats hooks
+
+# Development Roadmap  
+**Single Phase**: Create hooks, connect Header.tsx, integrate AI, add caching/error handling
+
+# Logical Dependency Chain
+1. Create useProgressLogs/useProgressStats hooks
+2. Connect Header.tsx to API data
+3. Build progress form and statistics dashboard
+4. Add caching and error handling
+
+# Risks and Mitigations  
+**API Format Mismatch**: Create adapter functions
+**Performance**: React Query caching
+**Breaking UI**: Wrapper components
+
+# Appendix  
+**APIs**: ProgressLogsService.createProgressLogProgressLogsPost(), getUserProgressStatsProgressLogsUserUserIdStatsGet(), getUserRecentProgressLogsProgressLogsUserUserIdRecentGet(), AiService.generateMotivationAiMotivationPost()
+**Components**: Header.tsx, ProgressLogForm, StatisticsDashboard
+</PRD>
