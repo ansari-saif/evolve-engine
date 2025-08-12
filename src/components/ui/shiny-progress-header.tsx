@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { clampPct } from '@/utils/progress';
+import { clampPct } from '../../utils/progress';
 
 export type ShinyProgressHeaderProps = {
   className?: string;
@@ -33,94 +33,156 @@ export function ShinyProgressHeader({
   return (
     <header
       className={cn(
-        'relative w-full overflow-hidden rounded-2xl p-4 sm:p-5',
-        // Glass base
-        'border border-white/40 bg-gradient-to-b from-white/40 via-cyan-200/15 to-cyan-200/5 backdrop-blur-2xl backdrop-saturate-150',
-        // Shadows / ring
-        'shadow-[0_20px_60px_rgba(0,200,255,0.18)] ring-1 ring-inset ring-white/40',
+        'group relative w-full overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-5',
+        // Brand-compliant glass effect
+        'border border-white/20 bg-gradient-to-br from-white/10 via-slate-800/30 to-slate-900/20 backdrop-blur-xl backdrop-saturate-150',
+        // Brand shadows
+        'shadow-[0_8px_32px_rgba(99,102,241,0.15)] ring-1 ring-inset ring-white/20',
+        // Touch-friendly interactions
+        'transition-all duration-300 active:scale-[0.98] sm:hover:shadow-[0_12px_40px_rgba(99,102,241,0.25)]',
         className,
       )}
     >
-      {/* Specular sweep */}
-      <span aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_60%_at_10%_0%,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0)_60%)]" />
-      {/* Shimmer stripe */}
-      <span aria-hidden className="pointer-events-none absolute -left-16 top-0 h-full w-16 rotate-12 bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-0 transition-all duration-700 group-hover:opacity-100 group-hover:translate-x-[130%]" />
+      {/* Brand-compliant specular highlight */}
+      <span 
+        aria-hidden 
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_60%_at_20%_10%,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0.05)_40%,rgba(255,255,255,0)_70%)]" 
+      />
 
-      <div className="relative z-10 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold text-foreground/90 drop-shadow">{title}</h2>
-            <p className="text-xs sm:text-sm text-foreground/70">
-              {subtitle ?? `${tasksCompleted}/${tasksPlanned} tasks • ${Math.round(completion)}% complete`}
+      <div className="relative z-10 flex flex-col gap-3 sm:gap-4">
+        {/* Compact header section */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground/90 truncate">
+              {title}
+            </h2>
+            <p className="text-xs sm:text-sm text-foreground/70 truncate">
+              {subtitle ?? `${tasksCompleted}/${tasksPlanned} tasks`}
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-xs text-foreground/80">
-            <Badge label="Mood" value={mood} />
-            <Badge label="Energy" value={energy} />
-            <Badge label="Focus" value={focus} />
+          
+          {/* Compact completion badge */}
+          <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+            <div className="text-xl sm:text-2xl font-bold text-primary">
+              {Math.round(completion)}%
+            </div>
+            <div className="text-xs text-foreground/60">
+              Complete
+            </div>
           </div>
         </div>
 
-        {/* Main completion bar */}
-        <div className="relative h-3 sm:h-3.5 w-full overflow-hidden rounded-full bg-white/15">
-          {/* caustic underglow */}
-          <span aria-hidden className="pointer-events-none absolute -bottom-1 left-1/2 h-2 w-40 -translate-x-1/2 rounded-full bg-white/30 blur-md" />
+        {/* Compact main progress bar */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs sm:text-sm text-foreground/80">
+            <span className="font-medium">Progress</span>
+            <span className="font-semibold text-foreground/90">
+              {tasksCompleted}/{tasksPlanned}
+            </span>
+          </div>
+          
+          <div className="relative h-2.5 sm:h-3 w-full overflow-hidden rounded-full bg-white/10">
+            {/* Brand-compliant underglow */}
+            <span 
+              aria-hidden 
+              className="pointer-events-none absolute -bottom-1 left-1/2 h-1.5 w-24 -translate-x-1/2 rounded-full bg-primary/20 blur-md" 
+            />
 
-          {/* track inner ring */}
-          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/30" />
+            {/* Track */}
+            <span 
+              aria-hidden 
+              className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/20" 
+            />
 
-          {/* fill */}
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-300 via-cyan-400 to-sky-500 shadow-[0_6px_16px_rgba(0,200,255,0.35)]"
-            style={{ width: `${completion}%` }}
-          />
-
-          {/* glossy overlay */}
-          <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/40 to-transparent" />
-
-          {/* animated glint */}
-          <span aria-hidden className="pointer-events-none absolute -left-10 top-0 h-full w-8 rotate-12 bg-gradient-to-r from-transparent via-white/70 to-transparent opacity-0 transition-all duration-700 [animation:glint_2s_ease_infinite]" />
+            {/* Brand-compliant fill */}
+            <div
+              className="relative h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 shadow-[0_2px_8px_rgba(99,102,241,0.3)] transition-all duration-700 ease-out"
+              style={{ width: `${completion}%` }}
+            >
+              {/* Inner highlight */}
+              <span 
+                aria-hidden 
+                className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/10 to-transparent" 
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Micro-bars */}
+        {/* Compact micro-bars */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <MiniBar label="Mood" value={mood} tint="from-fuchsia-300 via-pink-300 to-rose-400" />
-          <MiniBar label="Energy" value={energy} tint="from-amber-300 via-yellow-300 to-orange-400" />
-          <MiniBar label="Focus" value={focus} tint="from-emerald-300 via-teal-300 to-cyan-400" />
+          <MiniBar 
+            label="Mood" 
+            value={mood} 
+            tint="from-secondary via-secondary/90 to-secondary/80"
+            icon="😊"
+          />
+          <MiniBar 
+            label="Energy" 
+            value={energy} 
+            tint="from-warning via-warning/90 to-warning/80"
+            icon="⚡"
+          />
+          <MiniBar 
+            label="Focus" 
+            value={focus} 
+            tint="from-success via-success/90 to-success/80"
+            icon="🎯"
+          />
         </div>
       </div>
     </header>
   );
 }
 
-function Badge({ label, value }: { label: string; value: number }) {
+function MiniBar({ 
+  label, 
+  value, 
+  tint, 
+  icon 
+}: { 
+  label: string; 
+  value: number; 
+  tint: string; 
+  icon: string;
+}) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-white/40 bg-white/20 px-2 py-1 text-[10px] sm:text-xs backdrop-blur">
-      <span className="opacity-80">{label}</span>
-      <span className="font-semibold text-foreground/90">{Math.round(value)}%</span>
-    </span>
-  );
-}
-
-function MiniBar({ label, value, tint }: { label: string; value: number; tint: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between text-[10px] sm:text-xs text-foreground/80">
-        <span>{label}</span>
-        <span className="font-semibold text-foreground/90">{Math.round(value)}%</span>
+    <div className="group/bar flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm sm:text-base" role="img" aria-label={label}>
+            {icon}
+          </span>
+          <span className="text-xs sm:text-sm font-medium text-foreground/85 truncate">
+            {label}
+          </span>
+        </div>
+        <span className="text-xs sm:text-sm font-bold text-foreground/95">
+          {Math.round(value)}%
+        </span>
       </div>
-      <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-white/15">
-        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/25" />
-        <div
-          className={cn('h-full rounded-full bg-gradient-to-r', tint)}
-          style={{ width: `${value}%` }}
+      
+      <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/10">
+        {/* Track */}
+        <span 
+          aria-hidden 
+          className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/20" 
         />
-        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/40 to-transparent" />
+        
+        {/* Brand-compliant fill */}
+        <div
+          className={cn(
+            'relative h-full rounded-full bg-gradient-to-r shadow-sm transition-all duration-700 ease-out',
+            tint
+          )}
+          style={{ width: `${value}%` }}
+        >
+          {/* Inner highlight */}
+          <span 
+            aria-hidden 
+            className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/10 to-transparent" 
+          />
+        </div>
       </div>
     </div>
   );
 }
-
-// keyframes via tailwind arbitrary property
-// @keyframes glint { 0% { transform: translateX(-60%); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateX(260%); opacity: 0 } }
-// Using the arbitrary property syntax [animation:...] above to avoid adding to tailwind config.
