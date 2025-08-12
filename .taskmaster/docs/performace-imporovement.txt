@@ -1,0 +1,192 @@
+<context>  
+# Overview  
+Evolve Engine is an AI-powered startup journey management platform designed to help entrepreneurs and founders build their companies systematically. Currently, the user experience suffers from performance issues — delayed click responses, component rendering glitches, excessive API calls, and slow UI load times. The goal is to transform the UX into a **fast, fluid, and premium experience** comparable to top-tier SaaS tools like Linear, Notion, and Superhuman.  
+
+# Core Features
+
+* **AI-Powered Task Management**: Intelligent daily task suggestions based on energy levels and startup phase.
+* **Goal Tracking**: Multi-level objectives (yearly to weekly) with visual progress indicators.
+* **Daily Journaling**: Mood tracking, location-based entries, and rich text formatting.
+* **AI Assistant**: Context-aware advice, motivation, and task generation.
+* **Progress Analytics**: Charts and metrics showing growth over time.
+
+While these features are valuable, their current implementation suffers from **performance bottlenecks** and **UI interaction delays**.
+
+# User Experience
+
+**Personas**:
+
+1. **Solo Founder** – Needs rapid, smooth access to tasks and progress to maintain momentum.
+2. **Startup Team Lead** – Wants collaborative, responsive tracking for team execution.
+
+**Key Flows**:
+
+* Logging in and instantly seeing the dashboard without lag.
+* Clicking on a task or goal and getting immediate visual feedback.
+* Smooth navigation between Dashboard, Tasks, Goals, and Journal.
+
+**UI/UX Considerations**:
+
+* **Responsiveness**: Every click should respond within 100ms perceived delay.
+* **Performance**: Use optimistic updates, skeleton loaders, and caching to reduce wait times.
+* **Visual Stability**: Eliminate layout shifts and rendering "pop-ins."
+* **Micro-interactions**: Subtle animations and feedback loops to make the app feel alive.
+
+  </context>  
+
+<PRD>  
+CRITICAL : WRITE TYPECASE CODE AND check lint on every step and do not move forward without fixing it and git commit and you are done
+# Technical Architecture  
+- **Frontend**: React 18 + TypeScript + Vite, optimized with code splitting, lazy loading, and prefetching.  
+- **UI Framework**: shadcn/ui + Radix UI with Framer Motion for 60fps animations.  
+- **State/Data Layer**: TanStack Query with request deduplication, query caching, and background refresh.  
+- **API Layer**: Auto-generated client from OpenAPI spec, with centralized API calls to prevent duplicates.  
+- **Performance Enhancements**:  
+  - Component-level memoization to prevent unnecessary re-renders.  
+  - Granular state management to avoid cascading renders.  
+  - Preloading critical assets.  
+
+# Development Roadmap
+
+**Phase 1 – Foundation Fixes (2-3 weeks)**
+
+* **QueryClient Optimization**: Configure TanStack Query with staleTime: 5min, gcTime: 10min, retry: 2, refetchOnWindowFocus: false
+* **API Call Deduplication**: Implement centralized fetch logic in useTasks, useGoals, useUsers hooks to prevent duplicate requests
+* **Skeleton Loaders**: Create SkeletonCard, SkeletonTaskCard components for tasks, goals, and journal entries
+* **Optimistic Updates**: Implement optimistic UI for task completion, status changes, and goal updates
+* **Layout Stability**: Fix CLS issues by reserving space for images, charts, and dynamic content
+
+**Phase 2 – Interaction Optimization (1-2 weeks)**
+
+* **Micro-interactions**: Add hover effects, click feedback, and loading states for all interactive elements
+* **Debouncing**: Implement debounced search, filtering, and form submissions (300ms delay)
+* **GPU Acceleration**: Ensure all animations use transform/opacity properties with will-change CSS
+* **Route Prefetching**: Implement lazy loading with Suspense boundaries for all page components
+* **Bundle Optimization**: Code split by routes and implement dynamic imports for heavy components
+
+**Phase 3 – Visual & UX Polish (1-2 weeks)**
+
+* **Animation Consistency**: Standardize animation curves (ease-out-cubic) and durations (200ms, 300ms, 500ms)
+* **Mobile Optimization**: Implement touch-friendly interactions and responsive skeleton loaders
+* **AI Preloading**: Pre-generate tomorrow's tasks in background when user is idle
+* **Accessibility**: Ensure WCAG AA compliance with proper focus management and screen reader support
+
+# Logical Dependency Chain
+
+1. **Fix API and state management foundation** → prevents wasted rendering and redundant calls.
+2. **Implement visual feedback & loaders** → improves perceived speed before real speed is fully optimized.
+3. **Enhance animations & micro-interactions** → improves delight once responsiveness is established.
+4. **Advanced preloading & predictive UX** → provides next-level fluidity after basics are covered.
+
+# Performance Metrics & Success Criteria
+
+**Core Web Vitals Targets**:
+* LCP (Largest Contentful Paint) < 1.5s
+* FID (First Input Delay) < 100ms  
+* CLS (Cumulative Layout Shift) < 0.1
+* TTFB (Time to First Byte) < 500ms
+* INP (Interaction to Next Paint) < 200ms
+
+**Application-Specific Metrics**:
+* Dashboard load time < 2s
+* Task completion response < 100ms
+* Navigation between pages < 300ms
+* Bundle size < 500KB (gzipped)
+* Memory usage < 50MB
+
+**User Experience Metrics**:
+* 95% of interactions respond within 100ms
+* Zero layout shifts during task interactions
+* Smooth 60fps animations for all micro-interactions
+
+# Testing & Monitoring Strategy
+
+**Performance Testing**:
+* Lighthouse CI integration with GitHub Actions
+* React Profiler for component render analysis
+* Bundle analyzer to track bundle size changes
+* Performance regression testing on critical user flows
+
+**Real User Monitoring**:
+* Web Vitals tracking with Google Analytics 4
+* Custom performance metrics for task completion times
+* Error tracking with Sentry for performance-related issues
+* User session recordings for interaction analysis
+
+**Alerting & Rollback**:
+* Automated alerts when Core Web Vitals degrade
+* Feature flags for performance changes
+* Gradual rollout (10%, 50%, 100%) for major optimizations
+* Rollback triggers: LCP > 2s, FID > 200ms, CLS > 0.15
+
+# Risks and Mitigations
+
+* **Technical Challenge**: API call duplication may be deeply embedded in hooks. *Mitigation*: Audit all data fetching and centralize in one service layer.
+* **Over-optimization Prematurely**: Risk of spending too much time on polish before fixing fundamentals. *Mitigation*: Strictly follow dependency chain.
+* **Perceived Speed vs Actual Speed**: Users care about perceived responsiveness. *Mitigation*: Use optimistic UI and placeholders early.
+* **Bundle Size Bloat**: Risk of increasing bundle size with optimizations. *Mitigation*: Monitor bundle size with each change and set hard limits.
+* **Browser Compatibility**: Some optimizations may not work in older browsers. *Mitigation*: Implement progressive enhancement and fallbacks.
+* **Performance Regression**: Changes may accidentally degrade performance. *Mitigation*: Comprehensive testing suite and automated performance monitoring.
+
+# Implementation Details
+
+**QueryClient Configuration**:
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      retry: (failureCount, error) => {
+        if (error?.response?.status >= 400 && error?.response?.status < 500) return false;
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
+      retryDelay: 1000,
+    },
+  },
+});
+```
+
+**Component Memoization Pattern**:
+```typescript
+const TaskCard = React.memo(({ task, onComplete }) => {
+  // Component implementation
+}, (prevProps, nextProps) => {
+  return prevProps.task.task_id === nextProps.task.task_id &&
+         prevProps.task.completion_status === nextProps.task.completion_status;
+});
+```
+
+**Skeleton Loader Implementation**:
+```typescript
+const SkeletonTaskCard = () => (
+  <div className="p-4 rounded-xl border border-border/50 bg-surface/50 animate-pulse">
+    <div className="flex items-start gap-3">
+      <div className="w-4 h-4 bg-muted rounded-full" />
+      <div className="flex-1 space-y-3">
+        <div className="h-4 bg-muted rounded w-full" />
+        <div className="h-4 bg-muted rounded w-3/4" />
+      </div>
+    </div>
+  </div>
+);
+```
+
+# Appendix
+
+* **Research**: Benchmarked against Notion, Linear, Superhuman for load times, interaction delays, and animation smoothness.
+* **Technical References**: TanStack Query Docs, React Profiler, Lighthouse, Web Vitals API, Framer Motion Performance Guide.
+* **Tools & Libraries**: 
+  - @tanstack/react-query for data fetching
+  - framer-motion for animations
+  - react-window for virtual scrolling (if needed)
+  - web-vitals for performance monitoring
+  - lighthouse-ci for automated testing
+
+  </PRD>  

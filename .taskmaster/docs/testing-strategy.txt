@@ -1,0 +1,573 @@
+# Product Requirements Document: End-to-End Testing Strategy Integration
+
+## Executive Summary
+
+This PRD outlines the implementation of a comprehensive end-to-end (E2E) testing strategy for Evolve Engine to ensure application reliability, prevent regressions, and maintain quality across the entire user journey. The strategy will integrate seamlessly with the existing design system and development workflow while providing robust testing coverage for critical user flows.
+
+---
+
+## Overview
+
+### Current State
+Evolve Engine has a strong foundation with centralized design tokens, TypeScript integration, and component-based architecture. However, the application lacks comprehensive end-to-end testing coverage, which poses risks for:
+- **Regression detection** during design system updates
+- **Cross-browser compatibility** validation
+- **User journey verification** across critical flows
+- **Theme switching reliability** testing
+- **Performance degradation** early detection
+
+### Vision
+Implement a modern, maintainable E2E testing framework that provides confidence in releases, catches regressions early, and supports continuous deployment with automated quality gates.
+
+---
+
+## Core Features
+
+### 1. Modern E2E Testing Framework
+**What it does**: Establishes Playwright as the primary E2E testing framework with TypeScript support  
+**Why it's important**: Provides reliable, fast, and maintainable browser automation with excellent developer experience  
+**How it works**: Playwright configuration with parallel execution, auto-waiting, and built-in debugging tools
+
+### 2. Critical User Journey Coverage
+**What it does**: Tests essential user flows end-to-end across the application  
+**Why it's important**: Ensures core functionality works as expected from user perspective  
+**How it works**: Comprehensive test suites covering authentication, dashboard interactions, task management, and settings
+
+### 3. Visual Regression Testing
+**What it does**: Automatically detects visual changes and layout regressions  
+**Why it's important**: Maintains visual consistency especially important for design system changes  
+**How it works**: Screenshot comparison with configurable thresholds and approval workflows
+
+### 4. Cross-Browser & Device Testing
+**What it does**: Validates functionality across different browsers and viewport sizes  
+**Why it's important**: Ensures consistent user experience across all supported platforms  
+**How it works**: Parallel execution across Chromium, Firefox, Safari, and mobile viewports
+
+### 5. Performance & Accessibility Testing
+**What it does**: Monitors performance metrics and accessibility compliance during E2E tests  
+**Why it's important**: Prevents performance regressions and ensures inclusive design  
+**How it works**: Lighthouse integration and axe-core accessibility validation
+
+### 6. CI/CD Integration
+**What it does**: Automatically runs E2E tests on pull requests and deployments  
+**Why it's important**: Catches issues before they reach production  
+**How it works**: GitHub Actions workflow with parallel execution and intelligent test selection
+
+---
+
+## User Experience
+
+### Developer Personas
+**Primary**: Frontend developers writing and maintaining tests  
+**Secondary**: QA engineers validating functionality  
+**Tertiary**: DevOps engineers managing CI/CD pipelines
+
+### Key User Flows to Test
+
+#### 1. Authentication Flow
+- User registration with email verification
+- Login with various credential types
+- Password reset functionality
+- Session management and logout
+
+#### 2. Dashboard & Navigation
+- Dashboard loading and data display
+- Navigation between different sections
+- Responsive behavior across devices
+- Theme switching functionality
+
+#### 3. Task Management
+- Creating, editing, and deleting tasks
+- Task status updates and filtering
+- Bulk operations and search
+- Real-time updates and notifications
+
+#### 4. Settings & Preferences
+- Profile management and updates
+- Theme and appearance settings
+- Notification preferences
+- Data export/import functionality
+
+#### 5. Error Handling
+- Network failure scenarios
+- Invalid input handling
+- 404 and error page behavior
+- Graceful degradation testing
+
+---
+
+## Technical Architecture
+
+### Framework Selection: Playwright
+
+**Rationale**:
+- **TypeScript Support**: Native TypeScript integration matches project stack
+- **Cross-Browser**: Supports Chromium, Firefox, Safari with consistent API
+- **Performance**: Fast execution with automatic waiting and parallel testing
+- **Modern Features**: Network interception, mobile testing, trace viewer
+- **Maintenance**: Auto-updating browser binaries and stable selectors
+
+### Test Structure & Organization
+
+```
+tests/
+├── e2e/
+│   ├── auth/
+│   │   ├── login.spec.ts
+│   │   ├── registration.spec.ts
+│   │   └── password-reset.spec.ts
+│   ├── dashboard/
+│   │   ├── navigation.spec.ts
+│   │   ├── data-display.spec.ts
+│   │   └── responsive.spec.ts
+│   ├── tasks/
+│   │   ├── crud-operations.spec.ts
+│   │   ├── filtering.spec.ts
+│   │   └── bulk-actions.spec.ts
+│   ├── settings/
+│   │   ├── profile.spec.ts
+│   │   ├── preferences.spec.ts
+│   │   └── theme-switching.spec.ts
+│   └── visual/
+│       ├── component-library.spec.ts
+│       ├── page-layouts.spec.ts
+│       └── theme-variations.spec.ts
+├── fixtures/
+│   ├── test-data.ts
+│   ├── mock-responses.ts
+│   └── user-scenarios.ts
+├── utils/
+│   ├── page-objects/
+│   ├── helpers/
+│   └── custom-matchers.ts
+└── config/
+    ├── playwright.config.ts
+    ├── environments.ts
+    └── test-settings.ts
+```
+
+### Page Object Model Implementation
+
+```typescript
+// utils/page-objects/DashboardPage.ts
+export class DashboardPage {
+  constructor(private page: Page) {}
+
+  // Locators using data-testid for stability
+  private tasksList = this.page.getByTestId('tasks-list');
+  private addTaskButton = this.page.getByTestId('add-task-button');
+  private themeToggle = this.page.getByTestId('theme-toggle');
+
+  async navigateToTasks() {
+    await this.page.getByRole('link', { name: 'Tasks' }).click();
+    await this.page.waitForURL('/tasks');
+  }
+
+  async createTask(title: string, description: string) {
+    await this.addTaskButton.click();
+    await this.page.getByTestId('task-title-input').fill(title);
+    await this.page.getByTestId('task-description-input').fill(description);
+    await this.page.getByTestId('save-task-button').click();
+  }
+
+  async switchTheme(theme: 'light' | 'dark' | 'startup' | 'enterprise') {
+    await this.themeToggle.click();
+    await this.page.getByTestId(`theme-option-${theme}`).click();
+  }
+}
+```
+
+### Test Data Management
+
+```typescript
+// fixtures/test-data.ts
+export const testUsers = {
+  validUser: {
+    email: 'test@evolve-engine.dev',
+    password: 'SecurePassword123!',
+    name: 'Test User'
+  },
+  adminUser: {
+    email: 'admin@evolve-engine.dev',
+    password: 'AdminPassword123!',
+    name: 'Admin User'
+  }
+};
+
+export const testTasks = {
+  sampleTask: {
+    title: 'Sample E2E Test Task',
+    description: 'This task is created during E2E testing',
+    priority: 'medium',
+    status: 'pending'
+  }
+};
+```
+
+---
+
+## Integration Strategy
+
+### 1. Design System Testing Integration
+- **Token Validation**: Verify design tokens are properly applied across themes
+- **Component Library**: Test all components in isolation and integration
+- **Theme Switching**: Validate visual consistency across theme changes
+- **Responsive Design**: Test breakpoints and mobile layouts
+
+### 2. CI/CD Pipeline Integration
+
+```yaml
+# .github/workflows/e2e-tests.yml
+name: E2E Tests
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      
+      - name: Start application
+        run: npm run dev &
+      
+      - name: Wait for app to be ready
+        run: npx wait-on http://localhost:3000
+      
+      - name: Run E2E tests
+        run: npx playwright test --project=${{ matrix.browser }}
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+```
+
+### 3. Environment Configuration
+
+```typescript
+// config/playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-results.json' }],
+    ['junit', { outputFile: 'test-results.xml' }]
+  ],
+  use: {
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure'
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] }
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] }
+    },
+    {
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] }
+    },
+    {
+      name: 'mobile-safari',
+      use: { ...devices['iPhone 12'] }
+    }
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI
+  }
+});
+```
+
+---
+
+## Testing Strategy
+
+### Test Pyramid Approach
+- **Unit Tests**: Component logic and utilities (70%)
+- **Integration Tests**: Component interactions and API integration (20%)
+- **E2E Tests**: Critical user journeys and workflows (10%)
+
+### Test Categories
+
+#### 1. Smoke Tests (Fast, Run Always)
+- Application starts successfully
+- Authentication works
+- Critical pages load
+- Basic navigation functions
+- **Execution Time**: < 5 minutes
+
+#### 2. Core Functionality Tests (Medium, Run on PR)
+- Complete user workflows
+- CRUD operations
+- Form submissions
+- Error handling
+- **Execution Time**: 15-20 minutes
+
+#### 3. Comprehensive Tests (Slow, Run Nightly)
+- Cross-browser compatibility
+- Performance testing
+- Accessibility validation
+- Visual regression testing
+- **Execution Time**: 45-60 minutes
+
+### Visual Testing Strategy
+
+```typescript
+// tests/visual/component-library.spec.ts
+test.describe('Component Library Visual Tests', () => {
+  ['light', 'dark', 'startup', 'enterprise'].forEach(theme => {
+    test(`Button components in ${theme} theme`, async ({ page }) => {
+      await page.goto('/storybook');
+      await page.getByTestId('theme-selector').selectOption(theme);
+      
+      // Test all button variants
+      await page.getByTestId('button-primary').screenshot();
+      await page.getByTestId('button-secondary').screenshot();
+      await page.getByTestId('button-danger').screenshot();
+      
+      // Compare with baseline
+      await expect(page.getByTestId('button-showcase')).toHaveScreenshot(
+        `buttons-${theme}.png`
+      );
+    });
+  });
+});
+```
+
+---
+
+## Performance & Monitoring
+
+### Performance Testing Integration
+
+```typescript
+// tests/performance/core-flows.spec.ts
+test.describe('Performance Tests', () => {
+  test('Dashboard loads within performance budget', async ({ page }) => {
+    await page.goto('/dashboard');
+    
+    // Measure Core Web Vitals
+    const vitals = await page.evaluate(() => {
+      return new Promise(resolve => {
+        new PerformanceObserver(list => {
+          const entries = list.getEntries();
+          resolve(entries.map(entry => ({
+            name: entry.name,
+            value: entry.value,
+            rating: entry.rating
+          })));
+        }).observe({ entryTypes: ['measure'] });
+      });
+    });
+    
+    // Assert performance budgets
+    expect(vitals.lcp).toBeLessThan(2500); // 2.5s LCP
+    expect(vitals.fid).toBeLessThan(100);  // 100ms FID
+    expect(vitals.cls).toBeLessThan(0.1);  // 0.1 CLS
+  });
+});
+```
+
+### Accessibility Testing
+
+```typescript
+// tests/a11y/accessibility.spec.ts
+import { injectAxe, checkA11y } from 'axe-playwright';
+
+test.describe('Accessibility Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    await injectAxe(page);
+  });
+
+  test('Dashboard is accessible', async ({ page }) => {
+    await page.goto('/dashboard');
+    await checkA11y(page, null, {
+      detailedReport: true,
+      detailedReportOptions: { html: true }
+    });
+  });
+
+  test('Forms are accessible', async ({ page }) => {
+    await page.goto('/tasks/new');
+    await checkA11y(page, '.form-container', {
+      rules: {
+        'color-contrast': { enabled: true },
+        'keyboard-navigation': { enabled: true }
+      }
+    });
+  });
+});
+```
+
+---
+
+## Development Workflow
+
+### Test-Driven E2E Development
+1. **Write failing E2E test** for new feature
+2. **Implement minimum code** to make test pass
+3. **Refactor and optimize** implementation
+4. **Add additional test cases** for edge cases
+5. **Update documentation** and examples
+
+### Code Quality Gates
+- **PR Requirements**: All E2E smoke tests must pass
+- **Merge Requirements**: Full E2E test suite completion
+- **Deploy Requirements**: Performance and accessibility validation
+- **Release Requirements**: Cross-browser compatibility confirmation
+
+### Test Maintenance Strategy
+- **Weekly Review**: Analyze flaky tests and update selectors
+- **Monthly Audit**: Review test coverage and identify gaps
+- **Quarterly Planning**: Update test strategy based on application changes
+- **Continuous Monitoring**: Track test execution times and optimize
+
+---
+
+## Success Criteria & Metrics
+
+### Quality Metrics
+- **Test Coverage**: > 85% of critical user journeys covered
+- **Flaky Test Rate**: < 5% test failure rate due to flakiness
+- **Cross-Browser Compatibility**: 100% pass rate across supported browsers
+- **Performance Budget**: All pages meet Core Web Vitals thresholds
+- **Accessibility Compliance**: WCAG 2.1 AA compliance across all flows
+
+### Developer Experience Metrics
+- **Test Execution Speed**: Smoke tests < 5 minutes, full suite < 60 minutes
+- **Debug Efficiency**: Test failures provide actionable debugging information
+- **Maintenance Overhead**: < 10% developer time spent on test maintenance
+- **Confidence Level**: 95% developer confidence in release quality
+
+### Business Impact Metrics
+- **Regression Prevention**: 100% of regressions caught before production
+- **Release Velocity**: No reduction in deployment frequency
+- **Bug Reduction**: 50% reduction in production bugs
+- **Customer Satisfaction**: Maintained or improved user experience scores
+
+---
+
+## Implementation Roadmap
+
+### Phase 1: Foundation Setup (Week 1-2)
+- **Playwright Installation**: Configure framework and basic setup
+- **CI/CD Integration**: Basic GitHub Actions workflow
+- **Page Object Setup**: Core page objects and utilities
+- **Smoke Test Suite**: Essential application functionality tests
+
+### Phase 2: Core Coverage (Week 3-4)
+- **Authentication Tests**: Complete login/registration flows
+- **Dashboard Tests**: Navigation and data display validation
+- **Task Management**: CRUD operations and interactions
+- **Basic Visual Testing**: Component library screenshots
+
+### Phase 3: Advanced Features (Week 5-6)
+- **Cross-Browser Testing**: Multi-browser parallel execution
+- **Performance Integration**: Core Web Vitals monitoring
+- **Accessibility Testing**: WCAG compliance validation
+- **Visual Regression**: Comprehensive screenshot comparison
+
+### Phase 4: Optimization & Monitoring (Week 7-8)
+- **Test Optimization**: Parallel execution and performance tuning
+- **Reporting Enhancement**: Detailed test reports and metrics
+- **Maintenance Automation**: Flaky test detection and healing
+- **Documentation**: Comprehensive testing guidelines and best practices
+
+---
+
+## Risk Mitigation
+
+### Technical Risks
+**Risk**: Flaky tests due to timing issues  
+**Mitigation**: Use Playwright's auto-waiting, implement custom wait strategies, retry mechanisms
+
+**Risk**: High maintenance overhead for selectors  
+**Mitigation**: Use stable data-testid attributes, implement selector healing, regular maintenance schedule
+
+**Risk**: Slow test execution impacting CI/CD  
+**Mitigation**: Parallel execution, intelligent test selection, test optimization strategies
+
+### Resource Risks
+**Risk**: Team learning curve for new testing framework  
+**Mitigation**: Comprehensive training materials, pair programming sessions, gradual rollout
+
+**Risk**: Increased CI/CD costs from additional test runs  
+**Mitigation**: Optimize test execution, use efficient resource allocation, monitor usage costs
+
+---
+
+## Appendix
+
+### Required Dependencies
+```json
+{
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "axe-playwright": "^1.2.3",
+    "playwright-lighthouse": "^3.1.0",
+    "@types/node": "^20.0.0"
+  }
+}
+```
+
+### Browser Support Matrix
+- **Chromium**: Latest stable + 2 previous versions
+- **Firefox**: Latest stable + 1 previous version  
+- **Safari**: Latest stable (via WebKit)
+- **Mobile**: iOS Safari, Android Chrome
+- **Responsive**: 320px - 1920px viewport testing
+
+### Test Environment Requirements
+- **Node.js**: 18.x or higher
+- **Memory**: Minimum 4GB RAM for parallel execution
+- **Storage**: 2GB for browser binaries and test artifacts
+- **Network**: Stable internet for browser updates and CI/CD
+
+### Integration Checklist
+- [ ] Playwright framework installed and configured
+- [ ] Page object model structure established
+- [ ] CI/CD pipeline integration completed
+- [ ] Test data fixtures created
+- [ ] Cross-browser testing enabled
+- [ ] Visual regression testing configured
+- [ ] Performance monitoring integrated
+- [ ] Accessibility testing setup
+- [ ] Documentation and training materials prepared
+- [ ] Team onboarding completed

@@ -1,0 +1,437 @@
+<context>  
+# Overview  
+Evolve Engine currently has a **well-implemented centralized design system** using CSS custom properties and Tailwind integration. However, there are opportunities to enhance developer experience with TypeScript integration, dynamic theming capabilities, and prevent future hardcoded values. This PRD outlines improvements to make the existing system more robust and developer-friendly while maintaining the current excellent foundation.
+
+# Core Features  
+
+## Enhanced TypeScript Integration
+**What it does**: Adds type-safe access to design tokens through TypeScript constants  
+**Why it's important**: Provides autocomplete, validation, and prevents typos in token usage  
+**How it works**: TypeScript objects that mirror CSS custom properties with full type safety
+
+## Dynamic Theme Provider
+**What it does**: Enables runtime theme switching and multiple brand variations  
+**Why it's important**: Allows for A/B testing, user preferences, and brand iterations  
+**How it works**: React context with CSS custom property updates and persistence
+
+## ESLint Token Validation
+**What it does**: Prevents hardcoded color, spacing, and typography values  
+**Why it's important**: Ensures all new code uses the centralized token system  
+**How it works**: Custom ESLint rules that detect and flag hardcoded design values
+
+## Token Documentation & Tools
+**What it does**: Provides interactive documentation and validation tools  
+**Why it's important**: Makes token system discoverable and maintainable  
+**How it works**: Visual token browser and automated validation scripts
+
+## Brand Guidelines Update
+**What it does**: Updates comprehensive brand guidelines with new token system  
+**Why it's important**: Ensures documentation reflects current implementation and new capabilities  
+**How it works**: Enhanced brand guidelines with TypeScript usage examples and theme switching
+
+# User Experience  
+
+## Developer Personas
+**Primary**: Frontend developers building new components  
+**Secondary**: Designers iterating on visual identity  
+**Tertiary**: Product managers testing brand variations
+
+## Key User Flows
+1. **Token Discovery Flow**: Developer types `tokens.` → sees autocomplete for all available tokens
+2. **Theme Testing Flow**: Team switches between brand variations → immediate visual feedback
+3. **Validation Flow**: Developer writes code → ESLint catches hardcoded values automatically
+4. **Documentation Flow**: Developer references brand guidelines → sees updated token usage examples
+
+## UI/UX Considerations
+- No visible changes to end users (behind-the-scenes improvement)
+- Developers get better DX with autocomplete and validation
+- Design system documentation shows available tokens with examples
+  </context>  
+
+<PRD>  
+CRITICAL : WRITE TYPECASE CODE AND check lint on every step and do not move forward without fixing it and git commit and you are done
+# Technical Architecture  
+
+## Current State Assessment
+**✅ Already Implemented**:
+- CSS custom properties in `src/index.css` (47+ design tokens)
+- Tailwind integration in `tailwind.config.ts`
+- Comprehensive brand guidelines in `docs/brand-guidelines.md`
+- Consistent component usage of semantic class names
+- Dark theme support with CSS variables
+
+**🔄 Needs Enhancement**:
+- TypeScript theme constants for type safety
+- React theme provider for dynamic theming
+- ESLint rules for token validation
+- Token documentation and tools
+- **Brand guidelines update** with new token system
+
+## System Components
+- **Token Registry** (`src/index.css`): ✅ Already exists with 47+ CSS custom properties
+- **Theme Constants** (`src/theme/index.ts`): 🔄 New - TypeScript object with typed token access  
+- **Theme Provider** (`src/providers/ThemeProvider.tsx`): 🔄 New - React context for dynamic theming
+- **ESLint Rules** (`.eslintrc.js`): �� New - Custom rules for token validation
+- **Tailwind Extension** (`tailwind.config.ts`): ✅ Already properly configured
+- **Brand Guidelines** (`docs/brand-guidelines.md`): 🔄 Update - Enhanced with new token system
+
+## Data Models
+```typescript
+interface DesignTokens {
+  colors: {
+    primary: { DEFAULT: string; dark: string; foreground: string; };
+    secondary: { DEFAULT: string; foreground: string; };
+    success: { DEFAULT: string; foreground: string; };
+    warning: { DEFAULT: string; foreground: string; };
+    danger: { DEFAULT: string; foreground: string; };
+    destructive: { DEFAULT: string; foreground: string; };
+    muted: { DEFAULT: string; foreground: string; };
+    accent: { DEFAULT: string; foreground: string; };
+    card: { DEFAULT: string; foreground: string; };
+    popover: { DEFAULT: string; foreground: string; };
+    border: string;
+    input: string;
+    ring: string;
+    background: string;
+    foreground: string;
+    surface: string;
+    'surface-light': string;
+    'text-primary': string;
+    'text-secondary': string;
+    'text-muted': string;
+  };
+  gradients: {
+    primary: string;
+    success: string;
+    motivation: string;
+    warning: string;
+    subtle: string;
+  };
+  shadows: {
+    elegant: string;
+    glow: string;
+    card: string;
+  };
+  animations: {
+    smooth: string;
+    spring: string;
+  };
+  spacing: Record<string, string>;
+  borderRadius: { lg: string; md: string; sm: string; };
+}
+```
+
+## APIs and Integrations
+- CSS Custom Properties API for runtime theme updates
+- TypeScript module system for type-safe token access
+- React Context API for theme management
+- ESLint plugin system for custom rules
+
+## Infrastructure Requirements
+- TypeScript 4.5+ for template literal types
+- React 18+ for context and providers
+- ESLint 8.0+ for custom rules
+- Existing CSS custom property support (already working)
+
+# Development Roadmap  
+
+## Phase 1: TypeScript Integration (3-5 days)
+**Scope**: Add type safety to existing token system
+- **Theme Constants Creation**: Build `src/theme/index.ts` with typed token access
+- **Token Validation**: Add TypeScript validation for all existing CSS custom properties
+- **Component Type Safety**: Update key components to use typed token access
+- **Autocomplete Setup**: Ensure IDE autocomplete works for all token names
+- **Migration Testing**: Verify no visual changes from current implementation
+
+## Phase 2: Dynamic Theming (3-5 days)
+**Scope**: Enable runtime theme switching capabilities
+- **Theme Provider**: Create `src/providers/ThemeProvider.tsx` for theme management
+- **Theme Persistence**: Add localStorage support for user theme preferences
+- **Theme Switching**: Implement theme selector component with instant switching
+- **Multiple Themes**: Support for light/dark mode and brand variations
+- **Integration**: Connect theme provider to existing App component
+
+## Phase 3: Validation & Prevention (2-3 days)
+**Scope**: Prevent future hardcoded values
+- **ESLint Rules**: Create custom rules to detect hardcoded colors, spacing, fonts
+- **Hardcoded Value Fixes**: Fix the 1 remaining hardcoded value (confetti colors)
+- **Validation Scripts**: Add automated token validation and testing
+- **Documentation**: Update brand guidelines with new token usage patterns
+- **Team Training**: Document token usage best practices
+
+## Phase 4: Developer Experience & Documentation (2-3 days)
+**Scope**: Tools and documentation for ongoing maintenance
+- **Brand Guidelines Update**: Enhance `docs/brand-guidelines.md` with new token system
+- **Token Browser**: Create interactive playground for exploring tokens
+- **Usage Analytics**: Script to identify unused or missing tokens
+- **Migration Guide**: Step-by-step guide for future component updates
+- **Performance Monitoring**: Ensure token system doesn't impact performance
+- **Integration Testing**: Full testing of theme switching and validation
+
+# Logical Dependency Chain
+
+## Foundation First (Phase 1)
+- TypeScript constants must exist before components can use them
+- Token validation ensures all existing tokens are properly typed
+- No breaking changes to current implementation
+
+## Enhancement Strategy (Phase 2)
+- Theme provider builds on existing CSS custom properties
+- Dynamic theming works with current component structure
+- Backward compatibility with existing theme system
+
+## Prevention & Quality (Phase 3)
+- ESLint rules prevent regression of hardcoded values
+- Validation ensures token system integrity
+- Documentation supports ongoing maintenance
+
+## Developer Tools & Documentation (Phase 4)
+- Brand guidelines update reflects new capabilities
+- Tools built on top of established token system
+- Analytics help optimize token usage
+- Training materials support team adoption
+
+# Success Criteria & Metrics
+
+## Development Efficiency
+- **Token Update Time**: < 30 seconds to update any brand element app-wide
+- **TypeScript Autocomplete**: 100% token name autocomplete in IDE
+- **Hardcoded Value Prevention**: 0 new hardcoded values in codebase
+- **Theme Switching**: < 100ms to switch between themes
+
+## Code Quality
+- **Type Safety**: 100% of token usage has TypeScript validation
+- **ESLint Compliance**: 0 token-related linting errors
+- **Visual Consistency**: 0 unintended visual changes during implementation
+- **Performance**: No performance degradation from token system
+
+## Developer Experience
+- **Documentation Coverage**: 100% of tokens documented with examples
+- **Brand Guidelines**: Updated with TypeScript usage and theme switching
+- **Tool Integration**: Working token browser and validation tools
+- **Team Adoption**: All developers using typed token access
+- **Maintenance**: < 1 hour to add new tokens to system
+
+# Testing & Validation Strategy
+
+## Automated Testing
+- **TypeScript Tests**: Type checking for all token usage
+- **ESLint Tests**: Validation of custom rules
+- **Theme Switching Tests**: Automated theme switching validation
+- **Visual Regression**: Screenshot comparison for all components
+
+## Manual Testing
+- **Cross-Browser Testing**: Chrome, Firefox, Safari, Edge
+- **Theme Switching**: Manual testing of all theme variations
+- **Performance Testing**: No performance impact from token system
+- **Developer Experience**: IDE autocomplete and validation testing
+
+## Validation Tools
+- **Token Validator**: Custom script to validate token completeness
+- **Usage Analyzer**: Tool to identify unused or missing tokens
+- **Theme Preview**: Development tool for testing theme variations
+
+# Risks and Mitigations  
+
+## Technical Challenges
+**Risk**: TypeScript complexity with token types  
+**Mitigation**: Start with simple types, add complexity incrementally, use existing CSS structure
+
+**Risk**: Performance impact from theme switching  
+**Mitigation**: Use CSS custom properties (already optimized), avoid JavaScript-heavy solutions
+
+**Risk**: Breaking existing component behavior  
+**Mitigation**: Maintain backward compatibility, gradual migration approach
+
+## Implementation Scope
+**Risk**: Over-engineering the TypeScript layer  
+**Mitigation**: Keep it simple, focus on autocomplete and validation, not complex features
+
+**Risk**: ESLint rules being too strict  
+**Mitigation**: Start with warnings, not errors, allow exceptions for valid use cases
+
+**Risk**: Theme provider complexity  
+**Mitigation**: Build on existing CSS custom properties, keep React layer minimal
+
+## Resource Constraints
+**Risk**: Implementation taking too long  
+**Mitigation**: Leverage existing excellent foundation, focus on incremental improvements
+
+**Risk**: Learning curve for new token system  
+**Mitigation**: Provide clear documentation, make token usage obvious and beneficial
+
+# Implementation Details
+
+## TypeScript Theme Constants
+```typescript
+// src/theme/index.ts
+export const tokens = {
+  colors: {
+    primary: {
+      DEFAULT: 'hsl(var(--primary))',
+      dark: 'hsl(var(--primary-dark))',
+      foreground: 'hsl(var(--primary-foreground))'
+    },
+    secondary: {
+      DEFAULT: 'hsl(var(--secondary))',
+      foreground: 'hsl(var(--secondary-foreground))'
+    },
+    // ... other colors matching existing CSS variables
+  },
+  gradients: {
+    primary: 'var(--gradient-primary)',
+    success: 'var(--gradient-success)',
+    motivation: 'var(--gradient-motivation)',
+    warning: 'var(--gradient-warning)',
+    subtle: 'var(--gradient-subtle)'
+  },
+  shadows: {
+    elegant: 'var(--shadow-elegant)',
+    glow: 'var(--shadow-glow)',
+    card: 'var(--shadow-card)'
+  },
+  animations: {
+    smooth: 'var(--transition-smooth)',
+    spring: 'var(--transition-spring)'
+  }
+} as const;
+
+export type DesignTokens = typeof tokens;
+```
+
+## Theme Provider Implementation
+```typescript
+// src/providers/ThemeProvider.tsx
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: 'dark' | 'light' | 'startup' | 'enterprise';
+}
+
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  defaultTheme = 'dark'
+}) => {
+  const [theme, setTheme] = useState(defaultTheme);
+  
+  useEffect(() => {
+    // Apply theme to CSS custom properties
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('evolve-theme', theme);
+  }, [theme]);
+  
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+```
+
+## ESLint Rule Example
+```javascript
+// .eslintrc.js
+module.exports = {
+  rules: {
+    'no-hardcoded-colors': {
+      create(context) {
+        return {
+          Literal(node) {
+            if (node.value && /^#[0-9a-fA-F]{3,6}$/.test(node.value)) {
+              context.report({
+                node,
+                message: 'Use design tokens instead of hardcoded colors'
+              });
+            }
+          }
+        };
+      }
+    }
+  }
+};
+```
+
+## Component Usage Pattern
+```typescript
+// Before (current - already good)
+const Button = ({ children }) => (
+  <button className="bg-primary text-primary-foreground hover:bg-primary/90">
+    {children}
+  </button>
+);
+
+// After (with TypeScript tokens)
+import { tokens } from '@/theme';
+
+const Button = ({ children }) => (
+  <button 
+    className="hover:bg-primary/90"
+    style={{
+      backgroundColor: tokens.colors.primary.DEFAULT,
+      color: tokens.colors.primary.foreground
+    }}
+  >
+    {children}
+  </button>
+);
+```
+
+## Brand Guidelines Update Content
+The updated `docs/brand-guidelines.md` will include:
+
+### New Sections to Add:
+1. **Design System Overview**: Current implementation status and architecture
+2. **TypeScript Token Usage**: How to use typed tokens in components
+3. **Theme Switching**: How to implement and use dynamic theming
+4. **ESLint Validation**: Rules and best practices for token usage
+5. **Token Browser**: Interactive documentation for exploring tokens
+6. **Migration Guide**: Step-by-step process for updating components
+
+### Enhanced Existing Sections:
+1. **CSS Custom Properties**: Updated with TypeScript integration examples
+2. **Implementation**: Enhanced with new token usage patterns
+3. **Usage Examples**: Updated with TypeScript and theme switching examples
+
+# Appendix  
+
+## Current Brand Audit Findings (Updated)
+- **✅ 47 CSS custom properties** already centralized in `src/index.css`
+- **✅ Consistent Tailwind integration** in `tailwind.config.ts`
+- **✅ Comprehensive brand guidelines** in `docs/brand-guidelines.md`
+- **✅ 99% component compliance** with token usage
+- **🔄 1 hardcoded value** remaining (confetti colors in TodaysTasks.tsx)
+- **�� Missing TypeScript integration** for type safety
+- **�� No dynamic theming** capabilities
+- **🔄 No ESLint validation** for hardcoded values
+- **🔄 Brand guidelines need update** for new token system
+
+## Technical Specifications
+- **CSS Custom Properties Level 1** specification compliance (already implemented)
+- **TypeScript 4.5+** for template literal types and const assertions
+- **Tailwind CSS 3.0+** for custom property integration (already configured)
+- **React 18+** for theme context and providers
+- **ESLint 8.0+** for custom rules and token validation
+
+## Token Naming Convention (Already Established)
+--{category}-{variant}-{state}
+--primary
+--primary-dark
+--primary-foreground
+--gradient-primary
+--shadow-elegant
+--transition-smooth
+
+## Migration Checklist
+- [x] CSS custom properties centralized (already done)
+- [x] Tailwind integration configured (already done)
+- [x] Brand guidelines documented (already done)
+- [ ] Create TypeScript theme constants
+- [ ] Build theme provider component
+- [ ] Add ESLint rules for token validation
+- [ ] Fix remaining hardcoded value (confetti colors)
+- [ ] **Update brand guidelines with new token system**
+- [ ] Create token documentation and tools
+- [ ] Add theme switching capabilities
+- [ ] Set up automated validation
+- [ ] Train team on new token usage
+
+  </PRD>  

@@ -1,0 +1,242 @@
+{
+    "master": {
+        "tasks": [
+            {
+                "id": 3,
+                "title": "Create TypeScript Theme Constants",
+                "description": "Build typed token access system in src/theme/index.ts that mirrors existing CSS custom properties with full type safety",
+                "status": "pending",
+                "dependencies": [],
+                "priority": "high",
+                "details": "Create src/theme/index.ts with typed token objects. Map all 47+ existing CSS custom properties to TypeScript constants using 'hsl(var(--property))' and 'var(--property)' patterns. Include colors (primary, secondary, success, etc.), gradients, shadows, animations, spacing, and borderRadius. Use 'as const' assertion for type inference. Export DesignTokens type. Ensure perfect mapping to existing CSS variables for backward compatibility.",
+                "testStrategy": "TypeScript compilation tests, verify all tokens accessible via autocomplete, check type safety with incorrect property access, validate no runtime changes in visual appearance"
+            },
+            {
+                "id": 4,
+                "title": "Implement Theme Provider System",
+                "description": "Create React context-based theme provider in src/providers/ThemeProvider.tsx for dynamic theme switching with persistence",
+                "status": "pending",
+                "dependencies": [
+                    3
+                ],
+                "priority": "high",
+                "details": "Build ThemeProvider component with React.createContext for theme management. Support theme types: 'dark', 'light', 'startup', 'enterprise'. Implement useState for current theme, useEffect for DOM updates via document.documentElement.setAttribute('data-theme', theme). Add localStorage persistence with 'evolve-theme' key. Create useTheme hook for consuming theme context. Integrate with existing App component structure.",
+                "testStrategy": "Theme switching functionality tests, localStorage persistence verification, context provider integration tests, manual testing across all supported themes"
+            },
+            {
+                "id": 5,
+                "title": "Setup ESLint Custom Rules for Token Validation",
+                "description": "Configure custom ESLint rules to detect and prevent hardcoded color, spacing, and typography values",
+                "status": "pending",
+                "dependencies": [],
+                "priority": "medium",
+                "details": "Create custom ESLint rules in .eslintrc.js to detect hardcoded values. Rule 'no-hardcoded-colors' for hex colors (#[0-9a-fA-F]{3,6}), RGB values, and color names. Rule 'no-hardcoded-spacing' for pixel values. Rule 'no-hardcoded-fonts' for font families. Start with warnings, not errors. Include escape hatches for valid exceptions. Test rules against existing codebase.",
+                "testStrategy": "ESLint rule execution tests, validation against known hardcoded values, false positive/negative testing, integration with existing linting workflow"
+            },
+            {
+                "id": 6,
+                "title": "Fix Remaining Hardcoded Values",
+                "description": "Identify and replace the remaining hardcoded value (confetti colors in TodaysTasks.tsx) with design tokens",
+                "status": "pending",
+                "dependencies": [
+                    3,
+                    5
+                ],
+                "priority": "medium",
+                "details": "Locate confetti colors in TodaysTasks.tsx file. Replace hardcoded color values with appropriate design tokens from the theme constants. Ensure visual consistency is maintained. Update any other hardcoded values discovered during ESLint scanning. Document the token choices made for confetti colors.",
+                "testStrategy": "Visual regression testing for confetti functionality, ESLint validation passes, manual testing of affected component behavior"
+            },
+            {
+                "id": 7,
+                "title": "Create Theme Selector Component",
+                "description": "Build interactive theme switching component with instant visual feedback for theme testing",
+                "status": "pending",
+                "dependencies": [
+                    4
+                ],
+                "priority": "medium",
+                "details": "Create ThemeSelector component using the theme context. Implement dropdown or toggle interface for switching between dark, light, startup, and enterprise themes. Ensure < 100ms switching performance. Add visual preview indicators. Include accessibility features (keyboard navigation, screen reader support). Style with existing design tokens.",
+                "testStrategy": "Theme switching speed tests (< 100ms requirement), accessibility testing, visual feedback validation, cross-browser compatibility testing"
+            },
+            {
+                "id": 8,
+                "title": "Update Key Components for TypeScript Token Usage",
+                "description": "Migrate critical components to use typed token access instead of only CSS classes",
+                "status": "pending",
+                "dependencies": [
+                    3
+                ],
+                "priority": "medium",
+                "details": "Update 3-5 key components to demonstrate TypeScript token usage patterns. Maintain existing Tailwind classes for hover states and utilities, add style props for colors using tokens.colors.primary.DEFAULT syntax. Create hybrid approach balancing Tailwind convenience with TypeScript safety. Document usage patterns for team reference.",
+                "testStrategy": "Component rendering tests, TypeScript compilation validation, visual regression testing, autocomplete functionality verification"
+            },
+            {
+                "id": 9,
+                "title": "Build Token Documentation and Browser Tool",
+                "description": "Create interactive token browser and documentation for exploring and validating design tokens",
+                "status": "pending",
+                "dependencies": [
+                    3,
+                    4
+                ],
+                "priority": "low",
+                "details": "Build interactive token browser component that displays all available tokens with live previews. Show colors as swatches, gradients as bars, shadows as examples. Include search/filter functionality. Add copy-to-clipboard for token names. Create validation script to ensure all CSS custom properties have corresponding TypeScript tokens. Include usage examples and code snippets.",
+                "testStrategy": "Token completeness validation, interactive functionality testing, search and filter accuracy, copy-to-clipboard functionality verification"
+            },
+            {
+                "id": 10,
+                "title": "Enhance Brand Guidelines Documentation",
+                "description": "Update docs/brand-guidelines.md with new TypeScript token system, theme switching examples, and usage patterns",
+                "status": "pending",
+                "dependencies": [
+                    3,
+                    4,
+                    7
+                ],
+                "priority": "medium",
+                "details": "Add new sections to brand-guidelines.md: Design System Overview, TypeScript Token Usage, Theme Switching Guide, ESLint Validation Rules, Token Browser documentation, Migration Guide. Update existing sections with TypeScript integration examples. Include code snippets for both Tailwind and TypeScript token approaches. Add troubleshooting guide and best practices.",
+                "testStrategy": "Documentation completeness review, code example accuracy verification, team review for clarity and usefulness"
+            },
+            {
+                "id": 11,
+                "title": "Implement Automated Token Validation Scripts",
+                "description": "Create scripts to validate token completeness, detect unused tokens, and ensure system integrity",
+                "status": "pending",
+                "dependencies": [
+                    3
+                ],
+                "priority": "low",
+                "details": "Build Node.js validation scripts: 1) Token completeness checker - ensures all CSS custom properties have TypeScript equivalents, 2) Usage analyzer - scans codebase for unused tokens, 3) Orphan detector - finds CSS properties not in TypeScript constants. Integrate with CI/CD pipeline. Generate reports for token system maintenance.",
+                "testStrategy": "Script execution tests, accuracy validation against known token states, CI/CD integration testing, report generation verification"
+            },
+            {
+                "id": 12,
+                "title": "git commit",
+                "description": "analyze the code and make sure it is type safe and lint free and commit the code",
+                "status": "pending",
+                "dependencies": [
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8
+                ],
+                "priority": "high",
+                "details": "run lint and fix all errors and commit the code",
+                "testStrategy": "run lint and fix all errors and commit the code"
+            },
+            {
+                "id": 13,
+                "title": "Configure TanStack Query Client Optimization",
+                "description": "Set up optimized QueryClient configuration with proper caching, retry logic, and stale time settings to reduce API calls and improve data fetching performance",
+                "status": "pending",
+                "dependencies": [],
+                "priority": "high",
+                "details": "Configure QueryClient with staleTime: 5min, gcTime: 10min, retry: 2, refetchOnWindowFocus: false, refetchOnReconnect: true. Implement smart retry logic that doesn't retry 4xx errors but retries network failures up to 2 times with exponential backoff. Set up proper error boundaries and loading states.",
+                "testStrategy": "Unit tests for QueryClient configuration, integration tests for retry logic, performance tests measuring API call reduction, and E2E tests verifying data persistence across page reloads"
+            },
+            {
+                "id": 14,
+                "title": "Implement API Call Deduplication",
+                "description": "Centralize fetch logic in custom hooks (useTasks, useGoals, useUsers) to prevent duplicate API requests and optimize data fetching patterns",
+                "status": "pending",
+                "dependencies": [
+                    13
+                ],
+                "priority": "high",
+                "details": "Create centralized data fetching service layer with request deduplication. Implement custom hooks that use TanStack Query's built-in deduplication. Audit existing API calls and consolidate duplicate endpoints. Add request caching with proper cache invalidation strategies.",
+                "testStrategy": "Network monitoring tests to verify request deduplication, unit tests for custom hooks, integration tests for cache invalidation, and performance benchmarks measuring API call reduction"
+            },
+            {
+                "id": 15,
+                "title": "Create Skeleton Loading Components",
+                "description": "Build SkeletonCard, SkeletonTaskCard, and other skeleton components for tasks, goals, and journal entries to improve perceived loading performance",
+                "status": "pending",
+                "dependencies": [
+                    13
+                ],
+                "priority": "medium",
+                "details": "Create responsive skeleton components using shadcn/ui patterns. Implement SkeletonTaskCard, SkeletonGoalCard, SkeletonJournalEntry with proper dimensions and animations. Ensure skeletons match final component layouts to prevent layout shifts. Use CSS animations with GPU acceleration (transform/opacity).",
+                "testStrategy": "Visual regression tests for skeleton components, accessibility tests for screen readers, responsive design tests across devices, and CLS measurement to ensure zero layout shift"
+            },
+            {
+                "id": 16,
+                "title": "Implement Optimistic UI Updates",
+                "description": "Add optimistic updates for task completion, status changes, and goal updates to provide immediate user feedback while API calls process in background",
+                "status": "pending",
+                "dependencies": [
+                    14
+                ],
+                "priority": "high",
+                "details": "Implement optimistic updates using TanStack Query mutations with onMutate callbacks. Handle rollback scenarios for failed mutations. Create optimistic state management for task completion, goal progress updates, and journal entries. Ensure UI reflects changes immediately while syncing with backend.",
+                "testStrategy": "Integration tests for optimistic updates and rollbacks, error scenario testing for failed mutations, user experience tests measuring perceived response time, and data consistency validation"
+            },
+            {
+                "id": 17,
+                "title": "Fix Layout Stability and CLS Issues",
+                "description": "Eliminate Cumulative Layout Shift by reserving space for images, charts, and dynamic content, ensuring visual stability during loading",
+                "status": "pending",
+                "dependencies": [
+                    15
+                ],
+                "priority": "medium",
+                "details": "Reserve space for all dynamic content using CSS aspect-ratio and min-height properties. Implement proper image loading with defined dimensions. Fix chart container sizing before data loads. Add placeholder dimensions for progress bars and dynamic lists. Use CSS containment for isolated layout calculations.",
+                "testStrategy": "CLS measurement using Lighthouse and Web Vitals API, visual regression testing, automated layout shift detection in CI/CD, and user testing for visual stability perception"
+            },
+            {
+                "id": 18,
+                "title": "Add Micro-interactions and Click Feedback",
+                "description": "Implement hover effects, click feedback, and loading states for all interactive elements using Framer Motion to enhance user experience",
+                "status": "pending",
+                "dependencies": [
+                    16
+                ],
+                "priority": "medium",
+                "details": "Add consistent hover states, click animations, and loading indicators using Framer Motion. Implement button press feedback, card hover elevations, and smooth transitions. Use transform and opacity for 60fps animations. Add haptic feedback for mobile devices. Ensure all interactive elements provide immediate visual feedback.",
+                "testStrategy": "Interaction testing across all interactive elements, performance testing to ensure 60fps animations, accessibility testing for reduced motion preferences, and user experience testing for feedback responsiveness"
+            },
+            {
+                "id": 19,
+                "title": "Implement Debounced Search and Form Interactions",
+                "description": "Add debouncing to search, filtering, and form submissions with 300ms delay to reduce unnecessary API calls and improve performance",
+                "status": "pending",
+                "dependencies": [
+                    14
+                ],
+                "priority": "medium",
+                "details": "Implement useDebounce hook with 300ms delay for search inputs. Add debouncing to filter controls and form auto-save functionality. Use React's useDeferredValue for non-critical updates. Implement intelligent debouncing that triggers immediately on first interaction then delays subsequent calls.",
+                "testStrategy": "Unit tests for debounce functionality, integration tests for search and filter performance, API call monitoring to verify request reduction, and user experience testing for responsiveness"
+            },
+            {
+                "id": 20,
+                "title": "Optimize Bundle Size and Code Splitting",
+                "description": "Implement route-based code splitting, lazy loading with Suspense boundaries, and dynamic imports for heavy components to reduce initial bundle size",
+                "status": "pending",
+                "dependencies": [
+                    15
+                ],
+                "priority": "medium",
+                "details": "Split code by routes using React.lazy and Suspense. Implement dynamic imports for heavy components like charts and AI features. Set up bundle analyzer integration. Optimize third-party library imports. Implement progressive loading for non-critical features. Target bundle size < 500KB gzipped.",
+                "testStrategy": "Bundle size analysis and monitoring, Lighthouse performance testing, loading time measurements across different connection speeds, and automated bundle size regression detection in CI/CD"
+            },
+            {
+                "id": 21,
+                "title": "Standardize Animation System",
+                "description": "Create consistent animation curves (ease-out-cubic) and durations (200ms, 300ms, 500ms) across the application for premium feel",
+                "status": "pending",
+                "dependencies": [
+                    18
+                ],
+                "priority": "low",
+                "details": "Define animation design tokens with standardized easing curves and durations. Create reusable animation variants for Framer Motion. Implement animation presets for common interactions (page transitions, modal animations, list item animations). Ensure all animations use GPU-accelerated properties (transform, opacity).",
+                "testStrategy": "Animation consistency audit across application, performance testing to ensure 60fps, cross-browser compatibility testing, and accessibility testing for motion preferences"
+            },
+        ],
+        "metadata": {
+            "created": "2025-08-10T08:17:39.157Z",
+            "updated": "2025-08-12T13:11:12.371Z",
+            "description": "Tasks for master context"
+        }
+    }
+}
