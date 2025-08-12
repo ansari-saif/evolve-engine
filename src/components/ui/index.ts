@@ -1,6 +1,8 @@
 // Export all UI components for easy importing
 export { LoadingSpinner } from './loading-spinner';
 export { Skeleton, SkeletonLoader } from './skeleton-loader';
+export { SkeletonTaskCard, SkeletonTaskList } from './skeleton-task-card';
+export { SkeletonGoalCard, SkeletonGoalList } from './skeleton-goal-card';
 export { ErrorFallback, ErrorMessage } from './error-fallback';
 
 // Re-export existing components

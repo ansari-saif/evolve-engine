@@ -1,14 +1,23 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { BarChart3, TrendingUp } from "lucide-react";
+import { performanceMetrics } from "../utils/performance";
 
 const Statistics = () => {
+  const startTime = performance.now();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Statistics', startTime);
+  }, [startTime]);
+
   return (
-    <div className="space-y-6 pt-16">
+    <div className="space-y-6 pt-16" role="main" aria-labelledby="statistics-heading">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold text-gradient-primary mb-2">Statistics</h1>
+        <h1 className="text-3xl font-bold text-gradient-primary mb-2" id="statistics-heading">Statistics</h1>
         <p className="text-text-secondary">Analyze your productivity and progress</p>
       </motion.div>
 

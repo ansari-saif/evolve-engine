@@ -123,15 +123,45 @@ export const useUpdateTask = (): UseMutationResult<TaskResponse, Error, { id: nu
       });
       return response;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['tasks', variables.id] });
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      await queryClient.cancelQueries({ queryKey: ['tasks', id] });
+
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData(['tasks']);
+      const previousTask = queryClient.getQueryData(['tasks', id]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['tasks'], (old: TaskResponse[] | undefined) => {
+        if (!old) return old;
+        return old.map(task => task.task_id === id ? { ...task, ...data } : task);
+      });
+      queryClient.setQueryData(['tasks', id], (old: TaskResponse | undefined) => {
+        if (!old) return old;
+        return { ...old, ...data };
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousTasks, previousTask };
     },
-    onError: (error) => {
-      handleError(error, {
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks'], context.previousTasks);
+      }
+      if (context?.previousTask) {
+        queryClient.setQueryData(['tasks', variables.id], context.previousTask);
+      }
+      handleError(err, {
         showToast: true,
         toastTitle: 'Failed to update task',
       });
+    },
+    onSettled: (_, __, variables) => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', variables.id] });
     },
   });
 };
@@ -145,15 +175,50 @@ export const useCompleteTask = (): UseMutationResult<TaskResponse, Error, number
       const response = await TasksService.completeTaskTasksTaskIdCompletePatch({ taskId });
       return response;
     },
-    onSuccess: (_, taskId) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['tasks', taskId] });
+    onMutate: async (taskId) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['tasks'] });
+      await queryClient.cancelQueries({ queryKey: ['tasks', taskId] });
+
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData(['tasks']);
+      const previousTask = queryClient.getQueryData(['tasks', taskId]);
+
+      // Optimistically update to completed status
+      const optimisticUpdate = {
+        completion_status: 'Completed' as const,
+        completed_at: new Date().toISOString()
+      };
+
+      queryClient.setQueryData(['tasks'], (old: TaskResponse[] | undefined) => {
+        if (!old) return old;
+        return old.map(task => task.task_id === taskId ? { ...task, ...optimisticUpdate } : task);
+      });
+      queryClient.setQueryData(['tasks', taskId], (old: TaskResponse | undefined) => {
+        if (!old) return old;
+        return { ...old, ...optimisticUpdate };
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousTasks, previousTask };
     },
-    onError: (error) => {
-      handleError(error, {
+    onError: (err, taskId, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks'], context.previousTasks);
+      }
+      if (context?.previousTask) {
+        queryClient.setQueryData(['tasks', taskId], context.previousTask);
+      }
+      handleError(err, {
         showToast: true,
         toastTitle: 'Failed to complete task',
       });
+    },
+    onSettled: (_, __, taskId) => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks', taskId] });
     },
   });
 };

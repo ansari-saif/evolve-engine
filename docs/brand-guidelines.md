@@ -1,360 +1,384 @@
-# Brand Guidelines - Evolve Engine
+# Brand Guidelines & Design System
 
-## Brand Identity
+## Overview
 
-### Mission
-Transforming startup dreams into reality through AI-powered task management, motivation tracking, and intelligent progress visualization.
+Our design system is built on a foundation of **type-safe design tokens** that provide consistent, maintainable, and scalable design patterns across the entire application. This system enables rapid theme switching, ensures visual consistency, and prevents design drift.
 
-### Brand Values
-- **Innovation**: Cutting-edge technology with human-centered design
-- **Fluidity**: Seamless, adaptive experiences that flow naturally
-- **Motivation**: Empowering users to achieve their goals
-- **Sophistication**: Premium, polished design with attention to detail
-- **Accessibility**: Intuitive and inclusive for all users
+## 🎨 Design Tokens
 
-## Color Palette
+### Core Principles
 
-### Primary Colors
-- **Indigo Primary**: `#6366F1` (Primary brand color)
-- **Indigo Dark**: `#4F46E5` (Deep, trustworthy tone)
-- **Deep Slate**: `#0F172A` (Rich background foundation)
+1. **Type Safety**: All design values are accessed through TypeScript constants
+2. **Single Source of Truth**: Tokens are defined once and used everywhere
+3. **Runtime Flexibility**: Themes can be switched dynamically without page reload
+4. **Developer Experience**: Full IDE autocomplete and validation
 
-### Secondary Colors
-- **Motivation Pink**: `#EC4899` (Energy, drive, passion)
-- **Success Green**: `#22C55E` (Progress, achievement, growth)
-- **Warning Amber**: `#F59E0B` (Alerts, deadlines, attention)
+### Token Categories
 
-### Accent Colors
-- **Danger Red**: `#EF4444` (Errors, overdue items)
-- **Info Cyan**: `#06B6D4` (Information, notifications)
-- **Purple Accent**: `#8B5CF6` (Innovation, technology)
+#### Colors
+```typescript
+import { tokens } from '../theme';
 
-### Neutral Colors
-- **Text Primary**: `#F1F5F9` (Primary text on dark)
-- **Text Secondary**: `#94A3B8` (Secondary text)
-- **Text Muted**: `#64748B` (Tertiary text)
-- **Background**: `#0F172A` (Main background)
-- **Surface**: `#1E293B` (Card backgrounds)
-- **Surface Light**: `#334155` (Elevated surfaces)
-- **Border**: `#334155` (Subtle borders)
+// Primary colors
+tokens.colors.primary.DEFAULT    // Main brand color
+tokens.colors.primary.50         // Lightest shade
+tokens.colors.primary.900        // Darkest shade
 
-## CSS Custom Properties
-
-### Dark Theme Variables
-```css
-:root {
-  /* Main backgrounds - Modern dark theme */
-  --background: 220 13% 6%;        /* Deep slate #0F172A */
-  --foreground: 210 20% 95%;       /* Text primary #F1F5F9 */
-  --surface: 217 19% 12%;          /* Surface #1E293B */
-  --surface-light: 215 16% 17%;    /* Surface light #334155 */
-
-  /* Card backgrounds */
-  --card: 217 19% 12%;             /* Card background */
-  --card-foreground: 210 20% 95%;  /* Card text */
-
-  /* Popover backgrounds */
-  --popover: 217 19% 12%;          /* Popover background */
-  --popover-foreground: 210 20% 95%; /* Popover text */
-
-  /* Primary - Indigo brand color */
-  --primary: 231 48% 63%;          /* Indigo Primary #6366F1 */
-  --primary-dark: 232 54% 56%;     /* Indigo Dark #4F46E5 */
-  --primary-foreground: 210 20% 95%; /* White text on primary */
-
-  /* Secondary - Pink accent for motivation */
-  --secondary: 328 86% 70%;        /* Motivation Pink #EC4899 */
-  --secondary-foreground: 210 20% 95%; /* White text */
-
-  /* Success - Green for completed items */
-  --success: 158 64% 52%;          /* Success Green #22C55E */
-  --success-foreground: 210 20% 95%; /* White text */
-
-  /* Warning - Amber for deadlines */
-  --warning: 43 96% 56%;           /* Warning Amber #F59E0B */
-  --warning-foreground: 220 13% 6%; /* Dark text on warning */
-
-  /* Danger - Red for overdue items */
-  --danger: 0 84% 60%;             /* Danger Red #EF4444 */
-  --danger-foreground: 210 20% 95%; /* White text */
-
-  /* Text colors */
-  --text-primary: 210 20% 95%;     /* Text primary #F1F5F9 */
-  --text-secondary: 215 16% 65%;   /* Text secondary #94A3B8 */
-  --text-muted: 215 20% 45%;       /* Text muted #64748B */
-
-  /* Muted backgrounds */
-  --muted: 215 16% 17%;            /* Muted background */
-  --muted-foreground: 215 16% 65%; /* Muted text */
-
-  /* Accent backgrounds */
-  --accent: 215 16% 17%;           /* Accent background */
-  --accent-foreground: 210 20% 95%; /* Accent text */
-
-  /* Destructive */
-  --destructive: 0 84% 60%;        /* Danger Red #EF4444 */
-  --destructive-foreground: 210 20% 95%; /* White text */
-
-  /* Borders and inputs */
-  --border: 215 16% 17%;           /* Border #334155 */
-  --input: 215 16% 17%;            /* Input borders */
-  --ring: 231 48% 63%;             /* Focus rings */
-
-  /* Gradients for beautiful effects */
-  --gradient-primary: linear-gradient(135deg, hsl(231 48% 63%) 0%, hsl(250 84% 70%) 100%);
-  --gradient-success: linear-gradient(135deg, hsl(158 64% 52%) 0%, hsl(158 84% 45%) 100%);
-  --gradient-motivation: linear-gradient(135deg, hsl(328 86% 70%) 0%, hsl(347 77% 65%) 100%);
-  --gradient-warning: linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(38 92% 50%) 100%);
-  --gradient-subtle: linear-gradient(180deg, hsl(217 19% 12%) 0%, hsl(220 13% 9%) 100%);
-
-  /* Shadows with primary color */
-  --shadow-elegant: 0 10px 30px -10px hsl(231 48% 63% / 0.3);
-  --shadow-glow: 0 0 40px hsl(231 48% 70% / 0.4);
-  --shadow-card: 0 4px 16px -4px hsl(217 19% 8% / 0.4);
-
-  /* Animation variables */
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-spring: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-
-  /* Border radius */
-  --radius: 0.75rem;
-}
+// Semantic colors
+tokens.colors.success.DEFAULT    // Success states
+tokens.colors.warning.DEFAULT    // Warning states
+tokens.colors.error.DEFAULT      // Error states
 ```
 
-## Typography
-
-### Font Hierarchy
-- **Headings**: Inter, system-ui, sans-serif
-- **Body Text**: Inter, system-ui, sans-serif
-- **Code/Monospace**: JetBrains Mono, Consolas, monospace
-
-### Scale
-- **Hero (H1)**: 3.5rem (56px) - Landing pages
-- **Title (H2)**: 2.25rem (36px) - Page titles
-- **Heading (H3)**: 1.875rem (30px) - Section headers
-- **Subheading (H4)**: 1.5rem (24px) - Component titles
-- **Body Large**: 1.125rem (18px) - Important text
-- **Body**: 1rem (16px) - Default text
-- **Body Small**: 0.875rem (14px) - Secondary text
-- **Caption**: 0.75rem (12px) - Labels, captions
-
-### Text Gradients
-```css
-.text-gradient-primary {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-motivation {
-  background: var(--gradient-motivation);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+#### Gradients
+```typescript
+// Predefined gradients
+tokens.gradients.primary.DEFAULT
+tokens.gradients.accent.secondary
+tokens.gradients.success.tertiary
 ```
 
-## Spacing & Layout
-
-### Spacing Scale (Tailwind-based)
-- **xs**: 0.25rem (4px)
-- **sm**: 0.5rem (8px)
-- **md**: 1rem (16px)
-- **lg**: 1.5rem (24px)
-- **xl**: 2rem (32px)
-- **2xl**: 3rem (48px)
-- **3xl**: 4rem (64px)
-
-### Component Spacing
-- **Button padding**: 0.75rem 1.5rem (12px 24px)
-- **Card padding**: 1.5rem (24px)
-- **Form spacing**: 1rem (16px) between fields
-- **Section spacing**: 3rem (48px) between major sections
-
-## Glass Components
-
-### LiquidGlass Component
-The signature design element embodying fluid, responsive interactions.
-
-#### Props
-- **intensity**: `number` (1-10) - Liquid effect intensity
-- **color**: `string` - Background color override
-- **borderRadius**: `string` - Border radius (default: 1rem)
-- **disableHoverEffect**: `boolean` - Disable hover animations
-- **bendFactor**: `number` (0-1) - 3D bend intensity
-
-#### Usage Guidelines
-```tsx
-<LiquidGlass
-  intensity={5}                    // 1-10 scale for liquid effect
-  color="rgba(255, 255, 255, 0.1)" // Optional color override
-  borderRadius="1rem"              // Consistent with design system
-  disableHoverEffect={false}       // Enable/disable hover animations
-  bendFactor={0.5}                 // 0-1 scale for 3D bend effect
->
-  {/* Content */}
-</LiquidGlass>
+#### Shadows
+```typescript
+// Elevation shadows
+tokens.shadows.sm.DEFAULT        // Small elevation
+tokens.shadows.lg.DEFAULT        // Large elevation
+tokens.shadows.inner.DEFAULT     // Inset shadows
 ```
 
-### LiquidCard Component
-Structured variant with predefined variants and enhanced interactions.
-
-#### Props
-- **variant**: `'default' | 'primary' | 'secondary' | 'success' | 'warning'`
-- **hoverEffect**: `'lift' | 'glow' | 'both' | 'none'`
-- **borderGlow**: `boolean` - Enable border highlight
-- **bendFactor**: `number` (0-1) - 3D bend intensity
-
-### GlassIconButton Component
-Specialized circular button with water-drop styling and multiple light effects.
-
-#### Visual Effects
-- **Droplet Specular Highlight**: Top-left white highlight
-- **Vertical Light Streak**: Subtle light reflection
-- **Inner Refraction Ring**: Cyan-tinted inner border
-- **Concave Shadow**: Inset shadow for depth
-- **Bottom Caustic**: Light pool effect
-- **Ripple Animation**: Press feedback
-- **Shimmer Effect**: Hover animation
-
-## Gradients
-
-### Primary Gradients
-- **Primary Gradient**: `linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)`
-- **Motivation Gradient**: `linear-gradient(135deg, #EC4899 0%, #EF4444 100%)`
-- **Success Gradient**: `linear-gradient(135deg, #22C55E 0%, #16A34A 100%)`
-- **Warning Gradient**: `linear-gradient(135deg, #F59E0B 0%, #D97706 100%)`
-- **Subtle Gradient**: `linear-gradient(180deg, #1E293B 0%, #0F172A 100%)`
-
-## Shadows & Depth
-
-### Shadow System
-- **Elegant Shadow**: `0 10px 30px -10px hsl(231 48% 63% / 0.3)`
-- **Glow Shadow**: `0 0 40px hsl(231 48% 70% / 0.4)`
-- **Card Shadow**: `0 4px 16px -4px hsl(217 19% 8% / 0.4)`
-
-### Usage Guidelines
-- **shadow-elegant**: Primary interactive elements
-- **shadow-glow**: Hover states and important actions
-- **shadow-card**: Background cards and containers
-
-## Animation & Interactions
-
-### Transition System
-- **Smooth transitions**: `all 0.3s cubic-bezier(0.4, 0, 0.2, 1)`
-- **Spring transitions**: `all 0.4s cubic-bezier(0.23, 1, 0.32, 1)`
-
-### Animation Principles
-1. **Fluid Motion**: All animations should feel natural and smooth
-2. **Responsive Feedback**: Immediate visual feedback for user actions
-3. **Layered Effects**: Multiple subtle animations working together
-4. **Performance First**: Optimize for 60fps animations
-
-### Hover Effects
-```css
-.hover-scale {
-  @apply transition-all duration-200 hover:scale-105;
-}
-
-.hover-glow {
-  @apply transition-all duration-300 hover:shadow-glow;
-}
+#### Animations
+```typescript
+// Motion tokens
+tokens.animations.fadeIn.DEFAULT
+tokens.animations.slideInFromTop.DEFAULT
+tokens.animations.zoomIn.DEFAULT
 ```
 
-## Component Guidelines
-
-### When to Use Each Component
-
-#### LiquidGlass
-- **Hero sections** and main content areas
-- **Background containers** for important content
-- **Interactive panels** that need fluid effects
-- **Modal overlays** and dialogs
-
-#### LiquidCard
-- **Dashboard cards** and information displays
-- **Feature showcases** and product highlights
-- **Interactive content** with structured layouts
-- **Status indicators** and progress displays
-
-#### GlassIconButton
-- **Primary actions** and navigation
-- **Floating action buttons** (FAB)
-- **Tool controls** and settings
-- **Quick access** buttons
-
-### Intensity Guidelines
-- **Low (1-3)**: Subtle effects for background elements
-- **Medium (4-6)**: Standard interactive elements
-- **High (7-8)**: Prominent features and call-to-actions
-- **Maximum (9-10)**: Hero sections and key interactions
-
-## Usage Examples
-
-### Do's ✅
-- Use indigo primary as the main brand color
-- Apply liquid glass effects for premium interactions
-- Use motivation pink for encouraging and energizing elements
-- Maintain consistent spacing using the defined scale
-- Use success green for achievements and positive feedback
-- Keep the dark theme foundation for sophistication
-
-### Don'ts ❌
-- Don't mix random colors outside the palette
-- Don't overuse glass effects - they should enhance, not distract
-- Don't reduce contrast below WCAG AA standards
-- Don't use more than 3-4 colors in a single component
-- Don't ignore the spacing scale
-- Don't use harsh, bright colors that feel unprofessional
-
-## Accessibility
-
-### Color Contrast
-- **Primary text**: Minimum 4.5:1 contrast ratio
-- **Large text**: Minimum 3:1 contrast ratio
-- **Interactive elements**: Clear focus indicators
-- **Error states**: Not relying on color alone
-
-### Focus States
-- **Focus ring**: 2px solid primary color with offset
-- **Interactive elements**: Clear hover and active states
-- **Keyboard navigation**: Visible focus indicators
-- **Reduced motion**: Respect user's motion preferences
-
-### Screen Reader Support
-- **ARIA labels**: Proper labels for all interactive elements
-- **Semantic HTML**: Use appropriate HTML elements
-- **Alternative text**: Provide text alternatives for visual content
-
-## Implementation
-
-All colors are implemented as CSS custom properties and available in the Tailwind configuration. Use semantic color names (primary, secondary, etc.) rather than specific color values to maintain consistency and enable theme switching.
-
-### CSS Utility Classes
-```css
-/* Glass Effects */
-.glass                    /* Basic glass morphism */
-.liquid-glass            /* Liquid glass effect */
-.liquid-glass:hover      /* Hover state */
-
-/* Gradients */
-.bg-gradient-primary      /* Primary background gradient */
-.bg-gradient-motivation  /* Motivation background gradient */
-.text-gradient-primary   /* Primary text gradient */
-
-/* Shadows */
-.shadow-elegant          /* Elegant shadow */
-.shadow-glow             /* Glow shadow */
-.shadow-card             /* Card shadow */
-
-/* Animations */
-.transition-smooth       /* Smooth transitions */
-.transition-spring       /* Spring transitions */
-.hover-scale             /* Scale on hover */
-.hover-glow              /* Glow on hover */
+#### Spacing
+```typescript
+// Consistent spacing scale
+tokens.spacing.4.DEFAULT         // 1rem
+tokens.spacing.8.DEFAULT         // 2rem
+tokens.spacing.16.DEFAULT        // 4rem
 ```
+
+#### Border Radius
+```typescript
+// Corner radius tokens
+tokens.borderRadius.sm.DEFAULT   // Small radius
+tokens.borderRadius.lg.DEFAULT   // Large radius
+tokens.borderRadius.full.DEFAULT // Full radius
+```
+
+## 🎭 Theme System
+
+### Available Themes
+
+1. **Dark Theme** (Default)
+   - High contrast, modern aesthetic
+   - Optimized for low-light environments
+   - Primary: Deep blues and grays
+
+2. **Light Theme**
+   - Clean, minimal design
+   - Optimized for bright environments
+   - Primary: Soft whites and grays
+
+3. **Startup Theme**
+   - Vibrant, energetic colors
+   - Optimized for growth-focused applications
+   - Primary: Bright blues and greens
+
+4. **Enterprise Theme**
+   - Professional, trustworthy colors
+   - Optimized for business applications
+   - Primary: Deep blues and navies
+
+### Theme Switching
+
+```typescript
+import { useTheme } from '../providers/ThemeProvider';
+
+const MyComponent = () => {
+  const { theme, setTheme, availableThemes } = useTheme();
+  
+  return (
+    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+      {availableThemes.map(themeName => (
+        <option key={themeName} value={themeName}>
+          {themeName}
+        </option>
+      ))}
+    </select>
+  );
+};
+```
+
+### Custom Themes
+
+Create and apply custom themes through the Control Center:
+
+```typescript
+import { useDesignSystem } from '../hooks/useDesignSystem';
+
+const { createCustomTheme, applyCustomThemeById } = useDesignSystem();
+
+// Create a custom theme
+const customTheme = {
+  id: 'my-custom-theme',
+  name: 'My Custom Theme',
+  tokens: {
+    'colors.primary.DEFAULT': '#FF6B6B',
+    'colors.secondary.DEFAULT': '#4ECDC4',
+    'spacing.4.DEFAULT': '1.5rem'
+  }
+};
+
+createCustomTheme(customTheme);
+applyCustomThemeById('my-custom-theme');
+```
+
+## 🛠️ Usage Guidelines
+
+### ✅ Do's
+
+1. **Use TypeScript Tokens**
+   ```typescript
+   // ✅ Good
+   style={{ backgroundColor: tokens.colors.primary.DEFAULT }}
+   
+   // ❌ Bad
+   style={{ backgroundColor: '#3B82F6' }}
+   ```
+
+2. **Use CSS Custom Properties**
+   ```css
+   /* ✅ Good */
+   .my-component {
+     background-color: hsl(var(--primary));
+     padding: var(--spacing-4);
+   }
+   
+   /* ❌ Bad */
+   .my-component {
+     background-color: #3B82F6;
+     padding: 1rem;
+   }
+   ```
+
+3. **Use Tailwind with CSS Variables**
+   ```jsx
+   // ✅ Good
+   <div className="bg-primary text-primary-foreground p-4">
+   
+   // ❌ Bad
+   <div className="bg-blue-500 text-white p-4">
+   ```
+
+4. **Create Semantic Components**
+   ```typescript
+   const Button = ({ variant = 'primary', children }) => (
+     <button 
+       className={`btn btn-${variant}`}
+       style={{ 
+         backgroundColor: tokens.colors[variant].DEFAULT,
+         color: tokens.colors[variant].foreground 
+       }}
+     >
+       {children}
+     </button>
+   );
+   ```
+
+### ❌ Don'ts
+
+1. **Don't Use Hardcoded Values**
+   ```typescript
+   // ❌ Never do this
+   style={{ color: '#FF0000', margin: '20px' }}
+   ```
+
+2. **Don't Create Inconsistent Spacing**
+   ```typescript
+   // ❌ Avoid arbitrary values
+   style={{ padding: '17px', margin: '23px' }}
+   ```
+
+3. **Don't Mix Token Systems**
+   ```typescript
+   // ❌ Don't mix approaches
+   style={{ 
+     color: tokens.colors.primary.DEFAULT,
+     padding: '1rem' // Should use tokens.spacing.4.DEFAULT
+   }}
+   ```
+
+## 🎯 Component Patterns
+
+### Button Components
+```typescript
+const Button = ({ variant = 'primary', size = 'md', children }) => {
+  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors';
+  
+  const variantClasses = {
+    primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+  };
+  
+  const sizeClasses = {
+    sm: 'h-9 px-3 text-sm',
+    md: 'h-10 px-4 py-2',
+    lg: 'h-11 px-8'
+  };
+  
+  return (
+    <button 
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]}`}
+    >
+      {children}
+    </button>
+  );
+};
+```
+
+### Card Components
+```typescript
+const Card = ({ children, className = '' }) => (
+  <div 
+    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
+    style={{ 
+      borderColor: tokens.colors.border.DEFAULT,
+      backgroundColor: tokens.colors.background.secondary 
+    }}
+  >
+    {children}
+  </div>
+);
+```
+
+## 🔧 Development Tools
+
+### Control Center
+Access the interactive design system management tool at `/control-center`:
+
+- **Token Browser**: Explore all available tokens
+- **Theme Editor**: Create and manage custom themes
+- **Live Preview**: See changes in real-time
+- **Export/Import**: Share configurations
+
+### Validation Script
+Run token validation to ensure compliance:
+
+```bash
+node scripts/validate-tokens.js
+```
+
+This script will:
+- Detect hardcoded values
+- Identify unused tokens
+- Find missing token definitions
+- Generate usage statistics
+
+### ESLint Rules
+Custom ESLint rules prevent hardcoded values:
+
+```bash
+yarn lint
+```
+
+Rules include:
+- `no-hardcoded-colors`: Prevents hex/rgb color values
+- `no-hardcoded-spacing`: Prevents arbitrary spacing values
+- `no-hardcoded-typography`: Prevents hardcoded font sizes
+
+## 📱 Responsive Design
+
+### Breakpoint Tokens
+```typescript
+// Use Tailwind's responsive prefixes
+<div className="p-4 md:p-6 lg:p-8">
+  {/* Responsive padding using design tokens */}
+</div>
+```
+
+### Mobile-First Approach
+```typescript
+// Start with mobile, enhance for larger screens
+const Container = ({ children }) => (
+  <div className="w-full px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
+    {children}
+  </div>
+);
+```
+
+## 🎨 Color Accessibility
+
+### Contrast Ratios
+All color combinations meet WCAG 2.1 AA standards:
+
+- **Normal Text**: 4.5:1 minimum contrast ratio
+- **Large Text**: 3:1 minimum contrast ratio
+- **UI Components**: 3:1 minimum contrast ratio
+
+### Color Blindness Support
+Our color system includes:
+
+- **Semantic Indicators**: Icons and patterns alongside colors
+- **High Contrast Mode**: Enhanced contrast for accessibility
+- **Color Blind Safe**: Tested with color vision simulators
+
+## 📊 Performance Considerations
+
+### CSS Custom Properties
+- **Runtime Updates**: Instant theme switching without page reload
+- **Minimal Bundle Impact**: Tokens are CSS variables, not JavaScript
+- **Caching**: Browser caches CSS, improving performance
+
+### Token Optimization
+- **Tree Shaking**: Unused tokens are removed in production
+- **Lazy Loading**: Theme-specific tokens loaded on demand
+- **Compression**: CSS variables compress well with gzip
+
+## 🔄 Migration Guide
+
+### From Hardcoded Values
+1. **Identify**: Use validation script to find hardcoded values
+2. **Replace**: Replace with appropriate design tokens
+3. **Test**: Verify visual consistency
+4. **Validate**: Run linting to ensure compliance
+
+### From Old Theme System
+1. **Update Imports**: Replace old theme imports with new tokens
+2. **Update Components**: Use new token access patterns
+3. **Test Themes**: Verify all themes work correctly
+4. **Update Documentation**: Reflect new patterns
+
+## 🚀 Best Practices
+
+### Token Naming
+- **Semantic Names**: Use purpose over appearance
+- **Consistent Structure**: Follow `category.subcategory.variant` pattern
+- **Clear Hierarchy**: Group related tokens together
+
+### Component Design
+- **Composable**: Build from smaller, reusable pieces
+- **Configurable**: Accept theme-aware props
+- **Accessible**: Include proper ARIA attributes
+
+### Performance
+- **Minimize Re-renders**: Use React.memo for expensive components
+- **Optimize Bundles**: Tree-shake unused tokens
+- **Cache Results**: Memoize token calculations
+
+## 📚 Resources
+
+- **Control Center**: `/control-center` - Interactive design system tool
+- **Token Reference**: `src/theme/index.ts` - Complete token definitions
+- **Theme Provider**: `src/providers/ThemeProvider.tsx` - Theme management
+- **Validation Script**: `scripts/validate-tokens.js` - Token compliance checker
+- **Example Components**: `src/components/examples/` - Usage examples
 
 ---
 
-*This brand guide is a living document that should be updated as the Evolve Engine platform evolves. All team members should reference this guide to maintain consistency across the product experience.*
+*This document is living and will be updated as the design system evolves. For questions or suggestions, please refer to the development team.*

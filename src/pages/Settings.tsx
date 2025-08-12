@@ -1,20 +1,28 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { Settings as SettingsIcon, User, Palette, ArrowRight } from "lucide-react";
+import { performanceMetrics } from "../utils/performance";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
+  const startTime = performance.now();
   const navigate = useNavigate();
 
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Settings', startTime);
+  }, [startTime]);
+
   return (
-    <div className="space-y-6 pt-16">
+    <div className="space-y-6 pt-16" role="main" aria-labelledby="settings-heading">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold text-gradient-primary mb-2">Settings</h1>
+        <h1 className="text-3xl font-bold text-gradient-primary mb-2" id="settings-heading">Settings</h1>
         <p className="text-text-secondary">Customize your startup journey experience</p>
       </motion.div>
 

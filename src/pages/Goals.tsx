@@ -1,25 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDebouncedSearch } from '../hooks/use-debounced-search';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Progress } from '../components/ui/progress';
-import { LoadingSpinner, SkeletonLoader, ErrorMessage } from '../components/ui';
+import { LoadingSpinner, SkeletonLoader, ErrorMessage, SkeletonGoalList } from '../components/ui';
 import { useGetUserGoals, useCreateGoal } from '../hooks/useGoals';
 import { useUserId } from '../contexts/AppContext';
+import { performanceMetrics } from '../utils/performance';
 import type { GoalResponse } from '../client/models';
 
 const Goals: React.FC = () => {
+  const startTime = performance.now();
+  
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [newGoalDescription, setNewGoalDescription] = useState('');
   const [newGoalType, setNewGoalType] = useState<'Yearly' | 'Quarterly' | 'Monthly' | 'Weekly'>('Monthly');
   const [newGoalPriority, setNewGoalPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
+  const { searchTerm, debouncedSearchTerm, handleSearchChange, clearSearch } = useDebouncedSearch(300);
 
   const userId = useUserId();
 
   const { data: goals, isLoading, error } = useGetUserGoals(userId);
   const createGoalMutation = useCreateGoal();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Goals', startTime);
+  }, [startTime]);
 
   const handleCreateGoal = async () => {
     if (!newGoalTitle.trim()) return;
@@ -46,9 +56,7 @@ const Goals: React.FC = () => {
     return (
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">Goals</h1>
-        <div className="grid gap-3 sm:gap-4">
-          <SkeletonLoader count={3} className="h-24 sm:h-32" />
-        </div>
+        <SkeletonGoalList count={3} />
       </div>
     );
   }
@@ -63,8 +71,29 @@ const Goals: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">Goals</h1>
+    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6" role="main" aria-labelledby="goals-heading">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6" id="goals-heading">Goals</h1>
+
+      {/* Search Goals */}
+      <div className="mb-4 sm:mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search goals..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full p-2 sm:p-3 border-2 border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
+          />
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Create Goal Form */}
       <Card className="mb-4 sm:mb-6 border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/30 transition-colors">
@@ -164,7 +193,12 @@ const Goals: React.FC = () => {
       {/* Goals List */}
       <div className="grid gap-3 sm:gap-4">
         {goals && goals.length > 0 ? (
-          goals.map((goal: GoalResponse) => (
+          goals
+            .filter((goal: GoalResponse) => 
+              !debouncedSearchTerm || 
+              goal.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+            )
+            .map((goal: GoalResponse) => (
             <Card key={goal.goal_id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-start justify-between mb-3 sm:mb-4">

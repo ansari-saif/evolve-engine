@@ -337,7 +337,7 @@ const EditableTaskList: React.FC<EditableTaskListProps> = ({ tasks, onTasksChang
     // Type-safe field update
     const updatedTask: EditableGeneratedTask = {
       ...currentTask,
-      [field]: value as any, // Type assertion needed due to union type
+      [field]: value as EditableGeneratedTask[keyof EditableGeneratedTask], // Type assertion needed due to union type
       errors: currentTask.errors ? { ...currentTask.errors } : undefined
     };
     

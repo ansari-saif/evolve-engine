@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDebouncedSearch } from '../hooks/use-debounced-search';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -7,18 +8,27 @@ import { Textarea } from '../components/ui/textarea';
 import { LoadingSpinner, SkeletonLoader, ErrorMessage } from '../components/ui';
 import { useGetUserDayLogs, useCreateDayLog } from '../hooks/useDayLogs';
 import { useUserId } from '../contexts/AppContext';
+import { performanceMetrics } from '../utils/performance';
 import type { DayLogResponse } from '../client/models';
 
 const Diary: React.FC = () => {
+  const startTime = performance.now();
+  
   const [newLogTitle, setNewLogTitle] = useState('');
   const [newLogContent, setNewLogContent] = useState('');
   const [newLogMood, setNewLogMood] = useState('');
   const [newLogLocation, setNewLogLocation] = useState('');
+  const { searchTerm, debouncedSearchTerm, handleSearchChange, clearSearch } = useDebouncedSearch(300);
 
   const userId = useUserId();
 
   const { data: dayLogs, isLoading, error } = useGetUserDayLogs(userId);
   const createDayLogMutation = useCreateDayLog();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Diary', startTime);
+  }, [startTime]);
 
   const handleCreateDayLog = async () => {
     if (!newLogContent.trim()) return;
@@ -63,8 +73,29 @@ const Diary: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
-      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">Diary</h1>
+    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6" role="main" aria-labelledby="diary-heading">
+      <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6" id="diary-heading">Diary</h1>
+
+      {/* Search Diary Entries */}
+      <div className="mb-4 sm:mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search diary entries..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full p-2 sm:p-3 border-2 border-input bg-background text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
+          />
+          {searchTerm && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Create Diary Entry Form */}
       <Card className="mb-4 sm:mb-6">
@@ -118,7 +149,13 @@ const Diary: React.FC = () => {
       {/* Diary Entries List */}
       <div className="grid gap-3 sm:gap-4">
         {dayLogs && dayLogs.length > 0 ? (
-          dayLogs.map((log: DayLogResponse) => (
+          dayLogs
+            .filter((log: DayLogResponse) => 
+              !debouncedSearchTerm || 
+              (log.summary && log.summary.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
+              (log.location && log.location.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
+            )
+            .map((log: DayLogResponse) => (
             <Card key={log.log_id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-start justify-between mb-3 sm:mb-4">

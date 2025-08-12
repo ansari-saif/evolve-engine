@@ -16,7 +16,7 @@ export const isStringWithValue = (value: unknown): value is string => {
 	return isString(value) && value !== '';
 };
 
-export const isBlob = (value: any): value is Blob => {
+export const isBlob = (value: unknown): value is Blob => {
 	return value instanceof Blob;
 };
 
@@ -32,7 +32,7 @@ export const base64 = (str: string): string => {
 	try {
 		return btoa(str);
 	} catch (err) {
-		// @ts-ignore
+		// @ts-expect-error - Buffer is available in Node.js environment
 		return Buffer.from(str).toString('base64');
 	}
 };
@@ -69,7 +69,7 @@ const getUrl = (config: OpenAPIConfig, options: ApiRequestOptions): string => {
 	const path = options.url
 		.replace('{api-version}', config.VERSION)
 		.replace(/{(.*?)}/g, (substring: string, group: string) => {
-			if (options.path?.hasOwnProperty(group)) {
+			if (Object.prototype.hasOwnProperty.call(options.path, group)) {
 				return encoder(String(options.path[group]));
 			}
 			return substring;
