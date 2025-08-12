@@ -4,8 +4,11 @@ import StatsCards from "../components/dashboard/StatsCards";
 import TodaysTasks from "../components/dashboard/TodaysTasks";
 import MotivationCard from "../components/dashboard/MotivationCard";
 import { LiquidGlass } from "../components/ui/liquid-glass";
+import { useUserId } from "../contexts/AppContext";
 
 const Dashboard = () => {
+  const userId = useUserId();
+
   return (
     <div className="space-y-4 sm:space-y-6 max-w-full">
       {/* Hero Section with Weekly Roadmap */}
@@ -35,7 +38,7 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <StatsCards />
+        <StatsCards userId={userId} />
       </motion.section>
 
       {/* Main Content - Mobile First */}

@@ -1,54 +1,82 @@
 import { motion } from "framer-motion";
 import { TrendingUp, CheckCircle, Flame, Clock } from "lucide-react";
 import { LiquidCard } from "../ui/liquid-card";
+import { useDashboardStats } from "../../hooks/useDashboardStats";
+import { Skeleton } from "../ui/skeleton";
 
-const stats = [
-  {
-    id: 1,
-    title: "Tasks Completed",
-    value: "12",
-    subtext: "Today",
-    change: "+23%",
-    changeType: "positive" as const,
-    icon: CheckCircle,
-    gradient: "bg-gradient-success",
-  },
-  {
-    id: 2,
-    title: "Weekly Streak",
-    value: "5",
-    subtext: "Days",
-    change: "🔥 Hot",
-    changeType: "neutral" as const,
-    icon: Flame,
-    gradient: "bg-gradient-warning",
-  },
-  {
-    id: 3,
-    title: "Goals Progress",
-    value: "68%",
-    subtext: "Complete",
-    change: "+12%",
-    changeType: "positive" as const,
-    icon: TrendingUp,
-    gradient: "bg-gradient-primary",
-  },
-  {
-    id: 4,
-    title: "Focus Time",
-    value: "4.2h",
-    subtext: "Today",
-    change: "-0.3h",
-    changeType: "negative" as const,
-    icon: Clock,
-    gradient: "bg-gradient-motivation",
-  },
-];
+interface StatsCardsProps {
+  userId: string;
+}
 
-const StatsCards = () => {
+const StatsCards = ({ userId }: StatsCardsProps) => {
+  const { data: stats, isLoading, error } = useDashboardStats(userId);
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        {[1, 2, 3, 4].map((index) => (
+          <Skeleton key={index} className="h-32 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="col-span-full p-6 text-center text-text-secondary">
+          Failed to load dashboard stats. Please try again.
+        </div>
+      </div>
+    );
+  }
+
+  const statsConfig = [
+    {
+      id: 1,
+      title: "Tasks Completed",
+      value: stats.tasksCompleted.value.toString(),
+      subtext: stats.tasksCompleted.timeframe,
+      change: stats.tasksCompleted.trend,
+      changeType: stats.tasksCompleted.changeType,
+      icon: CheckCircle,
+      gradient: "bg-gradient-success",
+    },
+    {
+      id: 2,
+      title: "Weekly Streak",
+      value: stats.weeklyStreak.value.toString(),
+      subtext: stats.weeklyStreak.unit,
+      change: stats.weeklyStreak.status,
+      changeType: stats.weeklyStreak.changeType,
+      icon: Flame,
+      gradient: "bg-gradient-warning",
+    },
+    {
+      id: 3,
+      title: "Goals Progress",
+      value: `${stats.goalsProgress.value}${stats.goalsProgress.unit}`,
+      subtext: stats.goalsProgress.status,
+      change: stats.goalsProgress.trend,
+      changeType: stats.goalsProgress.changeType,
+      icon: TrendingUp,
+      gradient: "bg-gradient-primary",
+    },
+    {
+      id: 4,
+      title: "Focus Time",
+      value: `${stats.focusTime.value}${stats.focusTime.unit}`,
+      subtext: stats.focusTime.timeframe,
+      change: stats.focusTime.trend,
+      changeType: stats.focusTime.changeType,
+      icon: Clock,
+      gradient: "bg-gradient-motivation",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-      {stats.map((stat, index) => {
+      {statsConfig.map((stat, index) => {
         const Icon = stat.icon;
         
         return (
