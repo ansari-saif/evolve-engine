@@ -17,6 +17,7 @@ import { Slider } from '../components/ui/slider';
 import { ThemeSelector } from '../components/ui/theme-selector';
 import { useTheme } from '../providers/ThemeProvider';
 import { tokens } from '../theme';
+import { useDesignSystem } from '../hooks/useDesignSystem';
 import { 
   Palette, 
   Settings, 
@@ -73,14 +74,25 @@ interface CustomTheme {
 
 const ControlCenter: React.FC = () => {
   const { theme, setTheme, availableThemes } = useTheme();
+  const {
+    updateToken,
+    getTokenValue,
+    customTokens,
+    createCustomTheme,
+    deleteCustomTheme,
+    applyCustomThemeById,
+    customThemes,
+    activeCustomTheme,
+    resetToDefaultTheme,
+    exportConfiguration,
+    importConfiguration,
+  } = useDesignSystem();
+  
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'tokens' | 'themes' | 'components' | 'settings'>('overview');
-  
-  // Interactive state
-  const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
   const [tokenValue, setTokenValue] = useState('');
+  const [selectedTokenCategory, setSelectedTokenCategory] = useState<string>('');
   
   // App control state
   const [notifications, setNotifications] = useState(true);
@@ -122,52 +134,33 @@ const ControlCenter: React.FC = () => {
     }
   };
 
-  const createCustomTheme = () => {
-    const newTheme: CustomTheme = {
-      name: `Custom Theme ${customThemes.length + 1}`,
-      colors: {
-        primary: '#6366F1',
-        secondary: '#EC4899',
-        background: '#0F172A',
-        surface: '#1E293B'
-      }
-    };
-    setCustomThemes([...customThemes, newTheme]);
+  const handleCreateCustomTheme = () => {
+    createCustomTheme(`Custom Theme ${customThemes.length + 1}`, {
+      primary: '#6366F1',
+      secondary: '#EC4899',
+      background: '#0F172A',
+      surface: '#1E293B',
+      foreground: '#F8FAFC',
+      muted: '#334155',
+      accent: '#334155'
+    });
   };
 
-  const deleteCustomTheme = (index: number) => {
-    setCustomThemes(customThemes.filter((_, i) => i !== index));
+  const handleDeleteCustomTheme = (themeId: string) => {
+    deleteCustomTheme(themeId);
   };
 
-  const updateToken = (tokenName: string, newValue: string) => {
-    // In a real implementation, this would update the CSS custom properties
-    console.log(`Updating token ${tokenName} to ${newValue}`);
-    setSelectedToken(null);
-    setTokenValue('');
+  const handleUpdateToken = (tokenName: string, newValue: string) => {
+    if (selectedTokenCategory && tokenName) {
+      updateToken(selectedTokenCategory, tokenName, newValue);
+      setSelectedToken(null);
+      setTokenValue('');
+      setSelectedTokenCategory('');
+    }
   };
 
-  const exportDesignSystem = () => {
-    const data = {
-      tokens,
-      themes: availableThemes,
-      customThemes,
-      settings: {
-        notifications,
-        soundEnabled,
-        autoSave,
-        performanceMode,
-        mobileOptimized,
-        darkModeAuto
-      }
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'design-system-export.json';
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExportDesignSystem = () => {
+    exportConfiguration();
   };
 
   const tokenCategories: TokenCategory[] = [
@@ -175,41 +168,41 @@ const ControlCenter: React.FC = () => {
       name: 'Colors',
       icon: <Palette className="w-4 h-4" />,
       tokens: [
-        { name: 'Primary', value: tokens.colors.primary.DEFAULT, editable: true },
-        { name: 'Secondary', value: tokens.colors.secondary.DEFAULT, editable: true },
-        { name: 'Success', value: tokens.colors.success.DEFAULT, editable: true },
-        { name: 'Warning', value: tokens.colors.warning.DEFAULT, editable: true },
-        { name: 'Danger', value: tokens.colors.danger.DEFAULT, editable: true },
-        { name: 'Background', value: tokens.colors.background, editable: true },
-        { name: 'Surface', value: tokens.colors.surface, editable: true },
+        { name: 'Primary', value: getTokenValue('colors', 'Primary'), editable: true },
+        { name: 'Secondary', value: getTokenValue('colors', 'Secondary'), editable: true },
+        { name: 'Success', value: getTokenValue('colors', 'Success'), editable: true },
+        { name: 'Warning', value: getTokenValue('colors', 'Warning'), editable: true },
+        { name: 'Danger', value: getTokenValue('colors', 'Danger'), editable: true },
+        { name: 'Background', value: getTokenValue('colors', 'Background'), editable: true },
+        { name: 'Surface', value: getTokenValue('colors', 'Surface'), editable: true },
       ]
     },
     {
       name: 'Gradients',
       icon: <Layers className="w-4 h-4" />,
       tokens: [
-        { name: 'Primary', value: tokens.gradients.primary, editable: true },
-        { name: 'Motivation', value: tokens.gradients.motivation, editable: true },
-        { name: 'Success', value: tokens.gradients.success, editable: true },
-        { name: 'Warning', value: tokens.gradients.warning, editable: true },
-        { name: 'Subtle', value: tokens.gradients.subtle, editable: true },
+        { name: 'Primary', value: getTokenValue('gradients', 'Primary'), editable: true },
+        { name: 'Motivation', value: getTokenValue('gradients', 'Motivation'), editable: true },
+        { name: 'Success', value: getTokenValue('gradients', 'Success'), editable: true },
+        { name: 'Warning', value: getTokenValue('gradients', 'Warning'), editable: true },
+        { name: 'Subtle', value: getTokenValue('gradients', 'Subtle'), editable: true },
       ]
     },
     {
       name: 'Shadows',
       icon: <Eye className="w-4 h-4" />,
       tokens: [
-        { name: 'Elegant', value: tokens.shadows.elegant, editable: true },
-        { name: 'Glow', value: tokens.shadows.glow, editable: true },
-        { name: 'Card', value: tokens.shadows.card, editable: true },
+        { name: 'Elegant', value: getTokenValue('shadows', 'Elegant'), editable: true },
+        { name: 'Glow', value: getTokenValue('shadows', 'Glow'), editable: true },
+        { name: 'Card', value: getTokenValue('shadows', 'Card'), editable: true },
       ]
     },
     {
       name: 'Animations',
       icon: <Zap className="w-4 h-4" />,
       tokens: [
-        { name: 'Smooth', value: tokens.animations.smooth, editable: true },
-        { name: 'Spring', value: tokens.animations.spring, editable: true },
+        { name: 'Smooth', value: getTokenValue('animations', 'Smooth'), editable: true },
+        { name: 'Spring', value: getTokenValue('animations', 'Spring'), editable: true },
       ]
     }
   ];
@@ -269,7 +262,7 @@ const ControlCenter: React.FC = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={exportDesignSystem} variant="outline" size="sm">
+            <Button onClick={handleExportDesignSystem} variant="outline" size="sm">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
@@ -410,6 +403,7 @@ const ControlCenter: React.FC = () => {
                                     onClick={() => {
                                       setSelectedToken(token.name);
                                       setTokenValue(token.value);
+                                      setSelectedTokenCategory(category.name.toLowerCase());
                                     }}
                                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
@@ -462,7 +456,7 @@ const ControlCenter: React.FC = () => {
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => updateToken(selectedToken, tokenValue)}>
+                        <Button onClick={() => handleUpdateToken(selectedToken, tokenValue)}>
                           <Save className="w-4 h-4 mr-2" />
                           Save Changes
                         </Button>
@@ -539,7 +533,7 @@ const ControlCenter: React.FC = () => {
                       <Plus className="w-5 h-5" />
                       Custom Themes
                     </CardTitle>
-                    <Button onClick={createCustomTheme} size="sm">
+                    <Button onClick={handleCreateCustomTheme} size="sm">
                       <Plus className="w-4 h-4 mr-2" />
                       Create Theme
                     </Button>
@@ -560,7 +554,7 @@ const ControlCenter: React.FC = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => deleteCustomTheme(index)}
+                                onClick={() => handleDeleteCustomTheme(customTheme.id)}
                                 className="text-destructive hover:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4" />
