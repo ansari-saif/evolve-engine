@@ -25,7 +25,11 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { GeneratedTask, TaskPriority, EnergyLevel, EditableGeneratedTask } from './DialogStateManager';
+import type { GeneratedTask, EditableGeneratedTask } from '../../store/types';
+
+// Define these types locally since they're not in the Redux types
+type TaskPriority = 'Urgent' | 'High' | 'Medium' | 'Low';
+type EnergyLevel = 'High' | 'Medium' | 'Low';
 
 interface TaskErrors {
   description?: string;
@@ -337,7 +341,7 @@ const EditableTaskList: React.FC<EditableTaskListProps> = ({ tasks, onTasksChang
     // Type-safe field update
     const updatedTask: EditableGeneratedTask = {
       ...currentTask,
-      [field]: value as any, // Type assertion needed due to union type
+      [field]: value as unknown, // Type assertion needed due to union type
       errors: currentTask.errors ? { ...currentTask.errors } : undefined
     };
     

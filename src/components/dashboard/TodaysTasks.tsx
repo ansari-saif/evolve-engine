@@ -4,7 +4,7 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { LoadingSpinner, ErrorMessage } from '../ui';
 import { useGetUserTodayTasks, useCompleteTask } from '../../hooks/useTasks';
-import { useUserId } from '../../contexts/AppContext';
+import { useUserId } from '../../hooks/redux/useAppConfig';
 import confetti from 'canvas-confetti';
 import type { TaskResponse } from '../../client/models';
 import { 

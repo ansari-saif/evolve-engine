@@ -14,6 +14,7 @@ Evolve Engine is a comprehensive productivity platform designed specifically for
 - **🤖 AI Assistant**: Get personalized guidance and motivation through intelligent chat
 - **📈 Progress Analytics**: Visualize your startup journey with comprehensive statistics
 - **🎨 Beautiful UI**: Modern glass morphism design with fluid animations and dark theme
+- **🔄 Centralized State Management**: Predictable Redux-based state management with DevTools integration
 
 ## 🛠️ Tech Stack
 
@@ -21,11 +22,47 @@ Evolve Engine is a comprehensive productivity platform designed specifically for
 - **UI Framework**: shadcn/ui + Radix UI
 - **Styling**: Tailwind CSS with custom design system
 - **Animations**: Framer Motion + React Spring
-- **State Management**: TanStack Query (React Query)
+- **State Management**: Redux Toolkit + React-Redux + Redux-Persist
+- **Server State**: TanStack Query (React Query)
 - **Routing**: React Router DOM
 - **Forms**: React Hook Form + Zod validation
 - **API Client**: Auto-generated from OpenAPI specification
 - **Notifications**: Sonner + Native browser notifications
+- **Testing**: Vitest + React Testing Library
+
+## 🏗️ Architecture
+
+### State Management
+
+Evolve Engine uses **Redux Toolkit** for centralized state management with the following architecture:
+
+```
+src/store/
+├── index.ts                 # Main store configuration
+├── types.ts                 # TypeScript type definitions
+└── slices/
+    ├── appConfigSlice.ts    # App configuration state
+    ├── dialogSlice.ts       # Dialog and form state management
+    ├── uiSlice.ts          # UI state (toasts, loading, modals)
+    ├── optimisticUpdatesSlice.ts # Optimistic updates for tasks
+    ├── formSlice.ts        # Form state and validation
+    └── navigationSlice.ts  # Navigation and routing state
+```
+
+### Custom Hooks
+
+Simplified component access through custom Redux hooks:
+
+- `useAppConfig()` - App configuration and user settings
+- `useDialogs()` - Dialog state management and workflow
+- `useToasts()` - Toast notifications with convenience methods
+
+### Performance Optimizations
+
+- **Memoized Selectors**: Using `createSelector` for derived state
+- **Redux DevTools**: Time-travel debugging and state inspection
+- **State Persistence**: Critical state persists across browser sessions
+- **Optimized Re-renders**: Selective subscriptions prevent unnecessary updates
 
 ## 🎨 Design System
 
@@ -88,6 +125,7 @@ Built with a sophisticated design system featuring:
 - **Bulk Operations**: Create multiple tasks efficiently
 - **Priority & Energy Management**: Match tasks to your energy levels
 - **Progress Tracking**: Visual completion status and time tracking
+- **Optimistic Updates**: Instant UI feedback with background synchronization
 
 ### Goal Setting
 - **Multi-level Goals**: Yearly, quarterly, monthly, and weekly objectives
@@ -126,6 +164,12 @@ The app uses auto-generated TypeScript clients from OpenAPI specifications. To r
 npm run generate-client
 ```
 
+### Redux DevTools
+
+For development debugging, install the Redux DevTools browser extension:
+- [Chrome Extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd)
+- [Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/reduxdevtools/)
+
 ## 🎯 Startup Phases
 
 Evolve Engine is designed around startup development phases:
@@ -156,6 +200,25 @@ Optimized for mobile with:
 - Native notifications support
 - Offline-ready architecture
 
+## 🧪 Testing
+
+### Running Tests
+```bash
+# Run all tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run Redux-specific tests
+npm run test:redux
+```
+
+### Test Coverage
+- Unit tests for Redux slices and selectors
+- Integration tests for component behavior
+- Custom hooks testing with React Testing Library
+
 ## 🔒 Security & Privacy
 
 - Environment-based configuration
@@ -175,6 +238,12 @@ npm run build
 npm run preview
 ```
 
+## 📚 Documentation
+
+- **State Management**: See `docs/state-management.md` for Redux implementation details
+- **Component Library**: Review component patterns and usage
+- **API Documentation**: Auto-generated from OpenAPI specifications
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -182,6 +251,13 @@ npm run preview
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
+
+### Development Guidelines
+
+- Use Redux Toolkit for state management
+- Follow the established component patterns
+- Write tests for new features
+- Update documentation as needed
 
 ## 📄 License
 
@@ -191,7 +267,7 @@ This project is proprietary software. All rights reserved.
 
 For support and questions:
 - Check the documentation in the `docs/` folder
-- Review the brand guidelines for design consistency
+- Review the state management guide for Redux patterns
 - Examine the component library for UI patterns
 
 ---

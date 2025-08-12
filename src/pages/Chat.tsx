@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useChatCompletion, useUserPrompts } from "../hooks/useChat";
 import { GlassIconButton } from "../components/ui/glass-icon-button";
 import { useNotification } from "@/hooks/use-notification";
-import { useUserId } from "../contexts/AppContext";
+import { useUserId } from "../hooks/redux/useAppConfig";
 
 interface Message {
   id: string;

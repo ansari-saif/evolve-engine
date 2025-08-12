@@ -66,7 +66,7 @@ export function useBulkErrorHandling(config: Partial<RetryConfig> = {}): BulkErr
     return 'unknown';
   };
 
-  const canRetryError = (errorType: ErrorType, retryCount: number): boolean => {
+  const canRetryError = useCallback((errorType: ErrorType, retryCount: number): boolean => {
     if (retryCount >= retryConfig.maxRetries) {
       return false;
     }
@@ -78,12 +78,12 @@ export function useBulkErrorHandling(config: Partial<RetryConfig> = {}): BulkErr
 
     // Retry network, server, and timeout errors
     return ['network', 'server', 'timeout'].includes(errorType);
-  };
+  }, [retryConfig.maxRetries]);
 
-  const calculateRetryDelay = (retryCount: number): number => {
+  const calculateRetryDelay = useCallback((retryCount: number): number => {
     const delay = retryConfig.baseDelay * Math.pow(retryConfig.backoffMultiplier, retryCount);
     return Math.min(delay, retryConfig.maxDelay);
-  };
+  }, [retryConfig.baseDelay, retryConfig.backoffMultiplier, retryConfig.maxDelay]);
 
   const addError = useCallback((error: Omit<BulkError, 'id' | 'retryCount' | 'timestamp'>) => {
     const newError: BulkError = {

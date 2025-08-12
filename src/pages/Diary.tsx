@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { LoadingSpinner, SkeletonLoader, ErrorMessage } from '../components/ui';
 import { useGetUserDayLogs, useCreateDayLog } from '../hooks/useDayLogs';
-import { useUserId } from '../contexts/AppContext';
+import { useUserId } from '../hooks/redux/useAppConfig';
 import type { DayLogResponse } from '../client/models';
 
 const Diary: React.FC = () => {

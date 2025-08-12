@@ -2,69 +2,74 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
-        "title": "Complete API Integration System Implementation",
-        "description": "Build comprehensive API integration system with OpenAPI client, React hooks for progress logging, AI motivation, and demo components",
-        "details": "Establish project structure: src/client/core/ (generated files), src/client/ (main client), src/hooks/ (React hooks). Configure OpenAPI client generation and install dependencies (@tanstack/react-query, React, TypeScript). Set up VITE_API_BASE environment variable and OpenAPI.BASE configuration. Implement src/hooks/useProgressLogs.ts with createProgressLog using ProgressLogsService.createProgressLogProgressLogsPost(), getUserProgressStats using ProgressLogsService.getUserProgressStatsProgressLogsUserUserIdStatsGet(), and getUserRecentProgressLogs using ProgressLogsService.getUserRecentProgressLogsProgressLogsUserUserIdRecentGet(). Create src/hooks/useAiMotivation.ts wrapping AiService.generateMotivationAiMotivationPost() for AI-powered motivation generation. Build demo components in src/pages/ showcasing all functionality: ProgressLogPage.tsx for progress tracking and statistics, AiMotivationPage.tsx for motivation features. Ensure proper TypeScript typing throughout with generated client types, error handling, loading states, and base URL configuration via useEffect patterns. Create comprehensive documentation covering API endpoint integration, hook creation patterns, component usage, and environment configuration with code examples.",
-        "testStrategy": "Verify directory structure is created correctly, all dependencies install without errors, OpenAPI client generates proper service methods, environment variables work with fallbacks, all hooks properly configure base URLs and integrate with React Query, demo components render and function correctly, and TypeScript compiles without errors with proper type inference.",
-        "priority": "high",
+        "id": 2,
+        "title": "Integrate Redux Toolkit for Centralized State Management",
+        "description": "Implement Redux Toolkit to replace scattered state management patterns with a centralized store, improving predictability, debugging capabilities, and performance.",
+        "details": "## Implementation Steps\n\n1. **Setup and Configuration**\n   - Install required dependencies: `npm install @reduxjs/toolkit react-redux redux-persist redux-logger`\n   - Create a store configuration file at `src/store/index.ts`\n   - Configure Redux DevTools integration for development environments\n   - Set up Redux Provider in the application root component\n\n2. **Store Structure Implementation**\n   - Create a modular store structure with the following slices:\n     - `src/store/slices/appConfigSlice.ts` - App configuration (migrated from AppContext)\n     - `src/store/slices/dialogSlice.ts` - Dialog states management\n     - `src/store/slices/uiSlice.ts` - UI states (toasts, loading indicators)\n     - `src/store/slices/optimisticUpdatesSlice.ts` - Optimistic updates for tasks\n     - `src/store/slices/formSlice.ts` - Form states and validation errors\n     - `src/store/slices/navigationSlice.ts` - Navigation and routing state\n\n3. **TypeScript Type Definitions**\n   - Create `src/store/types.ts` with comprehensive TypeScript interfaces for:\n     - RootState type\n     - Each slice's state interface\n     - Action payload types\n     - Selector return types\n\n4. **Middleware Configuration**\n   - Implement Redux middleware for side effects:\n     - Configure Redux Thunk for async operations\n     - Set up custom middleware for logging (in development)\n     - Add persistence middleware for relevant state slices\n\n5. **Migration Strategy**\n   - Implement each slice individually, starting with:\n     - AppConfig slice to replace AppContext\n     - Dialog slice to replace DialogStateManager\n     - UI slice for toast notifications\n   - Create custom hooks in `src/hooks/redux/` to simplify component access:\n     - `useAppConfig.ts`\n     - `useDialogs.ts`\n     - `useToasts.ts`\n     - etc.\n\n6. **Component Updates**\n   - Systematically update components to use Redux:\n     - Replace `useContext(AppContext)` with custom Redux hooks\n     - Update components using DialogStateManager\n     - Migrate toast notification components\n     - Replace optimistic updates implementation\n   - Use `useSelector` for state access and `useDispatch` for actions\n\n7. **Performance Optimizations**\n   - Implement memoized selectors using `createSelector`\n   - Add shallowEqual comparison where appropriate\n   - Use `useSelector` with specific state slices to prevent unnecessary re-renders\n\n8. **Testing Infrastructure**\n   - Create test utilities in `src/tests/redux/`\n   - Implement mock store configuration for testing\n   - Add helper functions for testing selectors and reducers\n\n9. **Documentation**\n   - Create comprehensive documentation in `docs/state-management.md`\n   - Document each slice's purpose, state structure, and available actions\n   - Add usage examples for common patterns\n   - Include migration guide for developers\n\n## Technical Considerations\n- Ensure backward compatibility during migration by maintaining both systems temporarily\n- Use RTK's `createSlice` for all reducers to leverage simplified action creators\n- Implement proper TypeScript typing throughout the Redux implementation\n- Consider using Redux Toolkit's `createEntityAdapter` for collections of items\n- Use the Redux DevTools Extension for debugging during development\n- Consider implementing a feature flag system to gradually roll out Redux integration",
+        "testStrategy": "1. **Unit Testing**\n   - Write comprehensive unit tests for each Redux slice:\n     - Test initial state configuration\n     - Test all reducer functions with various action payloads\n     - Test selectors for correct state extraction\n     - Test action creators for proper payload formatting\n   - Use Jest and React Testing Library for all tests\n   - Example test command: `npm run test:redux`\n\n2. **Integration Testing**\n   - Test the integration between Redux and React components:\n     - Verify components correctly dispatch actions\n     - Ensure components re-render appropriately when state changes\n     - Test that connected components receive the right props\n   - Create test fixtures with predefined state for consistent testing\n   - Test middleware functionality with mock API responses\n\n3. **Migration Verification**\n   - Create a checklist of all state management patterns to migrate\n   - Implement verification tests that ensure:\n     - AppContext functionality is fully replicated in Redux\n     - DialogStateManager behavior is preserved\n     - Toast notifications work identically\n     - Optimistic updates function correctly\n   - Run both systems in parallel with comparison tests during migration\n\n4. **Performance Testing**\n   - Measure render performance before and after Redux implementation\n   - Use React DevTools Profiler to compare component render counts\n   - Test with large state objects to ensure performance at scale\n   - Verify memoized selectors prevent unnecessary re-renders\n\n5. **Redux DevTools Verification**\n   - Manually verify that Redux DevTools correctly displays:\n     - All state changes\n     - Action history\n     - Time-travel debugging functionality\n     - State structure as designed\n\n6. **Cross-browser Testing**\n   - Test Redux implementation across major browsers\n   - Verify persistence works correctly across browser sessions\n   - Test performance in different browser environments\n\n7. **Documentation Testing**\n   - Review documentation for completeness and accuracy\n   - Have team members follow documentation to implement new features\n   - Verify all examples in documentation work as expected\n\n8. **Acceptance Criteria**\n   - All existing functionality works identically after migration\n   - Redux DevTools shows complete state tree with proper organization\n   - No regressions in user experience or application behavior\n   - Performance metrics show improvement or no degradation\n   - All tests pass with 90%+ coverage of Redux code",
+        "status": "done",
         "dependencies": [],
-        "status": "in-progress",
+        "priority": "high",
         "subtasks": [
           {
             "id": 1,
-            "title": "Setup Foundation and OpenAPI Client Infrastructure",
-            "description": "Establish project structure, configure OpenAPI client generation, and install all required dependencies for the API integration system",
-            "details": "Create directory structure: src/client/core/ (generated files), src/client/ (main client), src/hooks/ (React hooks). Configure OpenAPI client generation tooling and create openapi.json specification. Install @tanstack/react-query, React, TypeScript, and OpenAPI generation dependencies. Set up build scripts for client regeneration. Configure VITE_API_BASE environment variable support and OpenAPI.BASE configuration patterns. Ensure generated files output correctly to src/client/services.ts and src/client/index.ts.",
-            "testStrategy": "Verify directory structure exists, all dependencies install correctly, TypeScript compiles without errors, client generation produces proper service methods in src/client/services.ts, and environment variable configuration works with fallback defaults.",
-            "priority": "high",
+            "title": "Setup Redux Toolkit Core Infrastructure",
+            "description": "Install required dependencies and set up the basic Redux store configuration with DevTools integration and provider setup.",
             "dependencies": [],
-            "status": "done"
+            "details": "Install packages (@reduxjs/toolkit, react-redux, redux-persist, redux-logger). Create store configuration file at src/store/index.ts. Configure Redux DevTools for development environments. Set up Redux Provider in the application root component. Create TypeScript type definitions in src/store/types.ts for RootState and other core types.",
+            "status": "done",
+            "testStrategy": "Verify store initialization with no errors. Test that Redux DevTools connects properly in development mode. Create a simple test component that connects to the store to verify the provider is working."
           },
           {
             "id": 2,
-            "title": "Implement Core Progress Logging Features",
-            "description": "Create React hooks for progress logging functionality including creation, statistics, and recent progress display",
-            "details": "Implement src/hooks/useProgressLogs.ts with three main functions: 1) createProgressLog using ProgressLogsService.createProgressLogProgressLogsPost() with useMutation for logging new progress entries, 2) getUserProgressStats using ProgressLogsService.getUserProgressStatsProgressLogsUserUserIdStatsGet() with useQuery for fetching user statistics, 3) getUserRecentProgressLogs using ProgressLogsService.getUserRecentProgressLogsProgressLogsUserUserIdRecentGet() with useQuery for recent progress display. Include proper TypeScript typing, error handling, loading states, and base URL configuration via useEffect.",
-            "testStrategy": "Test each hook function independently: verify createProgressLog accepts proper payload and calls correct API endpoint, getUserProgressStats fetches and returns user statistics with proper caching, and getUserRecentProgressLogs retrieves recent progress entries. Test error handling, loading states, and TypeScript type safety.",
-            "priority": "high",
+            "title": "Implement Core State Slices",
+            "description": "Create the foundational Redux slices that will replace the most critical existing state management patterns.",
             "dependencies": [
-              1
+              "2.1"
             ],
-            "status": "done"
+            "details": "Implement the three highest priority slices: appConfigSlice.ts (to replace AppContext), dialogSlice.ts (to replace DialogStateManager), and uiSlice.ts (for toast notifications and loading states). For each slice, define initial state, reducers, actions, and selectors. Ensure proper TypeScript typing for all elements.",
+            "status": "done",
+            "testStrategy": "Write unit tests for each slice covering initial state, all reducers, action creators, and selectors. Test edge cases and error handling in reducers."
           },
           {
             "id": 3,
-            "title": "Implement AI Motivation Feature",
-            "description": "Create React hook for AI-powered motivation generation using the AiService endpoint",
-            "details": "Implement src/hooks/useAiMotivation.ts that wraps AiService.generateMotivationAiMotivationPost() with useMutation. Include proper payload handling for motivation generation requests, response typing for AI-generated content, error handling for AI service failures, and loading states for user feedback. Follow the established hook pattern with base URL configuration via useEffect and expose clean API with methods like generateMotivation({ userProgress, goals }) and loading state isGenerating.",
-            "testStrategy": "Test the AI motivation hook by calling generateMotivation with various user progress scenarios. Verify it properly handles AI service responses, manages loading states during generation, and handles error cases when AI service is unavailable. Test TypeScript type safety for request/response payloads.",
-            "priority": "medium",
+            "title": "Create Custom Redux Hooks",
+            "description": "Develop custom hooks to simplify component access to Redux state and actions.",
             "dependencies": [
-              1
+              "2.2"
             ],
-            "status": "done"
+            "details": "Create a directory at src/hooks/redux/ with custom hooks for each implemented slice: useAppConfig.ts, useDialogs.ts, useToasts.ts. Each hook should provide simplified access to relevant state and dispatch functions, abstracting Redux implementation details from components. Include TypeScript typing for all hooks.",
+            "status": "done",
+            "testStrategy": "Test each custom hook with React Testing Library to verify they correctly access Redux state and dispatch actions. Create mock components that use these hooks to validate their behavior."
           },
           {
             "id": 4,
-            "title": "Integration, Testing, and Documentation",
-            "description": "Create demo components, implement comprehensive testing, ensure type safety, and provide complete documentation for the API integration system",
-            "details": "Create demo components in src/pages/ that showcase all implemented hooks: ProgressLogPage.tsx (demonstrates progress logging, stats display, recent progress), AiMotivationPage.tsx (shows AI motivation generation). Implement comprehensive testing including unit tests for all hooks, integration tests with mock API responses, and end-to-end tests for complete user workflows. Ensure TypeScript type safety throughout with proper import/export of generated types. Create comprehensive documentation covering: adding new API endpoints, creating feature hooks, using hooks in components, environment configuration, and troubleshooting guides. Include code examples for each API integration pattern.",
-            "testStrategy": "Test all demo components render correctly and integrate properly with their respective hooks. Run full test suite covering unit, integration, and e2e scenarios. Verify TypeScript compilation with no errors and proper type inference. Review documentation by following procedures to add new endpoints and verify all code examples work as written.",
-            "priority": "low",
+            "title": "Migrate Key Components to Redux",
+            "description": "Update critical components to use Redux instead of the previous state management approaches.",
             "dependencies": [
-              1,
-              2,
-              3
+              "2.3"
             ],
-            "status": "pending"
+            "details": "Systematically update components to use Redux through the custom hooks. Replace useContext(AppContext) with useAppConfig hook. Update components using DialogStateManager to use useDialogs. Migrate toast notification components to use useToasts. Implement proper error handling and loading states. Document the migration pattern for other developers.",
+            "status": "done",
+            "testStrategy": "Create integration tests for migrated components to verify they function correctly with Redux. Compare behavior before and after migration to ensure consistency. Test edge cases like error states and loading indicators."
+          },
+          {
+            "id": 5,
+            "title": "Implement Performance Optimizations and Documentation",
+            "description": "Add performance enhancements to the Redux implementation and create comprehensive documentation.",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "Implement memoized selectors using createSelector. Add shallowEqual comparison where appropriate to prevent unnecessary re-renders. Create comprehensive documentation in docs/state-management.md covering each slice's purpose, state structure, available actions, usage examples, and migration guide. Set up Redux middleware for side effects including Redux Thunk for async operations.",
+            "status": "done",
+            "testStrategy": "Perform performance testing to measure render counts before and after optimizations. Use React DevTools to verify reduced re-renders. Review documentation with team members to ensure clarity and completeness."
           }
         ]
       }
     ],
     "metadata": {
       "created": "2025-08-10T08:17:39.157Z",
-      "updated": "2025-08-12T10:47:19.177Z",
+      "updated": "2025-08-12T13:11:12.371Z",
       "description": "Tasks for master context"
     }
   }

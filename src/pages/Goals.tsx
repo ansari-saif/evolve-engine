@@ -7,7 +7,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Progress } from '../components/ui/progress';
 import { LoadingSpinner, SkeletonLoader, ErrorMessage } from '../components/ui';
 import { useGetUserGoals, useCreateGoal } from '../hooks/useGoals';
-import { useUserId } from '../contexts/AppContext';
+import { useUserId } from '../hooks/redux/useAppConfig';
 import type { GoalResponse } from '../client/models';
 
 const Goals: React.FC = () => {

@@ -4,10 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useMemo } from "react";
-import { AppProvider } from "@/contexts/AppContext";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { WebSocketMessage } from "@/services/websocketService";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppConfig } from "@/hooks/redux/useAppConfig";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Goals from "./pages/Goals";
@@ -23,17 +22,17 @@ import MenuBar from "@/components/navigation/MenuBar";
 
 const queryClient = new QueryClient();
 
-// Inner App component that has access to AppContext
+// Inner App component that has access to Redux store
 const AppContent = () => {
-  const { userId, config } = useAppContext();
+  const { userId, webSocketUrl } = useAppConfig();
 
   // Stable WebSocket config and options (don't recreate on every render)
   const webSocketConfig = useMemo(() => ({
-    url: config.webSocketUrl + '/api/v1/ws',
+    url: webSocketUrl + '/api/v1/ws',
     userId: userId,
     reconnectInterval: 5000,
     maxReconnectAttempts: 10
-  }), [config.webSocketUrl, userId]);
+  }), [webSocketUrl, userId]);
 
   const webSocketOptions = useMemo(() => ({
     onMessage: (message: WebSocketMessage) => {
@@ -81,15 +80,13 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 };
