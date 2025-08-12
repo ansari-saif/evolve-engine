@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 
-import { Play, Pause, CheckCircle, Edit, Trash2, Calendar as CalendarIcon2, Clock, Target, Zap } from 'lucide-react';
-import { format } from 'date-fns';
+import { Play, CheckCircle, Edit, Trash2, Calendar as CalendarIcon2, Clock, Target, Zap } from 'lucide-react';
 import type { TaskResponse, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../../client/models';
 import type { GoalResponse } from '../../client/models';
 
-import { cardHover, buttonScale, ANIMATION_DURATIONS, ANIMATION_EASING } from '../../utils/animations';
-import { performanceMetrics } from '../../utils/performance';
+import { cardHover, buttonScale } from '../../utils/animations';
+import { useTaskStopwatch } from '../../hooks/useTaskStopwatch';
+import { useTaskInteractions } from '../../hooks/useTaskInteractions';
+import { TaskStylingService } from '../../utils/taskStyling';
+import { TaskStopwatch } from './TaskStopwatch';
 
 interface TaskCardProps {
   task: TaskResponse;
@@ -42,93 +44,16 @@ const TaskCard = React.memo(({
   isLoading
 }: TaskCardProps) => {
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
-  const [showStopwatch, setShowStopwatch] = useState(false);
-  const [stopwatchTime, setStopwatchTime] = useState(0);
+  
+  // SOLID: Single Responsibility - Extract stopwatch logic
+  const { showStopwatch, formattedTime } = useTaskStopwatch({
+    taskId: task.task_id,
+    completionStatus: task.completion_status,
+    startedAt: task.started_at,
+  });
 
-  // Real-time stopwatch with millisecond precision
-  const [currentTime, setCurrentTime] = useState(Date.now());
-
-  // Show stopwatch when task is in progress
-  useEffect(() => {
-    if (task.completion_status === 'In Progress') {
-      setShowStopwatch(true);
-      // Calculate elapsed time if task has started_at
-      if (task.started_at) {
-        const startTime = new Date(task.started_at).getTime();
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        setStopwatchTime(elapsed);
-      } else {
-        setStopwatchTime(0);
-      }
-    } else {
-      setShowStopwatch(false);
-      setStopwatchTime(0);
-    }
-  }, [task.completion_status, task.started_at]);
-
-  // Real-time stopwatch update (every 100ms for smooth display)
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (showStopwatch && task.started_at) {
-      interval = setInterval(() => {
-        setCurrentTime(Date.now());
-      }, 100); // Update every 100ms for smooth millisecond display
-    }
-    
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [showStopwatch, task.started_at]);
-
-  // Calculate elapsed time with millisecond precision
-  const elapsedTime = useMemo(() => {
-    if (!task.started_at || task.completion_status !== 'In Progress') {
-      return 0;
-    }
-    const startTime = new Date(task.started_at).getTime();
-    return currentTime - startTime;
-  }, [task.started_at, task.completion_status, currentTime]);
-
-  const getPriorityBorderColor = (priority: TaskPriorityEnum) => {
-    switch (priority) {
-      case 'Urgent': return 'border-l-destructive';
-      case 'High': return 'border-l-warning';
-      case 'Medium': return 'border-l-primary';
-      case 'Low': return 'border-l-success';
-      default: return 'border-l-primary';
-    }
-  };
-
-  const handleAction = (action: string, callback: () => void) => {
-    const startTime = performance.now();
-    callback();
-    performanceMetrics.userInteraction(action, startTime);
-  };
-
-  // Touch-friendly interaction handlers - prevent cursor movement
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent default touch behavior
-    (e.currentTarget as HTMLElement).style.transform = 'scale(0.98)';
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    e.preventDefault(); // Prevent default touch behavior
-    (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-  };
-
-  // Mouse interaction handlers - prevent cursor movement
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default mouse behavior
-    (e.currentTarget as HTMLElement).style.transform = 'scale(0.98)';
-  };
-
-  const handleMouseUp = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default mouse behavior
-    (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-  };
+  // SOLID: Single Responsibility - Extract interaction logic
+  const { handleAction, handleTouchStart, handleTouchEnd, handleMouseDown, handleMouseUp } = useTaskInteractions();
 
   return (
     <motion.div
@@ -139,7 +64,7 @@ const TaskCard = React.memo(({
       whileTap="tap"
       style={{ willChange: 'transform, opacity' }}
     >
-      <Card className={`bg-card shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80 border border-border/50 select-none`}>
+      <Card className={`bg-card shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 ${TaskStylingService.getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80 border border-border/50 select-none`}>
         <CardContent className="p-3 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-3 sm:space-y-4">
@@ -213,59 +138,27 @@ const TaskCard = React.memo(({
                 </div>
               </div>
 
-              {/* Stopwatch for tasks in progress - Optimized for performance */}
-              {showStopwatch && (
-                <div className="flex items-center gap-2 p-2 sm:p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="text-primary font-mono text-xs sm:text-sm">
-                    {Math.floor(elapsedTime / 3600000).toString().padStart(2, '0')}:
-                    {Math.floor((elapsedTime % 3600000) / 60000).toString().padStart(2, '0')}:
-                    {Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, '0')}.
-                    {Math.floor((elapsedTime % 1000) / 10).toString().padStart(2, '0')}
-                  </div>
-                  <span className="text-xs sm:text-sm text-primary font-medium">Task in progress</span>
-                </div>
-              )}
+              {/* SOLID: Single Responsibility - Extract stopwatch display */}
+              {showStopwatch && <TaskStopwatch formattedTime={formattedTime} />}
 
 
 
               <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 <Badge 
                   variant="outline"
-                  className={`font-medium text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 ${
-                    task.priority === 'Urgent' 
-                      ? 'bg-destructive/10 text-destructive border-destructive/20' 
-                      : task.priority === 'High'
-                      ? 'bg-warning/10 text-warning border-warning/20'
-                      : task.priority === 'Medium'
-                      ? 'bg-primary/10 text-primary border-primary/20'
-                      : 'bg-success/10 text-success border-success/20'
-                  }`}
+                  className={`font-medium text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 ${TaskStylingService.getPriorityBadgeClasses(task.priority || 'Medium')}`}
                 >
                   {task.priority || 'Medium'}
                 </Badge>
                 <Badge 
                   variant="outline"
-                  className={`font-medium text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 ${
-                    task.completion_status === 'Completed' 
-                      ? 'bg-success/10 text-success border-success/20' 
-                      : task.completion_status === 'In Progress'
-                      ? 'bg-primary/10 text-primary border-primary/20'
-                      : task.completion_status === 'Pending'
-                      ? 'bg-warning/10 text-warning border-warning/20'
-                      : 'bg-destructive/10 text-destructive border-destructive/20'
-                  }`}
+                  className={`font-medium text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 ${TaskStylingService.getStatusBadgeClasses(task.completion_status || 'Pending')}`}
                 >
                   {task.completion_status || 'Pending'}
                 </Badge>
                 <Badge 
                   variant="outline"
-                  className={`font-medium text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 ${
-                    task.energy_required === 'High' 
-                      ? 'bg-destructive/10 text-destructive border-destructive/20' 
-                      : task.energy_required === 'Medium'
-                      ? 'bg-warning/10 text-warning border-warning/20'
-                      : 'bg-success/10 text-success border-success/20'
-                  }`}
+                  className={`font-medium text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1 ${TaskStylingService.getEnergyBadgeClasses(task.energy_required || 'Medium')}`}
                 >
                   <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                   {task.energy_required || 'Medium'}
