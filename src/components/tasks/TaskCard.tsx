@@ -45,14 +45,8 @@ const TaskCard = React.memo(({
   const [showStopwatch, setShowStopwatch] = useState(false);
   const [stopwatchTime, setStopwatchTime] = useState(0);
 
-  // Memoize the elapsed time calculation to avoid unnecessary recalculations
-  const elapsedTime = useMemo(() => {
-    if (!task.started_at || task.completion_status !== 'In Progress') {
-      return 0;
-    }
-    const startTime = new Date(task.started_at).getTime();
-    return Math.floor((Date.now() - startTime) / 1000);
-  }, [task.started_at, task.completion_status]);
+  // Real-time stopwatch with millisecond precision
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Show stopwatch when task is in progress
   useEffect(() => {
@@ -72,18 +66,14 @@ const TaskCard = React.memo(({
     }
   }, [task.completion_status, task.started_at]);
 
-  // Update stopwatch time every second when task is in progress
+  // Real-time stopwatch update (every 100ms for smooth display)
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     if (showStopwatch && task.started_at) {
-      // Memoize the start time to avoid recalculating on every interval
-      const startTime = new Date(task.started_at).getTime();
-      
       interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        setStopwatchTime(elapsed);
-      }, 5000); // Update every 5 seconds instead of every second for better performance
+        setCurrentTime(Date.now());
+      }, 100); // Update every 100ms for smooth millisecond display
     }
     
     return () => {
@@ -92,6 +82,15 @@ const TaskCard = React.memo(({
       }
     };
   }, [showStopwatch, task.started_at]);
+
+  // Calculate elapsed time with millisecond precision
+  const elapsedTime = useMemo(() => {
+    if (!task.started_at || task.completion_status !== 'In Progress') {
+      return 0;
+    }
+    const startTime = new Date(task.started_at).getTime();
+    return currentTime - startTime;
+  }, [task.started_at, task.completion_status, currentTime]);
 
   const getPriorityBorderColor = (priority: TaskPriorityEnum) => {
     switch (priority) {
@@ -197,9 +196,10 @@ const TaskCard = React.memo(({
               {showStopwatch && (
                 <div className="flex items-center gap-2 p-2 sm:p-3 bg-primary/5 rounded-lg border border-primary/20">
                   <div className="text-primary font-mono text-xs sm:text-sm">
-                    {Math.floor(elapsedTime / 3600).toString().padStart(2, '0')}:
-                    {Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0')}:
-                    {(elapsedTime % 60).toString().padStart(2, '0')}
+                    {Math.floor(elapsedTime / 3600000).toString().padStart(2, '0')}:
+                    {Math.floor((elapsedTime % 3600000) / 60000).toString().padStart(2, '0')}:
+                    {Math.floor((elapsedTime % 60000) / 1000).toString().padStart(2, '0')}.
+                    {Math.floor((elapsedTime % 1000) / 10).toString().padStart(2, '0')}
                   </div>
                   <span className="text-xs sm:text-sm text-primary font-medium">Task in progress</span>
                 </div>
