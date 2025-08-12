@@ -1,6 +1,8 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Filter } from 'lucide-react';
+import { Input } from '../ui/input';
+import { Filter, Search, X } from 'lucide-react';
+import { useDebouncedSearch } from '../../hooks/use-debounced-search';
 import type { CompletionStatusEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../../client/models';
 import type { GoalResponse } from '../../client/models';
 import type { TaskFilter } from '../../types/app';
@@ -9,13 +11,23 @@ interface TaskFiltersProps {
   filters: TaskFilter;
   setFilters: (filters: TaskFilter) => void;
   goals: GoalResponse[] | undefined;
+  onSearchChange?: (searchTerm: string) => void;
 }
 
 const TaskFilters: React.FC<TaskFiltersProps> = ({
   filters,
   setFilters,
-  goals
+  goals,
+  onSearchChange
 }) => {
+  const { searchTerm, debouncedSearchTerm, handleSearchChange, clearSearch } = useDebouncedSearch(300);
+
+  // Update search when debounced term changes
+  React.useEffect(() => {
+    if (onSearchChange) {
+      onSearchChange(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm, onSearchChange]);
   const handleStatusChange = (value: string) => {
     setFilters({ 
       ...filters, 
@@ -50,6 +62,27 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
         <Filter className="w-4 h-4 text-muted-foreground" />
         <h3 className="text-sm font-medium text-muted-foreground">Filter Tasks</h3>
       </div>
+      
+      {/* Search Input */}
+      <div className="relative mb-3 sm:mb-4">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="pl-10 pr-10 h-9 text-sm bg-background/80 border-border/60 focus:bg-background"
+        />
+        {searchTerm && (
+          <button
+            onClick={clearSearch}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         <div>
           <label className="text-xs font-medium mb-1 block text-foreground/80">Status</label>

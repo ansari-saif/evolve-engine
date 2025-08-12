@@ -27,7 +27,7 @@ interface TaskCardProps {
   isLoading: boolean;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({
+const TaskCard = React.memo(({
   task,
   goals,
   onStatusChange,
@@ -40,7 +40,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   formatDate,
   formatDuration,
   isLoading
-}) => {
+}: TaskCardProps) => {
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   const [showStopwatch, setShowStopwatch] = useState(false);
   const [stopwatchTime, setStopwatchTime] = useState(0);
@@ -254,6 +254,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
       </Card>
     </motion.div>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.task.task_id === nextProps.task.task_id &&
+         prevProps.task.completion_status === nextProps.task.completion_status &&
+         prevProps.isLoading === nextProps.isLoading;
+});
 
 export default TaskCard;
