@@ -117,12 +117,12 @@ const TaskCard = React.memo(({
       whileTap="tap"
       style={{ willChange: 'transform, opacity' }}
     >
-      <Card className={`hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80`}>
+      <Card className={`bg-card shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 ${getPriorityBorderColor(task.priority || 'Medium')} hover:border-l-opacity-80 border border-border/50`}>
         <CardContent className="p-3 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-3 sm:space-y-4">
               <div className="flex items-start justify-between">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 pr-2">{task.description}</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground pr-2">{task.description}</h3>
                 <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                   {task.completion_status !== 'Completed' && (
                     <>
