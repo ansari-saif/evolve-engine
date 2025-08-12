@@ -7,52 +7,58 @@ import { LiquidGlass } from "../components/ui/liquid-glass";
 
 const Dashboard = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 max-w-full">
       {/* Hero Section with Weekly Roadmap */}
       <motion.section
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-3 sm:space-y-4"
       >
-        <LiquidGlass 
-          intensity={3}
-          borderRadius="1.5rem"
-          className="p-6 mb-6"
-          disableHoverEffect={true}
-        >
-          <div className="mb-6">
-            <h1 className="text-4xl font-bold text-gradient-primary mb-2">
-              Your Startup Journey
-            </h1>
-            <p className="text-text-secondary text-lg">
-              Transform your dreams into reality, one day at a time.
-            </p>
-          </div>
-          <WeeklyRoadmap />
-        </LiquidGlass>
+        {/* Header - Mobile Optimized */}
+        <div className="px-1">
+          <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-gradient-primary mb-1">
+            Your Journey
+          </h1>
+          <p className="text-text-secondary text-xs sm:text-sm lg:text-lg">
+            Transform dreams into reality, one step at a time.
+          </p>
+        </div>
+        
+        {/* Weekly Roadmap - No extra wrapper */}
+        <WeeklyRoadmap />
       </motion.section>
 
       {/* Stats Overview */}
       <motion.section
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
       >
         <StatsCards />
       </motion.section>
 
-      {/* Main Content Grid */}
+      {/* Main Content - Mobile First */}
       <motion.section
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="space-y-4 sm:space-y-6"
       >
-        <div className="lg:col-span-2">
+        {/* Mobile: Stack vertically, Desktop: Grid */}
+        <div className="block lg:hidden space-y-4">
           <TodaysTasks />
-        </div>
-        <div className="space-y-6">
           <MotivationCard />
+        </div>
+        
+        {/* Desktop: Side by side */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <TodaysTasks />
+          </div>
+          <div className="space-y-6">
+            <MotivationCard />
+          </div>
         </div>
       </motion.section>
     </div>

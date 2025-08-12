@@ -15,31 +15,31 @@ const WeeklyRoadmap = () => {
   return (
     <motion.div
       whileHover={{ y: -2 }}
-      className="bg-gradient-subtle rounded-2xl p-8 border border-border/50 shadow-card hover:shadow-elegant transition-all duration-300"
+      className="bg-gradient-subtle rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-8 border border-border/50 shadow-card hover:shadow-elegant transition-all duration-300"
     >
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-            <Target className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-3 sm:mb-4 lg:mb-6">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-primary rounded-lg sm:rounded-xl flex items-center justify-center">
+            <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Weekly Roadmap</h2>
-            <p className="text-text-secondary text-sm">Your path to startup success</p>
+            <h2 className="text-sm sm:text-lg lg:text-xl font-semibold text-text-primary">Weekly Roadmap</h2>
+            <p className="text-text-secondary text-xs sm:text-sm">Your path to startup success</p>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-gradient-primary">{completedCount}/4</div>
-          <div className="text-xs text-text-secondary">Milestones</div>
+          <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gradient-primary">{completedCount}/4</div>
+          <div className="text-[10px] sm:text-xs text-text-secondary">Milestones</div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-sm text-text-secondary mb-2">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex justify-between text-xs sm:text-sm text-text-secondary mb-2">
           <span>Weekly Progress</span>
           <span>{progressPercentage.toFixed(0)}%</span>
         </div>
-        <div className="w-full bg-surface-light rounded-full h-2 overflow-hidden">
+        <div className="w-full bg-surface-light rounded-full h-1.5 sm:h-2 overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
@@ -50,7 +50,7 @@ const WeeklyRoadmap = () => {
       </div>
 
       {/* Milestones */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
         {milestones.map((milestone, index) => {
           const IconComponent = milestone.status === "completed" ? CheckCircle : 
                                milestone.status === "in-progress" ? Clock : Circle;
@@ -61,9 +61,9 @@ const WeeklyRoadmap = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 + 0.3 }}
-              whileHover={{ scale: 1.05, y: -4 }}
+              whileHover={{ scale: 1.02, y: -2 }}
               className={`
-                p-4 rounded-xl border transition-all duration-300 cursor-pointer
+                p-2.5 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl border transition-all duration-300 cursor-pointer
                 ${milestone.status === "completed" 
                   ? "bg-success/10 border-success/30 hover:shadow-success/20" 
                   : milestone.status === "in-progress"
@@ -72,9 +72,9 @@ const WeeklyRoadmap = () => {
                 } hover:shadow-lg
               `}
             >
-              <div className="flex items-start space-x-3">
+              <div className="flex items-start space-x-2 sm:space-x-3">
                 <div className={`
-                  w-8 h-8 rounded-full flex items-center justify-center mt-1
+                  w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mt-0.5 lg:mt-1
                   ${milestone.status === "completed" 
                     ? "bg-gradient-success text-white" 
                     : milestone.status === "in-progress"
@@ -82,16 +82,16 @@ const WeeklyRoadmap = () => {
                     : "bg-surface text-text-secondary"
                   }
                 `}>
-                  <IconComponent className="w-4 h-4" />
+                  <IconComponent className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-text-secondary font-medium mb-1">
+                  <div className="text-[10px] sm:text-xs text-text-secondary font-medium mb-1">
                     {milestone.date}
                   </div>
-                  <h4 className="font-semibold text-text-primary text-sm mb-2">
+                  <h4 className="font-semibold text-text-primary text-xs sm:text-sm mb-1 sm:mb-2">
                     {milestone.title}
                   </h4>
-                  <p className="text-xs text-text-muted leading-relaxed">
+                  <p className="text-[10px] sm:text-xs text-text-muted leading-relaxed">
                     {milestone.description}
                   </p>
                 </div>

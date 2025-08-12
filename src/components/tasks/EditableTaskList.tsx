@@ -25,27 +25,21 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import type { GeneratedTask, TaskPriority, EnergyLevel, EditableGeneratedTask } from './DialogStateManager';
 
-interface GeneratedTask {
-  description: string;
-  priority: string;
-  energy_required: string;
-  estimated_duration?: number;
-  scheduled_for_date?: string;
-  errors?: {
-    description?: string;
-    priority?: string;
-    energy_required?: string;
-    estimated_duration?: string;
-  };
+interface TaskErrors {
+  description?: string;
+  priority?: string;
+  energy_required?: string;
+  estimated_duration?: string;
 }
 
 interface EditableTaskListProps {
-  tasks: GeneratedTask[];
-  onTasksChange: (tasks: GeneratedTask[]) => void;
+  tasks: EditableGeneratedTask[];
+  onTasksChange: (tasks: EditableGeneratedTask[]) => void;
 }
 
-// Validation functions
+// Type-safe validation functions
 const validateDescription = (value: string): string | null => {
   if (!value.trim()) {
     return 'Description cannot be empty';
@@ -56,17 +50,25 @@ const validateDescription = (value: string): string | null => {
   return null;
 };
 
-const validatePriority = (value: string): string | null => {
-  const validPriorities = ['Urgent', 'High', 'Medium', 'Low'];
-  if (!validPriorities.includes(value)) {
+const validatePriority = (value: string): value is TaskPriority => {
+  const validPriorities: readonly TaskPriority[] = ['Urgent', 'High', 'Medium', 'Low'] as const;
+  return validPriorities.includes(value as TaskPriority);
+};
+
+const validatePriorityWithError = (value: string): string | null => {
+  if (!validatePriority(value)) {
     return 'Priority must be one of: Urgent, High, Medium, Low';
   }
   return null;
 };
 
-const validateEnergyRequired = (value: string): string | null => {
-  const validEnergyLevels = ['High', 'Medium', 'Low'];
-  if (!validEnergyLevels.includes(value)) {
+const validateEnergyRequired = (value: string): value is EnergyLevel => {
+  const validEnergyLevels: readonly EnergyLevel[] = ['High', 'Medium', 'Low'] as const;
+  return validEnergyLevels.includes(value as EnergyLevel);
+};
+
+const validateEnergyRequiredWithError = (value: string): string | null => {
+  if (!validateEnergyRequired(value)) {
     return 'Energy level must be one of: High, Medium, Low';
   }
   return null;
@@ -86,10 +88,10 @@ const validateDuration = (value: number | undefined): string | null => {
 
 // Sortable Task Row Component
 interface SortableTaskRowProps {
-  task: GeneratedTask;
+  task: EditableGeneratedTask;
   index: number;
-  onTaskChange: (index: number, field: keyof GeneratedTask, value: string | number) => void;
-  onTaskBlur: (index: number, field: keyof GeneratedTask) => void;
+  onTaskChange: (index: number, field: keyof EditableGeneratedTask, value: string | number) => void;
+  onTaskBlur: (index: number, field: keyof EditableGeneratedTask) => void;
   onDeleteTask: (index: number) => void;
   formatDuration: (minutes?: number) => string;
 }
@@ -126,63 +128,82 @@ const SortableTaskRow: React.FC<SortableTaskRowProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`task-card ${task.errors && Object.keys(task.errors).length > 0 ? 'border-destructive/50 bg-destructive/5' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={`task-card p-3 sm:p-6 ${task.errors && Object.keys(task.errors).length > 0 ? 'border-destructive/50 bg-destructive/5' : ''} ${isDragging ? 'dragging' : ''}`}
     >
-      {/* Task Header */}
-      <div className="task-header">
-        <div className="task-drag-handle" {...attributes} {...listeners}>
-          <GripVertical className="h-4 w-4" />
+      {/* Task Header - Compact Single Line */}
+      <div className="task-header flex items-center gap-1 sm:gap-2 mb-3 sm:mb-4 p-2 bg-muted/10 rounded-lg border border-muted/20 overflow-hidden">
+        {/* Drag handle */}
+        <div 
+          className="task-drag-handle flex-shrink-0 p-1 rounded-md hover:bg-muted/30 transition-colors cursor-grab active:cursor-grabbing" 
+          {...attributes} 
+          {...listeners}
+        >
+          <GripVertical className="h-3 w-3 text-muted-foreground" />
         </div>
-        <div className="task-number">#{index + 1}</div>
-        <div className="task-badges">
-          <Badge variant={task.priority === 'Urgent' ? 'destructive' : task.priority === 'High' ? 'default' : 'secondary'}>
+
+        {/* Task number */}
+        <div className="task-number text-xs font-semibold text-muted-foreground bg-background px-1.5 py-0.5 rounded border shadow-sm flex-shrink-0">
+          #{index + 1}
+        </div>
+
+        {/* Badges */}
+        <div className="task-badges flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
+          <Badge 
+            variant={task.priority === 'Urgent' ? 'destructive' : task.priority === 'High' ? 'default' : 'secondary'} 
+            className="text-xs px-1.5 py-0.5 font-medium flex-shrink-0"
+          >
             {task.priority}
           </Badge>
-          <Badge variant={task.energy_required === 'High' ? 'destructive' : task.energy_required === 'Medium' ? 'default' : 'secondary'}>
-            {task.energy_required} Energy
+          <Badge 
+            variant={task.energy_required === 'High' ? 'destructive' : task.energy_required === 'Medium' ? 'default' : 'secondary'} 
+            className="text-xs px-1.5 py-0.5 font-medium flex-shrink-0"
+          >
+            {task.energy_required}
           </Badge>
           {task.estimated_duration && (
-            <Badge variant="outline">
+            <Badge variant="outline" className="text-xs px-1.5 py-0.5 font-medium flex-shrink-0">
               {formatDuration(task.estimated_duration)}
             </Badge>
           )}
         </div>
+
+        {/* Delete button */}
         <button
-          className="delete-task-button"
+          className="delete-task-button flex-shrink-0 p-1 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors"
           onClick={() => onDeleteTask(index)}
           aria-label="Delete task"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3 w-3" />
         </button>
       </div>
 
       {/* Task Content */}
-      <div className="task-content">
+      <div className="task-content space-y-3 sm:space-y-4">
         {/* Description */}
         <div className="task-field">
-          <label className="field-label">Description</label>
+          <label className="field-label text-xs sm:text-sm font-medium mb-1 sm:mb-2">Description</label>
           <Textarea
             value={task.description}
             onChange={(e) => onTaskChange(index, 'description', e.target.value)}
             onBlur={() => onTaskBlur(index, 'description')}
             placeholder="Enter task description..."
-            className={`field-input ${task.errors?.description ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+            className={`field-input text-xs sm:text-sm p-2 sm:p-3 ${task.errors?.description ? 'border-destructive focus-visible:ring-destructive' : ''}`}
             maxLength={500}
-            rows={3}
+            rows={2}
           />
           {task.errors?.description && (
-            <div className="field-error">
+            <div className="field-error text-xs p-2 mt-1">
               <AlertCircle className="h-3 w-3" />
               {task.errors.description}
             </div>
           )}
         </div>
 
-        {/* Task Properties */}
+        {/* Task Properties - Single Row Layout */}
         <div className="task-properties">
-          <div className="property-group">
-            <div className="task-field">
-              <label className="field-label">Priority</label>
+          <div className="property-group flex flex-row gap-2 sm:gap-3">
+            <div className="task-field flex-1 min-w-0">
+              <label className="field-label text-xs sm:text-sm font-medium mb-1">Priority</label>
               <Select
                 value={task.priority}
                 onValueChange={(value) => onTaskChange(index, 'priority', value)}
@@ -190,7 +211,7 @@ const SortableTaskRow: React.FC<SortableTaskRowProps> = ({
                   if (!open) onTaskBlur(index, 'priority');
                 }}
               >
-                <SelectTrigger className={`field-input ${task.errors?.priority ? 'border-destructive focus-visible:ring-destructive' : ''}`}>
+                <SelectTrigger className={`field-input text-xs sm:text-sm h-8 sm:h-10 ${task.errors?.priority ? 'border-destructive focus-visible:ring-destructive' : ''}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -201,15 +222,15 @@ const SortableTaskRow: React.FC<SortableTaskRowProps> = ({
                 </SelectContent>
               </Select>
               {task.errors?.priority && (
-                <div className="field-error">
+                <div className="field-error text-xs p-1 mt-1">
                   <AlertCircle className="h-3 w-3" />
                   {task.errors.priority}
                 </div>
               )}
             </div>
 
-            <div className="task-field">
-              <label className="field-label">Energy Required</label>
+            <div className="task-field flex-1 min-w-0">
+              <label className="field-label text-xs sm:text-sm font-medium mb-1">Energy</label>
               <Select
                 value={task.energy_required}
                 onValueChange={(value) => onTaskChange(index, 'energy_required', value)}
@@ -217,7 +238,7 @@ const SortableTaskRow: React.FC<SortableTaskRowProps> = ({
                   if (!open) onTaskBlur(index, 'energy_required');
                 }}
               >
-                <SelectTrigger className={`field-input ${task.errors?.energy_required ? 'border-destructive focus-visible:ring-destructive' : ''}`}>
+                <SelectTrigger className={`field-input text-xs sm:text-sm h-8 sm:h-10 ${task.errors?.energy_required ? 'border-destructive focus-visible:ring-destructive' : ''}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -227,32 +248,32 @@ const SortableTaskRow: React.FC<SortableTaskRowProps> = ({
                 </SelectContent>
               </Select>
               {task.errors?.energy_required && (
-                <div className="field-error">
+                <div className="field-error text-xs p-1 mt-1">
                   <AlertCircle className="h-3 w-3" />
                   {task.errors.energy_required}
                 </div>
               )}
             </div>
 
-            <div className="task-field">
-              <label className="field-label">Duration (minutes)</label>
+            <div className="task-field flex-1 min-w-0">
+              <label className="field-label text-xs sm:text-sm font-medium mb-1">Duration (min)</label>
               <Input
                 type="number"
                 value={task.estimated_duration || ''}
                 onChange={(e) => onTaskChange(index, 'estimated_duration', e.target.value ? parseInt(e.target.value) : undefined)}
                 onBlur={() => onTaskBlur(index, 'estimated_duration')}
-                placeholder="Enter duration..."
+                placeholder="Enter..."
                 min="1"
                 max="1440"
-                className={`field-input ${task.errors?.estimated_duration ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                className={`field-input text-xs sm:text-sm h-8 sm:h-10 ${task.errors?.estimated_duration ? 'border-destructive focus-visible:ring-destructive' : ''}`}
               />
               {task.estimated_duration && !task.errors?.estimated_duration && (
-                <p className="field-hint">
+                <p className="field-hint text-xs mt-1">
                   {formatDuration(task.estimated_duration)}
                 </p>
               )}
               {task.errors?.estimated_duration && (
-                <div className="field-error">
+                <div className="field-error text-xs p-1 mt-1">
                   <AlertCircle className="h-3 w-3" />
                   {task.errors.estimated_duration}
                 </div>
@@ -266,7 +287,7 @@ const SortableTaskRow: React.FC<SortableTaskRowProps> = ({
 };
 
 const EditableTaskList: React.FC<EditableTaskListProps> = ({ tasks, onTasksChange }) => {
-  const [editedTasks, setEditedTasks] = useState<GeneratedTask[]>(tasks);
+  const [editedTasks, setEditedTasks] = useState<EditableGeneratedTask[]>(tasks);
 
   // DnD sensors
   const sensors = useSensors(
@@ -285,43 +306,52 @@ const EditableTaskList: React.FC<EditableTaskListProps> = ({ tasks, onTasksChang
     setEditedTasks(tasks);
   }, [tasks]);
 
-  const validateTask = (task: GeneratedTask): GeneratedTask => {
-    const errors: GeneratedTask['errors'] = {};
+  const validateTask = (task: EditableGeneratedTask): EditableGeneratedTask => {
+    const errors: TaskErrors = {};
     
     const descriptionError = validateDescription(task.description);
     if (descriptionError) errors.description = descriptionError;
     
-    const priorityError = validatePriority(task.priority);
+    const priorityError = validatePriorityWithError(task.priority);
     if (priorityError) errors.priority = priorityError;
     
-    const energyError = validateEnergyRequired(task.energy_required);
+    const energyError = validateEnergyRequiredWithError(task.energy_required);
     if (energyError) errors.energy_required = energyError;
     
     const durationError = validateDuration(task.estimated_duration);
     if (durationError) errors.estimated_duration = durationError;
     
-    return { ...task, errors };
+    return {
+      ...task,
+      errors: Object.keys(errors).length > 0 ? errors : undefined
+    };
   };
 
-  const handleTaskChange = (index: number, field: keyof GeneratedTask, value: string | number) => {
+  // Type-safe field keys for task updates
+  type TaskFieldKey = 'description' | 'priority' | 'energy_required' | 'estimated_duration' | 'scheduled_for_date';
+  
+  const handleTaskChange = (index: number, field: TaskFieldKey, value: string | number) => {
     const updatedTasks = [...editedTasks];
-    updatedTasks[index] = {
-      ...updatedTasks[index],
-      [field]: value,
-      errors: { ...updatedTasks[index].errors } // Preserve other errors
+    const currentTask = updatedTasks[index];
+    
+    // Type-safe field update
+    const updatedTask: EditableGeneratedTask = {
+      ...currentTask,
+      [field]: value as any, // Type assertion needed due to union type
+      errors: currentTask.errors ? { ...currentTask.errors } : undefined
     };
     
     // Clear the specific field error when user starts editing
-    if (updatedTasks[index].errors) {
-      const fieldKey = field as 'description' | 'priority' | 'energy_required' | 'estimated_duration';
-      delete updatedTasks[index].errors[fieldKey];
+    if (updatedTask.errors && field in updatedTask.errors) {
+      delete updatedTask.errors[field as keyof TaskErrors];
     }
     
+    updatedTasks[index] = updatedTask;
     setEditedTasks(updatedTasks);
     onTasksChange(updatedTasks);
   };
 
-  const handleTaskBlur = (index: number, field: keyof GeneratedTask) => {
+  const handleTaskBlur = (index: number, field: keyof EditableGeneratedTask) => {
     const updatedTasks = [...editedTasks];
     const validatedTask = validateTask(updatedTasks[index]);
     updatedTasks[index] = validatedTask;

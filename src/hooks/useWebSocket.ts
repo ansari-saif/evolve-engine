@@ -16,6 +16,7 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
   const listenerRef = useRef<WebSocketEventListener | null>(null);
   const notification = useNotification();
   const initializedRef = useRef(false);
+  const configRef = useRef<string | null>(null); // Track config changes
 
   // Set up message listener
   const messageListener = useCallback((message: WebSocketMessage) => {
@@ -76,47 +77,43 @@ export function useWebSocket(config?: WebSocketConfig, options?: UseWebSocketOpt
 
   // Auto-connect on mount if enabled (defaults to true)
   useEffect(() => {
-    if ((options?.autoConnect ?? true) && config && !initializedRef.current) {
-      console.log('🔌 Initializing WebSocket connection...', config);
-      initializedRef.current = true;
+    if ((options?.autoConnect ?? true) && config) {
+      const configKey = `${config.url}-${config.userId}`;
       
-      // Set notification hook
-      webSocketService.setNotificationHook(notification);
-      
-      // Connect (service will prevent duplicates)
-      webSocketService.connect(config);
-      
-      // Add message listener
-      if (listenerRef.current) {
-        webSocketService.removeEventListener(listenerRef.current);
-      }
-      listenerRef.current = messageListener;
-      webSocketService.addEventListener(messageListener);
-
-      // Update connection status immediately and set up polling
-      updateConnectionStatus();
-      const statusInterval = setInterval(updateConnectionStatus, 1000);
-      
-      // Cleanup function
-      return () => {
-        console.log('🧹 Cleaning up WebSocket hook...');
-        clearInterval(statusInterval);
+      // Only initialize if not already done with this exact config
+      if (!initializedRef.current || configRef.current !== configKey) {
+        console.log('🔌 Initializing WebSocket connection...', config);
+        initializedRef.current = true;
+        configRef.current = configKey;
+        
+        // Set notification hook
+        webSocketService.setNotificationHook(notification);
+        
+        // Connect (service will prevent duplicates)
+        webSocketService.connect(config);
+        
+        // Add message listener
         if (listenerRef.current) {
           webSocketService.removeEventListener(listenerRef.current);
-          listenerRef.current = null;
         }
-        // Don't reset initializedRef to prevent re-initialization on every cleanup
-      };
-    }
-  }, []); // Empty deps - run only once on mount
+        listenerRef.current = messageListener;
+        webSocketService.addEventListener(messageListener);
 
-  // Separate effect for config changes
-  useEffect(() => {
-    if (config && initializedRef.current) {
-      console.log('🔄 WebSocket config changed, reconnecting...', config);
-      webSocketService.connect(config);
+        // Update connection status immediately and set up polling
+        updateConnectionStatus();
+      }
     }
-  }, [config?.url, config?.userId]); // Only reconnect if URL or userId changes
+
+    // Set up status polling interval (always needed)
+    const statusInterval = setInterval(updateConnectionStatus, 1000);
+    
+    // Cleanup function
+    return () => {
+      console.log('🧹 Cleaning up WebSocket hook...');
+      clearInterval(statusInterval);
+      // Don't disconnect service or remove listeners - let it persist globally
+    };
+  }, [config?.url, config?.userId, options?.autoConnect]); // Only essential config changes
 
   // Handle connection state changes
   useEffect(() => {

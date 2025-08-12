@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Filter } from 'lucide-react';
 import type { CompletionStatusEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../../client/models';
@@ -17,82 +16,106 @@ const TaskFilters: React.FC<TaskFiltersProps> = ({
   setFilters,
   goals
 }) => {
+  const handleStatusChange = (value: string) => {
+    setFilters({ 
+      ...filters, 
+      status: value as CompletionStatusEnum | 'All'
+    });
+  };
+
+  const handlePriorityChange = (value: string) => {
+    setFilters({ 
+      ...filters, 
+      priority: value as TaskPriorityEnum | 'All'
+    });
+  };
+
+  const handleEnergyChange = (value: string) => {
+    setFilters({ 
+      ...filters, 
+      energy: value as EnergyRequiredEnum | 'All'
+    });
+  };
+
+  const handleGoalChange = (value: string) => {
+    setFilters({ 
+      ...filters, 
+      goal: value === 'All' ? 'All' : parseInt(value, 10)
+    });
+  };
+
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="w-5 h-5" />
-          Filters
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <label className="text-sm font-medium">Status</label>
-            <Select value={filters.status} onValueChange={(value: CompletionStatusEnum | 'All') => setFilters({ ...filters, status: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Statuses</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium">Priority</label>
-            <Select value={filters.priority} onValueChange={(value: TaskPriorityEnum | 'All') => setFilters({ ...filters, priority: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Priorities</SelectItem>
-                <SelectItem value="Urgent">Urgent</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium">Energy</label>
-            <Select value={filters.energy} onValueChange={(value: EnergyRequiredEnum | 'All') => setFilters({ ...filters, energy: value })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Energy Levels</SelectItem>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium">Goal</label>
-            <Select value={filters.goal.toString()} onValueChange={(value) => setFilters({ ...filters, goal: value === 'All' ? 'All' : parseInt(value) })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Goals</SelectItem>
-                {goals?.map(goal => (
-                  <SelectItem key={goal.goal_id} value={goal.goal_id.toString()}>
-                    {goal.description}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="bg-background/60 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+        <Filter className="w-4 h-4 text-muted-foreground" />
+        <h3 className="text-sm font-medium text-muted-foreground">Filter Tasks</h3>
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <div>
+          <label className="text-xs font-medium mb-1 block text-foreground/80">Status</label>
+          <Select value={filters.status} onValueChange={handleStatusChange}>
+            <SelectTrigger className="h-8 text-xs bg-background/80 border-border/60 hover:bg-background/90">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All" className="text-xs">All</SelectItem>
+              <SelectItem value="Pending" className="text-xs">Pending</SelectItem>
+              <SelectItem value="In Progress" className="text-xs">In Progress</SelectItem>
+              <SelectItem value="Completed" className="text-xs">Completed</SelectItem>
+              <SelectItem value="Cancelled" className="text-xs">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </CardContent>
-    </Card>
+        
+        <div>
+          <label className="text-xs font-medium mb-1 block text-foreground/80">Priority</label>
+          <Select value={filters.priority} onValueChange={handlePriorityChange}>
+            <SelectTrigger className="h-8 text-xs bg-background/80 border-border/60 hover:bg-background/90">
+              <SelectValue placeholder="All Priorities" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All" className="text-xs">All</SelectItem>
+              <SelectItem value="Urgent" className="text-xs">Urgent</SelectItem>
+              <SelectItem value="High" className="text-xs">High</SelectItem>
+              <SelectItem value="Medium" className="text-xs">Medium</SelectItem>
+              <SelectItem value="Low" className="text-xs">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <label className="text-xs font-medium mb-1 block text-foreground/80">Energy</label>
+          <Select value={filters.energy} onValueChange={handleEnergyChange}>
+            <SelectTrigger className="h-8 text-xs bg-background/80 border-border/60 hover:bg-background/90">
+              <SelectValue placeholder="All Energy" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All" className="text-xs">All</SelectItem>
+              <SelectItem value="High" className="text-xs">High</SelectItem>
+              <SelectItem value="Medium" className="text-xs">Medium</SelectItem>
+              <SelectItem value="Low" className="text-xs">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <label className="text-xs font-medium mb-1 block text-foreground/80">Goal</label>
+          <Select value={filters.goal.toString()} onValueChange={handleGoalChange}>
+            <SelectTrigger className="h-8 text-xs bg-background/80 border-border/60 hover:bg-background/90">
+              <SelectValue placeholder="All Goals" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All" className="text-xs">All</SelectItem>
+              {goals?.map((goal) => (
+                <SelectItem key={goal.goal_id} value={goal.goal_id.toString()} className="text-xs">
+                  {goal.description}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
   );
 };
 

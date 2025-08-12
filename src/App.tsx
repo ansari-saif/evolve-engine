@@ -51,21 +51,23 @@ const AppContent = () => {
   const { isConnected, lastMessage } = useWebSocket(webSocketConfig, webSocketOptions);
 
   return (
-    <div className="min-h-screen bg-background p-8 pb-24 pt-28">
+    <div className="min-h-screen bg-background">
       <MenuBar />
       <Header />
-      <Routes>
-        <Route path="/welcome" element={<Index />} />
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/goals" element={<Goals />} />
-        <Route path="/diary" element={<Diary />} />
-        <Route path="/statistics" element={<Statistics />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/chat" element={<Chat />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <main className="px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-24">
+        <Routes>
+          <Route path="/welcome" element={<Index />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/goals" element={<Goals />} />
+          <Route path="/diary" element={<Diary />} />
+          <Route path="/statistics" element={<Statistics />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/chat" element={<Chat />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
       <BottomTabBar />
     </div>
   );

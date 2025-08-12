@@ -322,7 +322,7 @@ export type PromptsData = {
   };
 };
 
-export type DefaultData = {};
+export type DefaultData = Record<string, never>;
 
 export class UsersService {
   /**

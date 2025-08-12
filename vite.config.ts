@@ -6,17 +6,11 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "localhost",
-    port: 8080,
-    strictPort: true,
-    // Allow external access via ngrok domain
-    allowedHosts: [
-      "a1b608711f34.ngrok-free.app",
-    ],
+    host: "0.0.0.0",
+    port: 3000,
+    strictPort: false,
     hmr: {
-      host: "localhost",
-      protocol: "ws",
-      clientPort: 8080,
+      overlay: false,
     },
   },
   plugins: [

@@ -102,7 +102,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ className }) => {
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
               className={cn(
-                "fixed top-0 left-0 h-full w-80 bg-background/95 backdrop-blur-xl border-r border-border shadow-2xl z-[56]",
+                "fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-background/95 backdrop-blur-xl border-r border-border shadow-2xl z-[56]",
                 className
               )}
             >
