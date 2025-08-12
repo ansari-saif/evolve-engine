@@ -11,6 +11,8 @@ export type ShinyProgressHeaderProps = {
   focusScore: number; // 0-100
   title?: string;
   subtitle?: string;
+  date?: string;
+  daysRemaining?: number;
 };
 
 export function ShinyProgressHeader({
@@ -20,8 +22,9 @@ export function ShinyProgressHeader({
   moodScore,
   energyLevel,
   focusScore,
-  title = 'Today\'s Progress',
+  title,
   subtitle,
+  daysRemaining,
 }: ShinyProgressHeaderProps) {
   const completion = clampPct(
     tasksPlanned > 0 ? (tasksCompleted / tasksPlanned) * 100 : (tasksCompleted > 0 ? 100 : 0)
@@ -33,100 +36,80 @@ export function ShinyProgressHeader({
   return (
     <header
       className={cn(
-        'group relative w-full overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-5',
-        // Brand-compliant glass effect
-        'border border-white/20 bg-gradient-to-br from-white/10 via-slate-800/30 to-slate-900/20 backdrop-blur-xl backdrop-saturate-150',
-        // Brand shadows
-        'shadow-[0_8px_32px_rgba(99,102,241,0.15)] ring-1 ring-inset ring-white/20',
-        // Touch-friendly interactions
-        'transition-all duration-300 active:scale-[0.98] sm:hover:shadow-[0_12px_40px_rgba(99,102,241,0.25)]',
+        'group relative w-full overflow-hidden rounded-2xl p-4 sm:p-6',
+        // Elegant glass effect
+        'bg-gradient-to-br from-white/5 via-slate-800/20 to-slate-900/10 backdrop-blur-2xl',
+        'border border-white/10 shadow-lg',
+        // Subtle hover effect
+        'transition-all duration-300 hover:shadow-xl hover:border-white/20',
         className,
       )}
     >
-      {/* Brand-compliant specular highlight */}
-      <span 
-        aria-hidden 
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_60%_at_20%_10%,rgba(255,255,255,0.3)_0%,rgba(255,255,255,0.05)_40%,rgba(255,255,255,0)_70%)]" 
-      />
-
-      <div className="relative z-10 flex flex-col gap-3 sm:gap-4">
-        {/* Compact header section */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-base sm:text-lg font-semibold text-foreground/90 truncate">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+      
+      <div className="relative z-10 space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground/90 mb-1">
               {title}
             </h2>
-            <p className="text-xs sm:text-sm text-foreground/70 truncate">
-              {subtitle ?? `${tasksCompleted}/${tasksPlanned} tasks`}
-            </p>
+            {subtitle && (
+              <p className="text-sm text-foreground/70">
+                {subtitle}
+              </p>
+            )}
           </div>
           
-          {/* Compact completion badge */}
-          <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-            <div className="text-xl sm:text-2xl font-bold text-primary">
-              {Math.round(completion)}%
-            </div>
-            <div className="text-xs text-foreground/60">
-              Complete
+          {/* Days left */}
+          <div className="flex flex-col items-end text-right">
+            <div className="text-sm sm:text-base font-medium text-foreground/90">
+              {Math.abs(daysRemaining)} days left
             </div>
           </div>
         </div>
 
-        {/* Compact main progress bar */}
+        {/* Main progress bar */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs sm:text-sm text-foreground/80">
-            <span className="font-medium">Progress</span>
-            <span className="font-semibold text-foreground/90">
-              {tasksCompleted}/{tasksPlanned}
-            </span>
+          <div className="flex items-center justify-between text-sm text-foreground/80">
+            <span className="font-medium">Overall Progress</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-foreground/60">Completion</span>
+              <span className="font-semibold text-foreground/90">
+                {Math.round(completion)}%
+              </span>
+            </div>
           </div>
           
-          <div className="relative h-2.5 sm:h-3 w-full overflow-hidden rounded-full bg-white/10">
-            {/* Brand-compliant underglow */}
-            <span 
-              aria-hidden 
-              className="pointer-events-none absolute -bottom-1 left-1/2 h-1.5 w-24 -translate-x-1/2 rounded-full bg-primary/20 blur-md" 
-            />
-
-            {/* Track */}
-            <span 
-              aria-hidden 
-              className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/20" 
-            />
-
-            {/* Brand-compliant fill */}
+          <div className="relative h-3 w-full overflow-hidden rounded-full bg-white/10">
             <div
-              className="relative h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 shadow-[0_2px_8px_rgba(99,102,241,0.3)] transition-all duration-700 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 transition-all duration-1000 ease-out"
               style={{ width: `${completion}%` }}
-            >
-              {/* Inner highlight */}
-              <span 
-                aria-hidden 
-                className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/10 to-transparent" 
-              />
-            </div>
+            />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
           </div>
         </div>
 
-        {/* Compact micro-bars */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <MiniBar 
-            label="Mood" 
-            value={mood} 
-            tint="from-secondary via-secondary/90 to-secondary/80"
+        {/* Metrics grid */}
+        <div className="grid grid-cols-3 gap-3">
+          <MetricCard
+            label="Mood"
+            value={mood}
             icon="😊"
+            color="from-secondary to-secondary/80"
           />
-          <MiniBar 
-            label="Energy" 
-            value={energy} 
-            tint="from-warning via-warning/90 to-warning/80"
+          <MetricCard
+            label="Energy"
+            value={energy}
             icon="⚡"
+            color="from-warning to-warning/80"
           />
-          <MiniBar 
-            label="Focus" 
-            value={focus} 
-            tint="from-success via-success/90 to-success/80"
+          <MetricCard
+            label="Focus"
+            value={focus}
             icon="🎯"
+            color="from-success to-success/80"
           />
         </div>
       </div>
@@ -134,54 +117,42 @@ export function ShinyProgressHeader({
   );
 }
 
-function MiniBar({ 
+function MetricCard({ 
   label, 
   value, 
-  tint, 
-  icon 
+  icon, 
+  color 
 }: { 
   label: string; 
   value: number; 
-  tint: string; 
-  icon: string;
+  icon: string; 
+  color: string;
 }) {
   return (
-    <div className="group/bar flex flex-col gap-1.5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm sm:text-base" role="img" aria-label={label}>
+    <div className="group relative p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-lg" role="img" aria-label={label}>
             {icon}
           </span>
-          <span className="text-xs sm:text-sm font-medium text-foreground/85 truncate">
+          <span className="text-sm font-medium text-foreground/85">
             {label}
           </span>
         </div>
-        <span className="text-xs sm:text-sm font-bold text-foreground/95">
+        <span className="text-sm font-bold text-foreground/95">
           {Math.round(value)}%
         </span>
       </div>
       
       <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/10">
-        {/* Track */}
-        <span 
-          aria-hidden 
-          className="pointer-events-none absolute inset-0 rounded-full ring-1 ring-white/20" 
-        />
-        
-        {/* Brand-compliant fill */}
         <div
           className={cn(
-            'relative h-full rounded-full bg-gradient-to-r shadow-sm transition-all duration-700 ease-out',
-            tint
+            'h-full rounded-full bg-gradient-to-r transition-all duration-1000 ease-out',
+            color
           )}
           style={{ width: `${value}%` }}
-        >
-          {/* Inner highlight */}
-          <span 
-            aria-hidden 
-            className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/30 via-white/10 to-transparent" 
-          />
-        </div>
+        />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 to-transparent" />
       </div>
     </div>
   );
