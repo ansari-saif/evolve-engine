@@ -5,12 +5,12 @@ import StatsCards from "../components/dashboard/StatsCards";
 import TodaysTasks from "../components/dashboard/TodaysTasks";
 import MotivationCard from "../components/dashboard/MotivationCard";
 import { LiquidGlass } from "../components/ui/liquid-glass";
-import { useUserId } from "../contexts/AppContext";
+import { useAppConfig } from "../hooks/redux/useAppConfig";
 import { performanceMetrics } from "../utils/performance";
 
 const Dashboard = () => {
   const startTime = performance.now();
-  const userId = useUserId();
+  const { userId } = useAppConfig();
 
   // Performance tracking
   useEffect(() => {

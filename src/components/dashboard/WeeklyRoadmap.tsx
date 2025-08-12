@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle, Circle, Clock, Target, AlertCircle, Loader2 } from "lucide-react";
 import { useWeeklyGoals, useWeeklyMilestones } from "../../hooks/useWeeklyGoals";
-import { useUserId } from "../../contexts/AppContext";
+import { useUserId } from "../../hooks/redux/useAppConfig";
 
 // Fallback milestones for when API fails or no data
 const fallbackMilestones = [
