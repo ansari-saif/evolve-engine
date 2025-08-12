@@ -12,6 +12,7 @@ import { useAiService } from '../hooks/useAiService';
 import { useToast } from '../hooks/use-toast';
 import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum, PhaseEnum } from '../client/models';
 import type { TaskFilter } from '../types/app';
+import type { TaskPriority, EnergyLevel } from '../components/tasks/DialogStateManager';
 
 const Tasks: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'in-progress' | 'completed'>('all');
@@ -191,8 +192,8 @@ const Tasks: React.FC = () => {
 
         return {
           description,
-          priority,
-          energy_required: energyRequired,
+          priority: priority as TaskPriority,
+          energy_required: energyRequired as EnergyLevel,
           estimated_duration: estimatedDuration,
           scheduled_for_date: scheduledForDate
         };
