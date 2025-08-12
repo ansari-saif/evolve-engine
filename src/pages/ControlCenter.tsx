@@ -99,7 +99,8 @@ const ControlCenter: React.FC = () => {
   
   // Performance tracking
   useEffect(() => {
-    performanceMetrics.componentRender('ControlCenter', startTime);
+    const endTime = performance.now();
+    console.log(`ControlCenter rendered in ${endTime - startTime}ms`);
   }, [startTime]);
 
   // App control state
@@ -144,13 +145,13 @@ const ControlCenter: React.FC = () => {
 
   const handleCreateCustomTheme = () => {
     createCustomTheme(`Custom Theme ${customThemes.length + 1}`, {
-      primary: '#6366F1',
-      secondary: '#EC4899',
-      background: '#0F172A',
-      surface: '#1E293B',
-      foreground: '#F8FAFC',
-      muted: '#334155',
-      accent: '#334155'
+      primary: tokens.colors.primary.DEFAULT,
+      secondary: tokens.colors.secondary.DEFAULT,
+      background: tokens.colors.background,
+      surface: tokens.colors.surface,
+      foreground: tokens.colors.foreground,
+      muted: tokens.colors.muted.DEFAULT,
+      accent: tokens.colors.accent.DEFAULT
     });
   };
 
