@@ -46,11 +46,15 @@ const TaskCard = React.memo(({
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   
   // SOLID: Single Responsibility - Extract stopwatch logic
-  const { showStopwatch, formattedTime } = useTaskStopwatch({
+  const stopwatchProps = {
     taskId: task.task_id,
     completionStatus: task.completion_status,
     startedAt: task.started_at,
-  });
+  };
+  
+  console.log('TaskCard stopwatch props:', stopwatchProps);
+  
+  const { showStopwatch, formattedTime } = useTaskStopwatch(stopwatchProps);
 
   // SOLID: Single Responsibility - Extract interaction logic
   const { handleAction, handleTouchStart, handleTouchEnd, handleMouseDown, handleMouseUp } = useTaskInteractions();
@@ -139,7 +143,12 @@ const TaskCard = React.memo(({
               </div>
 
               {/* SOLID: Single Responsibility - Extract stopwatch display */}
-              {showStopwatch && <TaskStopwatch formattedTime={formattedTime} />}
+              {showStopwatch && (
+                <>
+                  {console.log('Rendering stopwatch with time:', formattedTime)}
+                  <TaskStopwatch formattedTime={formattedTime} />
+                </>
+              )}
 
 
 
