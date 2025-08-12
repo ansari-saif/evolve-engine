@@ -188,7 +188,7 @@ export class TimeTrackingService {
   /**
    * Start time tracking for a task
    */
-  public startTracking(taskId: number, task: TaskResponse, resetToZero: boolean = false): TimeTrackingState {
+  public async startTracking(taskId: number, task: TaskResponse, resetToZero: boolean = false): Promise<TimeTrackingState> {
     // Stop any existing timer for this task
     this.stopTracking(taskId);
 
@@ -197,9 +197,11 @@ export class TimeTrackingService {
       .filter(([id, state]) => id !== taskId && state.isActive);
     
     // Stop all other active timers
-    otherActiveTimers.forEach(async ([otherTaskId, state]) => {
-      await this.stopTracking(otherTaskId);
-    });
+    await Promise.all(
+      otherActiveTimers.map(async ([otherTaskId, state]) => {
+        await this.stopTracking(otherTaskId);
+      })
+    );
 
     const now = performance.now();
     const existingData = extractTimeTrackingFromTask(task);

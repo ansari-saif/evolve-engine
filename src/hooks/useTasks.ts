@@ -15,6 +15,8 @@ export const useGetTasks = (): UseQueryResult<TaskResponse[], Error> => {
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
     ...createRetryConfig(2, 1000),
   });
 };
@@ -30,6 +32,8 @@ export const useGetTask = (id: number): UseQueryResult<TaskResponse, Error> => {
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
     ...createRetryConfig(2, 1000),
   });
 };
@@ -45,6 +49,8 @@ export const useGetUserTasks = (userId: string): UseQueryResult<TaskResponse[], 
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
     ...createRetryConfig(2, 1000),
   });
 };
@@ -60,6 +66,8 @@ export const useGetUserPendingTasks = (userId: string): UseQueryResult<TaskRespo
     },
     enabled: !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
     ...createRetryConfig(2, 1000),
   });
 };
@@ -75,6 +83,8 @@ export const useGetUserTodayTasks = (userId: string): UseQueryResult<TaskRespons
     },
     enabled: !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
     ...createRetryConfig(2, 1000),
   });
 };

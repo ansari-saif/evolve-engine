@@ -12,6 +12,8 @@ export const useGetUsers = (limit: number = 100, skip: number = 0): UseQueryResu
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -24,6 +26,8 @@ export const useGetUser = (telegramId: string): UseQueryResult<UserResponse, Err
     },
     enabled: !!telegramId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -36,6 +40,8 @@ export const useGetUserProfile = (telegramId: string): UseQueryResult<UserRespon
     },
     enabled: !!telegramId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 

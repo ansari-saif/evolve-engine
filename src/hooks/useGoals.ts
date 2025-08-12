@@ -12,6 +12,8 @@ export const useGetGoals = (): UseQueryResult<GoalResponse[], Error> => {
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -24,6 +26,8 @@ export const useGetGoal = (id: number): UseQueryResult<GoalResponse, Error> => {
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -36,6 +40,8 @@ export const useGetUserGoals = (userId: string): UseQueryResult<GoalResponse[], 
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -48,6 +54,8 @@ export const useGetUserPendingGoals = (userId: string): UseQueryResult<GoalRespo
     },
     enabled: !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };
 

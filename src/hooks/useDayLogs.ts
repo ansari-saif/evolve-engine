@@ -13,6 +13,8 @@ export const useGetDayLog = (id: number): UseQueryResult<DayLogResponse, Error> 
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -25,6 +27,8 @@ export const useGetUserDayLogs = (userId: string, limit: number = 10, skip: numb
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -37,6 +41,8 @@ export const useGetUserDayLogByDate = (userId: string, date: string): UseQueryRe
     },
     enabled: !!userId && !!date,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -59,6 +65,8 @@ export const useGetUserDayLogsByDateRange = (
     },
     enabled: !!userId && !!startDate && !!endDate,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -71,6 +79,8 @@ export const useGetUserDayLogStats = (userId: string): UseQueryResult<unknown, E
     },
     enabled: !!userId,
     staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnWindowFocus: false,
   });
 };
 

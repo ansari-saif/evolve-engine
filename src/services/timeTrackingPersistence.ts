@@ -258,7 +258,7 @@ export class TimeTrackingPersistenceService {
   /**
    * Check if service is online
    */
-  public isOnline(): boolean {
+  public getIsOnline(): boolean {
     return this.isOnline;
   }
 
