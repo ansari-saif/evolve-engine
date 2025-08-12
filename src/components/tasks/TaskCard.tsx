@@ -99,6 +99,15 @@ const TaskCard = React.memo(({
     performanceMetrics.userInteraction(action, startTime);
   };
 
+  // Touch-friendly interaction handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    (e.currentTarget as HTMLElement).style.transform = 'scale(0.98)';
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+  };
+
   return (
     <motion.div
       variants={cardHover}
@@ -120,10 +129,12 @@ const TaskCard = React.memo(({
                       <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
                         <Button
                           onClick={() => handleAction('start-task', () => onStatusChange(task.task_id, 'In Progress'))}
+                          onTouchStart={handleTouchStart}
+                          onTouchEnd={handleTouchEnd}
                           disabled={isLoading || task.completion_status === 'In Progress'}
                           variant="ghost"
                           size="sm"
-                          className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                          className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
                           title="Start task"
                         >
                           <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -132,10 +143,12 @@ const TaskCard = React.memo(({
                       <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
                         <Button
                           onClick={() => handleAction('complete-task', () => onComplete(task.task_id))}
+                          onTouchStart={handleTouchStart}
+                          onTouchEnd={handleTouchEnd}
                           disabled={isLoading}
                           variant="ghost"
                           size="sm"
-                          className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                          className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
                         >
                           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
@@ -145,9 +158,11 @@ const TaskCard = React.memo(({
                   <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
                     <Button
                       onClick={() => handleAction('edit-task', () => onEdit(task))}
+                      onTouchStart={handleTouchStart}
+                      onTouchEnd={handleTouchEnd}
                       variant="ghost"
                       size="sm"
-                      className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                      className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
                     >
                       <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
@@ -155,10 +170,12 @@ const TaskCard = React.memo(({
                   <motion.div variants={buttonScale} whileHover="hover" whileTap="tap">
                     <Button
                       onClick={() => handleAction('delete-task', () => onDelete(task.task_id))}
+                      onTouchStart={handleTouchStart}
+                      onTouchEnd={handleTouchEnd}
                       disabled={isLoading}
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
+                      className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 touch-manipulation"
                     >
                       <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>

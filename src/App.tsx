@@ -14,6 +14,8 @@ import BottomTabBar from "@/components/layout/BottomTabBar";
 import Header from "@/components/layout/Header";
 import MenuBar from "@/components/navigation/MenuBar";
 import { initPerformanceMonitoring } from "@/utils/performance";
+import { useAiPreloading } from "@/hooks/use-ai-preloading";
+import { createSkipLink } from "@/utils/accessibility";
 
 // Lazy load pages for better performance
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -61,6 +63,14 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const { userId, config } = useAppContext();
 
+  // Initialize AI preloading
+  useAiPreloading({
+    enabled: true,
+    idleDelay: 30000, // 30 seconds
+    preloadTasks: true,
+    preloadGoals: true,
+  });
+
   // Stable WebSocket config and options (don't recreate on every render)
   const webSocketConfig = useMemo(() => ({
     url: config.webSocketUrl + '/api/v1/ws',
@@ -86,9 +96,10 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <a {...createSkipLink('main-content')} />
       <MenuBar />
       <Header />
-      <main className="px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-24">
+      <main id="main-content" className="px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-28 pb-16 sm:pb-20 lg:pb-24">
         <Suspense fallback={<PageLoading />}>
           <Routes>
             <Route path="/welcome" element={<Index />} />
