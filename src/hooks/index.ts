@@ -25,6 +25,11 @@ export {
 } from './useGoals';
 
 export { 
+  useWeeklyGoals,
+  useWeeklyMilestones,
+} from './useWeeklyGoals';
+
+export { 
   useProgressLogs,
   useGetProgressLogs,
   useGetProgressLog,
