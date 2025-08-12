@@ -7,6 +7,7 @@ import { useGetUserTodayTasks, useCompleteTask } from '../../hooks/useTasks';
 import { useUserId } from '../../contexts/AppContext';
 import confetti from 'canvas-confetti';
 import type { TaskResponse } from '../../client/models';
+import { tokens } from '../../theme';
 import { 
   CheckCircle2, 
   Clock, 
@@ -31,12 +32,17 @@ const TodaysTasks: React.FC = () => {
       await completeTaskMutation.mutateAsync(taskId);
       setCompletedTasks(prev => new Set(prev).add(taskId));
       
-      // Trigger confetti effect with brand colors
+      // Trigger confetti effect with brand colors using design tokens
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#6366F1', '#EC4899', '#22C55E', '#8B5CF6']
+        colors: [
+          tokens.colors.primary.DEFAULT,
+          tokens.colors.secondary.DEFAULT,
+          tokens.colors.success.DEFAULT,
+          tokens.colors.accent.DEFAULT
+        ]
       });
     } catch (error) {
       console.error('Failed to complete task:', error);
@@ -154,12 +160,7 @@ const TodaysTasks: React.FC = () => {
                             >
                               {task.priority}
                             </Badge>
-                            {task.deadline && (
-                              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
-                                <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                                <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
-                              </div>
-                            )}
+                          
                           </div>
                         </div>
                       </div>

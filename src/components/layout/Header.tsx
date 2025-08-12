@@ -3,6 +3,7 @@ import { format, differenceInDays } from "date-fns";
 import { useState, useEffect } from "react";
 import { ShinyProgressHeader } from "../ui/shiny-progress-header";
 import { Button } from "../ui/button";
+import { ThemeSelector } from "../ui/theme-selector";
 import { Eye, EyeOff, Menu } from "lucide-react";
 import { useUserId } from "../../contexts/AppContext";
 import { useGetUserProgressStats, useGetUserRecentProgressLogs } from "../../hooks";
@@ -64,12 +65,17 @@ const Header = ({ onVisibilityChange, sidebarOpen, setSidebarOpen }: HeaderProps
         </Button>
       </motion.div>
 
-      {/* Toggle Button - Always visible */}
+      {/* Theme Selector and Toggle Button - Always visible */}
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="fixed top-2 right-2 sm:top-4 sm:right-4 z-50"
+        className="fixed top-2 right-2 sm:top-4 sm:right-4 z-50 flex gap-2"
       >
+        <ThemeSelector 
+          variant="outline" 
+          size="icon" 
+          className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 h-8 w-8 sm:h-10 sm:w-10"
+        />
         <Button
           variant="outline"
           size="icon"
