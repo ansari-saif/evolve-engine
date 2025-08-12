@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { SkeletonLoader, ErrorMessage, SkeletonTaskList } from '../components/ui';
+import { SkeletonLoader, ErrorMessage } from '../components/ui';
 import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, GenerateDailyTasksDialog, type CreateTaskDialogRef } from '../components/tasks';
 import { useGetUserTasks, useCreateTask, useUpdateTask, useCompleteTask, useDeleteTask, useCreateBulkTasks } from '../hooks/useTasks';
 import { useGetUserGoals } from '../hooks/useGoals';
@@ -10,14 +10,11 @@ import { Button } from '../components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { useAiService } from '../hooks/useAiService';
 import { useToast } from '../hooks/use-toast';
-import { performanceMetrics } from '../utils/performance';
 import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum, PhaseEnum } from '../client/models';
 import type { TaskFilter } from '../types/app';
 import type { TaskPriority, EnergyLevel } from '../components/tasks/DialogStateManager';
 
 const Tasks: React.FC = () => {
-  const startTime = performance.now();
-  
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'in-progress' | 'completed'>('all');
   const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
@@ -28,7 +25,6 @@ const Tasks: React.FC = () => {
     energy: 'All',
     goal: 'All'
   });
-  const [searchTerm, setSearchTerm] = useState('');
 
   const createTaskDialogRef = useRef<CreateTaskDialogRef>(null);
 
@@ -38,11 +34,6 @@ const Tasks: React.FC = () => {
 
   // Data fetching
   const { data: tasks, isLoading, error } = useGetUserTasks(userId);
-  
-  // Performance tracking
-  useEffect(() => {
-    performanceMetrics.componentRender('Tasks', startTime);
-  }, [startTime]);
   const { data: goals } = useGetUserGoals(userId);
   
   // Mutations
@@ -56,86 +47,44 @@ const Tasks: React.FC = () => {
   const { generateDailyTasks } = useAiService();
   const { toast } = useToast();
 
-  // Filtered and sorted tasks - Optimized for performance
+  // Filtered and sorted tasks
   const filteredTasks = useMemo(() => {
     if (!tasks) return [];
     
-    // Use Set for faster search lookups
-    const searchTermLower = searchTerm.toLowerCase();
-    const hasSearchTerm = searchTerm.length > 0;
-    
     const filtered = tasks.filter(task => {
-      // Search filter - optimized
-      if (hasSearchTerm && !task.description.toLowerCase().includes(searchTermLower)) {
-        return false;
-      }
-      
-      // Status filter
       if (filters.status !== 'All' && task.completion_status !== filters.status) return false;
-      
-      // Priority filter
       if (filters.priority !== 'All' && task.priority !== filters.priority) return false;
-      
-      // Energy filter
       if (filters.energy !== 'All' && task.energy_required !== filters.energy) return false;
-      
-      // Goal filter
       if (filters.goal !== 'All' && task.goal_id !== filters.goal) return false;
-      
       return true;
     });
 
-    // Optimized sorting with early returns
+    // Sort by priority, then by scheduled date, then by creation date
     const sorted = [...filtered].sort((a, b) => {
-      // Priority comparison
       const priorityOrder = { 'Urgent': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
       const aPriority = priorityOrder[a.priority || 'Medium'];
       const bPriority = priorityOrder[b.priority || 'Medium'];
       
       if (aPriority !== bPriority) return aPriority - bPriority;
       
-      // Date comparison - optimized
-      const aScheduled = a.scheduled_for_date ? new Date(a.scheduled_for_date).getTime() : 0;
-      const bScheduled = b.scheduled_for_date ? new Date(b.scheduled_for_date).getTime() : 0;
-      
-      if (aScheduled && bScheduled) {
-        return aScheduled - bScheduled;
+      if (a.scheduled_for_date && b.scheduled_for_date) {
+        return new Date(a.scheduled_for_date).getTime() - new Date(b.scheduled_for_date).getTime();
       }
       
-      // Creation date fallback
-      const aCreated = new Date(a.created_at || '').getTime();
-      const bCreated = new Date(b.created_at || '').getTime();
-      return aCreated - bCreated;
+      return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
     });
 
     return sorted;
-  }, [tasks, filters, searchTerm]);
+  }, [tasks, filters]);
 
-  // Group tasks by status for tabs - Optimized for performance
+  // Group tasks by status for tabs
   const taskGroups = useMemo(() => {
-    // Single pass grouping for better performance
     const groups = {
       all: filteredTasks,
-      pending: [] as TaskResponse[],
-      'in-progress': [] as TaskResponse[],
-      completed: [] as TaskResponse[]
+      pending: filteredTasks.filter(t => t.completion_status === 'Pending'),
+      'in-progress': filteredTasks.filter(t => t.completion_status === 'In Progress'),
+      completed: filteredTasks.filter(t => t.completion_status === 'Completed')
     };
-    
-    // Single loop instead of multiple filter operations
-    for (const task of filteredTasks) {
-      switch (task.completion_status) {
-        case 'Pending':
-          groups.pending.push(task);
-          break;
-        case 'In Progress':
-          groups['in-progress'].push(task);
-          break;
-        case 'Completed':
-          groups.completed.push(task);
-          break;
-      }
-    }
-    
     return groups;
   }, [filteredTasks]);
 
@@ -244,10 +193,6 @@ const Tasks: React.FC = () => {
     } finally {
       setLoadingTaskId(null);
     }
-  };
-
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term);
   };
 
   const handleOpenGenerateDialog = () => {
@@ -394,7 +339,9 @@ const Tasks: React.FC = () => {
           <h1 className="text-3xl font-bold">Tasks</h1>
           <SkeletonLoader className="h-10 w-32" />
         </div>
-        <SkeletonTaskList count={5} />
+        <div className="grid gap-4">
+          <SkeletonLoader count={3} className="h-32" />
+        </div>
       </div>
     );
   }
@@ -450,37 +397,33 @@ const Tasks: React.FC = () => {
       </div>
 
       {/* Task Tabs */}
-      <Tabs 
-        value={activeTab} 
-        onValueChange={(value) => setActiveTab(value as 'all' | 'pending' | 'in-progress' | 'completed')}
-        aria-label="Task status tabs"
-      >
-        <div className="flex overflow-x-auto scrollbar-hide mb-3 sm:mb-6 touch-pan-x">
-          <TabsList className="flex bg-muted/50 p-1 rounded-lg min-w-full sm:min-w-0 touch-manipulation">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'pending' | 'in-progress' | 'completed')}>
+        <div className="flex overflow-x-auto scrollbar-hide mb-3 sm:mb-6">
+          <TabsList className="flex bg-muted/50 p-1 rounded-lg min-w-full sm:min-w-0">
             <TabsTrigger 
               value="all" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
             >
               <span className="hidden sm:inline">All ({taskGroups.all.length})</span>
               <span className="sm:hidden">All</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pending" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
             >
               <span className="hidden sm:inline">Pending ({taskGroups.pending.length})</span>
               <span className="sm:hidden">Pending</span>
             </TabsTrigger>
             <TabsTrigger 
               value="in-progress" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
             >
               <span className="hidden sm:inline">In Progress ({taskGroups['in-progress'].length})</span>
               <span className="sm:hidden">Progress</span>
             </TabsTrigger>
             <TabsTrigger 
               value="completed" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
             >
               <span className="hidden sm:inline">Completed ({taskGroups.completed.length})</span>
               <span className="sm:hidden">Done</span>
@@ -494,7 +437,6 @@ const Tasks: React.FC = () => {
             filters={filters}
             setFilters={setFilters}
             goals={goals}
-            onSearchChange={handleSearchChange}
           />
         </div>
 
