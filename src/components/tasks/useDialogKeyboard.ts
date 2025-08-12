@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { DialogStateEnum } from '../../store/types';
 
 interface UseDialogKeyboardProps {
@@ -25,9 +25,39 @@ export const useDialogKeyboard = ({
   canCreate = false
 }: UseDialogKeyboardProps) => {
   
+  // Use refs to store current values to avoid recreating the callback
+  const stateRef = useRef({
+    currentState,
+    isGenerating,
+    isCreating,
+    hasValidationErrors,
+    canCreate,
+    onClose,
+    onBack,
+    onGenerate,
+    onCreate
+  });
+  
+  // Update refs when props change
+  useEffect(() => {
+    stateRef.current = {
+      currentState,
+      isGenerating,
+      isCreating,
+      hasValidationErrors,
+      canCreate,
+      onClose,
+      onBack,
+      onGenerate,
+      onCreate
+    };
+  });
+  
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    const state = stateRef.current;
+    
     // Debug logging
-    console.log('🔍 Keyboard event:', event.key, 'Ctrl:', event.ctrlKey, 'Meta:', event.metaKey, 'Current state:', currentState);
+    console.log('🔍 Keyboard event:', event.key, 'Ctrl:', event.ctrlKey, 'Meta:', event.metaKey, 'Current state:', state.currentState);
     
     // Prevent keyboard shortcuts when user is typing in input fields
     const activeElement = document.activeElement;
@@ -44,17 +74,17 @@ export const useDialogKeyboard = ({
     switch (event.key) {
       case 'Escape':
         // ESC to close dialog (if not in loading state)
-        if (!isGenerating && !isCreating) {
+        if (!state.isGenerating && !state.isCreating) {
           event.preventDefault();
-          onClose();
+          state.onClose();
         }
         break;
         
       case 'Backspace':
         // Backspace to go back (only in preview state)
-        if (currentState === DialogStateEnum.PREVIEW && !isCreating) {
+        if (state.currentState === DialogStateEnum.PREVIEW && !state.isCreating) {
           event.preventDefault();
-          onBack();
+          state.onBack();
         }
         break;
         
@@ -63,19 +93,19 @@ export const useDialogKeyboard = ({
         if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
           
-          switch (currentState) {
+          switch (state.currentState) {
             case DialogStateEnum.INITIAL:
-              if (onGenerate && !isGenerating) {
-                onGenerate();
+              if (state.onGenerate && !state.isGenerating) {
+                state.onGenerate();
               }
               break;
             case DialogStateEnum.PREVIEW:
-              if (onCreate && !isCreating && canCreate && !hasValidationErrors) {
-                onCreate();
+              if (state.onCreate && !state.isCreating && state.canCreate && !state.hasValidationErrors) {
+                state.onCreate();
               }
               break;
             case DialogStateEnum.SUCCESS:
-              onClose();
+              state.onClose();
               break;
           }
         }
@@ -86,15 +116,15 @@ export const useDialogKeyboard = ({
         // Ctrl/Cmd + G to generate tasks (only in initial state)
         console.log('🔍 G key pressed - checking conditions:', {
           ctrlOrMeta: event.ctrlKey || event.metaKey,
-          currentState,
-          isInitial: currentState === DialogStateEnum.INITIAL,
-          notGenerating: !isGenerating
+          currentState: state.currentState,
+          isInitial: state.currentState === DialogStateEnum.INITIAL,
+          notGenerating: !state.isGenerating
         });
-        if ((event.ctrlKey || event.metaKey) && currentState === DialogStateEnum.INITIAL && !isGenerating) {
+        if ((event.ctrlKey || event.metaKey) && state.currentState === DialogStateEnum.INITIAL && !state.isGenerating) {
           console.log('✅ Ctrl/Cmd + G shortcut triggered!');
           event.preventDefault();
-          if (onGenerate) {
-            onGenerate();
+          if (state.onGenerate) {
+            state.onGenerate();
           }
         }
         break;
@@ -102,10 +132,10 @@ export const useDialogKeyboard = ({
       case 'c':
       case 'C':
         // Ctrl/Cmd + C to create tasks (only in preview state)
-        if ((event.ctrlKey || event.metaKey) && currentState === DialogStateEnum.PREVIEW && !isCreating && canCreate && !hasValidationErrors) {
+        if ((event.ctrlKey || event.metaKey) && state.currentState === DialogStateEnum.PREVIEW && !state.isCreating && state.canCreate && !state.hasValidationErrors) {
           event.preventDefault();
-          if (onCreate) {
-            onCreate();
+          if (state.onCreate) {
+            state.onCreate();
           }
         }
         break;
@@ -113,23 +143,13 @@ export const useDialogKeyboard = ({
       case 'b':
       case 'B':
         // Ctrl/Cmd + B to go back (only in preview state)
-        if ((event.ctrlKey || event.metaKey) && currentState === DialogStateEnum.PREVIEW && !isCreating) {
+        if ((event.ctrlKey || event.metaKey) && state.currentState === DialogStateEnum.PREVIEW && !state.isCreating) {
           event.preventDefault();
-          onBack();
+          state.onBack();
         }
         break;
     }
-  }, [
-    currentState,
-    onClose,
-    onBack,
-    onGenerate,
-    onCreate,
-    isGenerating,
-    isCreating,
-    hasValidationErrors,
-    canCreate
-  ]);
+  }, []);
 
   useEffect(() => {
     console.log('🎹 Attaching keyboard event listener for state:', currentState);
