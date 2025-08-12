@@ -37,13 +37,28 @@ export const { setUserId, updateConfig, resetAppConfig } = appConfigSlice.action
 // Export reducer
 export default appConfigSlice.reducer;
 
-// Basic selectors
-export const selectUserId = (state: { appConfig: AppConfigState }) => state.appConfig.userId;
-export const selectConfig = (state: { appConfig: AppConfigState }) => state.appConfig.config;
-export const selectWebSocketUrl = (state: { appConfig: AppConfigState }) => state.appConfig.config.webSocketUrl;
-export const selectApiBaseUrl = (state: { appConfig: AppConfigState }) => state.appConfig.config.apiBaseUrl;
-
 // Memoized selectors for better performance
+export const selectUserId = createSelector(
+  [(state: { appConfig: AppConfigState }) => state.appConfig.userId],
+  (userId) => userId
+);
+
+export const selectConfig = createSelector(
+  [(state: { appConfig: AppConfigState }) => state.appConfig.config],
+  (config) => config
+);
+
+export const selectWebSocketUrl = createSelector(
+  [(state: { appConfig: AppConfigState }) => state.appConfig.config.webSocketUrl],
+  (webSocketUrl) => webSocketUrl
+);
+
+export const selectApiBaseUrl = createSelector(
+  [(state: { appConfig: AppConfigState }) => state.appConfig.config.apiBaseUrl],
+  (apiBaseUrl) => apiBaseUrl
+);
+
+// Composite selectors for better performance
 export const selectAppConfigState = createSelector(
   [selectUserId, selectConfig],
   (userId, config) => ({ userId, config })

@@ -1,9 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import type { 
   FormState, 
   FormData, 
   SetFormDataPayload, 
-  SetValidationErrorsPayload
+  SetValidationErrorsPayload 
 } from '../types';
 
 // Initial state
@@ -42,10 +42,9 @@ const formSlice = createSlice({
         };
       }
       state.forms[formId].values[field] = value;
-      state.forms[formId].touched[field] = true;
     },
     
-    // Set form field as touched
+    // Set form field touched state
     setFieldTouched: (state, action: PayloadAction<{ formId: string; field: string; touched: boolean }>) => {
       const { formId, field, touched } = action.payload;
       if (!state.forms[formId]) {
@@ -123,30 +122,48 @@ export const {
 // Export reducer
 export default formSlice.reducer;
 
-// Export selectors
-export const selectForm = (formId: string) => (state: { form: FormState }) => 
-  state.form.forms[formId] || { values: {}, touched: {}, errors: {} };
+// Memoized selectors for better performance
+export const selectForm = (formId: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]],
+  (form) => form || { values: {}, touched: {}, errors: {} }
+);
 
-export const selectFormValues = (formId: string) => (state: { form: FormState }) => 
-  state.form.forms[formId]?.values || {};
+export const selectFormValues = (formId: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]?.values],
+  (values) => values || {}
+);
 
-export const selectFormErrors = (formId: string) => (state: { form: FormState }) => 
-  state.form.forms[formId]?.errors || {};
+export const selectFormErrors = (formId: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]?.errors],
+  (errors) => errors || {}
+);
 
-export const selectFormTouched = (formId: string) => (state: { form: FormState }) => 
-  state.form.forms[formId]?.touched || {};
+export const selectFormTouched = (formId: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]?.touched],
+  (touched) => touched || {}
+);
 
-export const selectFormField = (formId: string, field: string) => (state: { form: FormState }) => 
-  state.form.forms[formId]?.values[field];
+export const selectFormField = (formId: string, field: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]?.values[field]],
+  (value) => value
+);
 
-export const selectFormFieldError = (formId: string, field: string) => (state: { form: FormState }) => 
-  state.form.forms[formId]?.errors[field];
+export const selectFormFieldError = (formId: string, field: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]?.errors[field]],
+  (error) => error
+);
 
-export const selectFormFieldTouched = (formId: string, field: string) => (state: { form: FormState }) => 
-  state.form.forms[formId]?.touched[field] || false;
+export const selectFormFieldTouched = (formId: string, field: string) => createSelector(
+  [(state: { form: FormState }) => state.form.forms[formId]?.touched[field]],
+  (touched) => touched || false
+);
 
-export const selectIsFormSubmitting = (formId: string) => (state: { form: FormState }) => 
-  state.form.isSubmitting[formId] || false;
+export const selectIsFormSubmitting = (formId: string) => createSelector(
+  [(state: { form: FormState }) => state.form.isSubmitting[formId]],
+  (isSubmitting) => isSubmitting || false
+);
 
-export const selectValidationErrors = (formId: string) => (state: { form: FormState }) => 
-  state.form.validationErrors[formId] || {};
+export const selectValidationErrors = (formId: string) => createSelector(
+  [(state: { form: FormState }) => state.form.validationErrors[formId]],
+  (errors) => errors || {}
+);

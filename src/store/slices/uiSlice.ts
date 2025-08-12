@@ -146,13 +146,28 @@ export const {
 // Export reducer
 export default uiSlice.reducer;
 
-// Basic selectors
-export const selectToasts = (state: { ui: UIState }) => state.ui.toasts;
-export const selectLoadingStates = (state: { ui: UIState }) => state.ui.loadingStates;
-export const selectModals = (state: { ui: UIState }) => state.ui.modals;
-export const selectSidebar = (state: { ui: UIState }) => state.ui.sidebar;
-
 // Memoized selectors for better performance
+export const selectToasts = createSelector(
+  [(state: { ui: UIState }) => state.ui.toasts],
+  (toasts) => toasts
+);
+
+export const selectLoadingStates = createSelector(
+  [(state: { ui: UIState }) => state.ui.loadingStates],
+  (loadingStates) => loadingStates
+);
+
+export const selectModals = createSelector(
+  [(state: { ui: UIState }) => state.ui.modals],
+  (modals) => modals
+);
+
+export const selectSidebar = createSelector(
+  [(state: { ui: UIState }) => state.ui.sidebar],
+  (sidebar) => sidebar
+);
+
+// Composite selectors for better performance
 export const selectActiveToasts = createSelector(
   [selectToasts],
   (toasts) => toasts.filter(toast => toast.open)
@@ -180,7 +195,7 @@ export const selectOpenModals = createSelector(
     .map(([key]) => key)
 );
 
-// Memoized selectors for specific loading states
+// Selector factories for parameterized selectors
 export const selectIsLoading = (key: LoadingStateKey) => createSelector(
   [selectLoadingStates],
   (loadingStates) => loadingStates[key] || false

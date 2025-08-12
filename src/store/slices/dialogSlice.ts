@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import type { 
   DialogState, 
   DialogStateEnum, 
@@ -11,9 +11,9 @@ import type {
   SetFormErrorsPayload
 } from '../types';
 
-// Initial state based on current DialogStateManager
+// Initial state
 const initialState: DialogState = {
-  currentState: 'INITIAL' as DialogStateEnum,
+  currentState: DialogStateEnum.INITIAL,
   energyLevel: 5,
   currentPhase: null,
   generatedTasks: [],
@@ -159,15 +159,58 @@ export const {
 // Export reducer
 export default dialogSlice.reducer;
 
-// Export selectors
-export const selectDialogState = (state: { dialog: DialogState }) => state.dialog.currentState;
-export const selectEnergyLevel = (state: { dialog: DialogState }) => state.dialog.energyLevel;
-export const selectCurrentPhase = (state: { dialog: DialogState }) => state.dialog.currentPhase;
-export const selectGeneratedTasks = (state: { dialog: DialogState }) => state.dialog.generatedTasks;
-export const selectEditedTasks = (state: { dialog: DialogState }) => state.dialog.editedTasks;
-export const selectIsGenerating = (state: { dialog: DialogState }) => state.dialog.isGenerating;
-export const selectIsCreating = (state: { dialog: DialogState }) => state.dialog.isCreating;
-export const selectIsSuccess = (state: { dialog: DialogState }) => state.dialog.isSuccess;
-export const selectGenerationError = (state: { dialog: DialogState }) => state.dialog.generationError;
-export const selectCreationError = (state: { dialog: DialogState }) => state.dialog.creationError;
-export const selectFormErrors = (state: { dialog: DialogState }) => state.dialog.formErrors;
+// Memoized selectors for better performance
+export const selectDialogState = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.currentState],
+  (currentState) => currentState
+);
+
+export const selectEnergyLevel = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.energyLevel],
+  (energyLevel) => energyLevel
+);
+
+export const selectCurrentPhase = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.currentPhase],
+  (currentPhase) => currentPhase
+);
+
+export const selectGeneratedTasks = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.generatedTasks],
+  (generatedTasks) => generatedTasks
+);
+
+export const selectEditedTasks = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.editedTasks],
+  (editedTasks) => editedTasks
+);
+
+export const selectIsGenerating = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.isGenerating],
+  (isGenerating) => isGenerating
+);
+
+export const selectIsCreating = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.isCreating],
+  (isCreating) => isCreating
+);
+
+export const selectIsSuccess = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.isSuccess],
+  (isSuccess) => isSuccess
+);
+
+export const selectGenerationError = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.generationError],
+  (generationError) => generationError
+);
+
+export const selectCreationError = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.creationError],
+  (creationError) => creationError
+);
+
+export const selectFormErrors = createSelector(
+  [(state: { dialog: DialogState }) => state.dialog.formErrors],
+  (formErrors) => formErrors
+);

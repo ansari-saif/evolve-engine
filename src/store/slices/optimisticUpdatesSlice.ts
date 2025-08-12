@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import type { 
   OptimisticUpdatesState, 
   OptimisticTask, 
@@ -99,18 +99,28 @@ export const {
 // Export reducer
 export default optimisticUpdatesSlice.reducer;
 
-// Export selectors
-export const selectOptimisticTasks = (state: { optimisticUpdates: OptimisticUpdatesState }) => 
-  state.optimisticUpdates.optimisticTasks;
+// Memoized selectors for better performance
+export const selectOptimisticTasks = createSelector(
+  [(state: { optimisticUpdates: OptimisticUpdatesState }) => state.optimisticUpdates.optimisticTasks],
+  (optimisticTasks) => optimisticTasks
+);
 
-export const selectPendingOperations = (state: { optimisticUpdates: OptimisticUpdatesState }) => 
-  state.optimisticUpdates.pendingOperations;
+export const selectPendingOperations = createSelector(
+  [(state: { optimisticUpdates: OptimisticUpdatesState }) => state.optimisticUpdates.pendingOperations],
+  (pendingOperations) => pendingOperations
+);
 
-export const selectHasOptimisticTasks = (state: { optimisticUpdates: OptimisticUpdatesState }) => 
-  state.optimisticUpdates.optimisticTasks.length > 0;
+export const selectHasOptimisticTasks = createSelector(
+  [selectOptimisticTasks],
+  (optimisticTasks) => optimisticTasks.length > 0
+);
 
-export const selectOptimisticTask = (taskId: number) => (state: { optimisticUpdates: OptimisticUpdatesState }) => 
-  state.optimisticUpdates.optimisticTasks.find(task => task.task_id === taskId);
+export const selectOptimisticTask = (taskId: number) => createSelector(
+  [selectOptimisticTasks],
+  (optimisticTasks) => optimisticTasks.find(task => task.task_id === taskId)
+);
 
-export const selectPendingOperation = (operationId: string) => (state: { optimisticUpdates: OptimisticUpdatesState }) => 
-  state.optimisticUpdates.pendingOperations[operationId];
+export const selectPendingOperation = (operationId: string) => createSelector(
+  [selectPendingOperations],
+  (pendingOperations) => pendingOperations[operationId]
+);

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import type { NavigationState, BreadcrumbItem, NavigatePayload } from '../types';
 
 const initialState: NavigationState = {
@@ -41,5 +41,34 @@ const navigationSlice = createSlice({
 export const { navigate, goBack, setBreadcrumbs, resetNavigation } = navigationSlice.actions;
 export default navigationSlice.reducer;
 
-export const selectCurrentRoute = (state: { navigation: NavigationState }) => state.navigation.currentRoute;
-export const selectBreadcrumbs = (state: { navigation: NavigationState }) => state.navigation.breadcrumbs;
+// Memoized selectors for better performance
+export const selectCurrentRoute = createSelector(
+  [(state: { navigation: NavigationState }) => state.navigation.currentRoute],
+  (currentRoute) => currentRoute
+);
+
+export const selectPreviousRoute = createSelector(
+  [(state: { navigation: NavigationState }) => state.navigation.previousRoute],
+  (previousRoute) => previousRoute
+);
+
+export const selectNavigationHistory = createSelector(
+  [(state: { navigation: NavigationState }) => state.navigation.navigationHistory],
+  (navigationHistory) => navigationHistory
+);
+
+export const selectBreadcrumbs = createSelector(
+  [(state: { navigation: NavigationState }) => state.navigation.breadcrumbs],
+  (breadcrumbs) => breadcrumbs
+);
+
+// Composite selectors
+export const selectNavigationState = createSelector(
+  [selectCurrentRoute, selectPreviousRoute, selectNavigationHistory, selectBreadcrumbs],
+  (currentRoute, previousRoute, navigationHistory, breadcrumbs) => ({
+    currentRoute,
+    previousRoute,
+    navigationHistory,
+    breadcrumbs,
+  })
+);
