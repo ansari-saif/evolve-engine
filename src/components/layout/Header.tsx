@@ -71,11 +71,6 @@ const Header = ({ onVisibilityChange, sidebarOpen, setSidebarOpen }: HeaderProps
         animate={{ opacity: 1, x: 0 }}
         className="fixed top-2 right-2 sm:top-4 sm:right-4 z-50 flex gap-2"
       >
-        <ThemeSelector 
-          variant="outline" 
-          size="icon" 
-          className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 h-8 w-8 sm:h-10 sm:w-10"
-        />
         <Button
           variant="outline"
           size="icon"
