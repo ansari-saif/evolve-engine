@@ -25,8 +25,8 @@ export interface StopwatchProps {
   disabled?: boolean;
   /** Whether the stopwatch is in display-only mode (no internal timer management) */
   displayOnly?: boolean;
-  /** Time format: 'HH:MM:SS' or 'MM:SS:MS' */
-  timeFormat?: 'HH:MM:SS' | 'MM:SS:MS';
+  /** Time format: 'HH:MM:SS', 'MM:SS:MS', or 'HH:MM:SS:MS' */
+  timeFormat?: 'HH:MM:SS' | 'MM:SS:MS' | 'HH:MM:SS:MS';
 }
 
 export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
@@ -43,10 +43,11 @@ export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
   displayOnly = false,
   timeFormat = 'MM:SS:MS'
 }) => {
-  const [time, setTime] = useState(autoStart ? 0 : initialTime);
+  console.log('initialTime', initialTime);
+  const [time, setTime] = useState(initialTime);
   const [isRunning, setIsRunning] = useState(autoStart && !displayOnly);
   const [startTime, setStartTime] = useState<number | null>((autoStart && !displayOnly) ? Date.now() : null);
-  const [pausedTime, setPausedTime] = useState(autoStart ? 0 : initialTime);
+  const [pausedTime, setPausedTime] = useState(initialTime);
   const animationFrameRef = useRef<number>();
 
   // Format time based on the specified format
@@ -57,6 +58,13 @@ export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
       const secs = Math.floor(seconds % 60);
       
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    } else if (timeFormat === 'HH:MM:SS:MS') {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      const milliseconds = Math.floor((seconds - Math.floor(seconds)) * 1000);
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}:${milliseconds.toString().padStart(3, '0')}`;
     } else {
       // MM:SS:MS format
       const totalSeconds = Math.floor(seconds);
@@ -86,68 +94,6 @@ export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
     }
   }, [isRunning, startTime, pausedTime, onTimeChange]);
 
-  // Start the stopwatch
-  const handleStart = useCallback(() => {
-    if (disabled) return;
-    
-    setIsRunning(true);
-    setStartTime(Date.now());
-    setTime(0); // Reset to zero when starting
-    setPausedTime(0); // Reset paused time to zero
-    
-    if (onStart) {
-      onStart();
-    }
-  }, [disabled, onStart]);
-
-  // Pause the stopwatch
-  const handlePause = useCallback(() => {
-    if (disabled) return;
-    
-    setIsRunning(false);
-    setPausedTime(time);
-    setStartTime(null);
-    
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    
-    if (onPause) {
-      onPause();
-    }
-  }, [disabled, time, onPause]);
-
-  // Reset the stopwatch
-  const handleReset = useCallback(() => {
-    if (disabled) return;
-    
-    setIsRunning(false);
-    setTime(initialTime);
-    setPausedTime(initialTime);
-    setStartTime(null);
-    
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    
-    if (onReset) {
-      onReset();
-    }
-    
-    if (onTimeChange) {
-      onTimeChange(initialTime);
-    }
-  }, [disabled, initialTime, onReset, onTimeChange]);
-
-  // Toggle between start and pause
-  const handleToggle = useCallback(() => {
-    if (isRunning) {
-      handlePause();
-    } else {
-      handleStart();
-    }
-  }, [isRunning, handleStart, handlePause]);
-
   // Start update loop when running (only when not in display-only mode)
   useEffect(() => {
     if (displayOnly) return;
@@ -163,16 +109,6 @@ export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
     };
   }, [isRunning, updateTime, displayOnly]);
 
-  // Update time when initialTime changes
-  useEffect(() => {
-    if (displayOnly) {
-      // In display-only mode, always update time from initialTime
-      setTime(initialTime);
-    } else if (!isRunning) {
-      setTime(initialTime);
-      setPausedTime(initialTime);
-    }
-  }, [initialTime, isRunning, displayOnly]);
 
   // Handle autoStart prop changes (only when not in display-only mode)
   useEffect(() => {
@@ -229,36 +165,6 @@ export const Stopwatch: React.FC<StopwatchProps> = React.memo(({
       >
         {formatTime(time)}
       </div>
-      
-      {showControls && (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size={buttonSize[size]}
-            onClick={handleToggle}
-            disabled={disabled}
-            aria-label={isRunning ? 'Pause stopwatch' : 'Start stopwatch'}
-            className="h-8 w-8 p-0"
-          >
-            {isRunning ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-          </Button>
-          
-          <Button
-            variant="outline"
-            size={buttonSize[size]}
-            onClick={handleReset}
-            disabled={disabled || (time === initialTime && !isRunning)}
-            aria-label="Reset stopwatch"
-            className="h-8 w-8 p-0"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 });
