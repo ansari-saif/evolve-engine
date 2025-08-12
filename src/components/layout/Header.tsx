@@ -96,12 +96,13 @@ const Header = ({ onVisibilityChange, sidebarOpen, setSidebarOpen }: HeaderProps
         <div className="px-4 py-3 sm:px-6 sm:py-4">
           <ShinyProgressHeader
             title="Startup Journey"
-            subtitle={`${format(today, "EEEE, MMMM do")} • ${daysRemaining} days left`}
+            subtitle={`${format(today, "EEEE, MMMM do")}`}
             tasksCompleted={tasksCompleted}
             tasksPlanned={tasksPlanned}
             moodScore={moodScore}
             energyLevel={energyLevel}
             focusScore={focusScore}
+            daysRemaining={daysRemaining}
           />
         </div>
       </motion.header>
