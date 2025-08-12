@@ -114,9 +114,12 @@ Quick task to complete`;
           Bulk Create
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px]" aria-describedby="bulk-create-description">
         <DialogHeader>
           <DialogTitle>Bulk Create Tasks</DialogTitle>
+          <p id="bulk-create-description" className="text-sm text-muted-foreground">
+            Create multiple tasks at once. Enter task descriptions separated by new lines, and they will be created with the selected settings.
+          </p>
         </DialogHeader>
         <div className="space-y-6">
           <div>

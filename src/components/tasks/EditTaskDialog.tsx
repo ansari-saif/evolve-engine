@@ -48,9 +48,12 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
 
   return (
     <Dialog open={true} onOpenChange={() => onCancel()}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]" aria-describedby="edit-task-description">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
+          <p id="edit-task-description" className="text-sm text-muted-foreground">
+            Modify the task details below. You can update the description, priority, energy level, and other properties.
+          </p>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

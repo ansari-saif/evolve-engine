@@ -55,49 +55,86 @@ const Tasks: React.FC = () => {
   const { generateDailyTasks } = useAiService();
   const { toast } = useToast();
 
-  // Filtered and sorted tasks
+  // Filtered and sorted tasks - Optimized for performance
   const filteredTasks = useMemo(() => {
     if (!tasks) return [];
     
+    // Use Set for faster search lookups
+    const searchTermLower = searchTerm.toLowerCase();
+    const hasSearchTerm = searchTerm.length > 0;
+    
     const filtered = tasks.filter(task => {
-      // Search filter
-      if (searchTerm && !task.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+      // Search filter - optimized
+      if (hasSearchTerm && !task.description.toLowerCase().includes(searchTermLower)) {
         return false;
       }
       
+      // Status filter
       if (filters.status !== 'All' && task.completion_status !== filters.status) return false;
+      
+      // Priority filter
       if (filters.priority !== 'All' && task.priority !== filters.priority) return false;
+      
+      // Energy filter
       if (filters.energy !== 'All' && task.energy_required !== filters.energy) return false;
+      
+      // Goal filter
       if (filters.goal !== 'All' && task.goal_id !== filters.goal) return false;
+      
       return true;
     });
 
-    // Sort by priority, then by scheduled date, then by creation date
+    // Optimized sorting with early returns
     const sorted = [...filtered].sort((a, b) => {
+      // Priority comparison
       const priorityOrder = { 'Urgent': 0, 'High': 1, 'Medium': 2, 'Low': 3 };
       const aPriority = priorityOrder[a.priority || 'Medium'];
       const bPriority = priorityOrder[b.priority || 'Medium'];
       
       if (aPriority !== bPriority) return aPriority - bPriority;
       
-      if (a.scheduled_for_date && b.scheduled_for_date) {
-        return new Date(a.scheduled_for_date).getTime() - new Date(b.scheduled_for_date).getTime();
+      // Date comparison - optimized
+      const aScheduled = a.scheduled_for_date ? new Date(a.scheduled_for_date).getTime() : 0;
+      const bScheduled = b.scheduled_for_date ? new Date(b.scheduled_for_date).getTime() : 0;
+      
+      if (aScheduled && bScheduled) {
+        return aScheduled - bScheduled;
       }
       
-      return new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime();
+      // Creation date fallback
+      const aCreated = new Date(a.created_at || '').getTime();
+      const bCreated = new Date(b.created_at || '').getTime();
+      return aCreated - bCreated;
     });
 
     return sorted;
   }, [tasks, filters, searchTerm]);
 
-  // Group tasks by status for tabs
+  // Group tasks by status for tabs - Optimized for performance
   const taskGroups = useMemo(() => {
+    // Single pass grouping for better performance
     const groups = {
       all: filteredTasks,
-      pending: filteredTasks.filter(t => t.completion_status === 'Pending'),
-      'in-progress': filteredTasks.filter(t => t.completion_status === 'In Progress'),
-      completed: filteredTasks.filter(t => t.completion_status === 'Completed')
+      pending: [] as TaskResponse[],
+      'in-progress': [] as TaskResponse[],
+      completed: [] as TaskResponse[]
     };
+    
+    // Single loop instead of multiple filter operations
+    for (const task of filteredTasks) {
+      switch (task.completion_status) {
+        case 'Pending':
+          groups.pending.push(task);
+          break;
+        case 'In Progress':
+          groups['in-progress'].push(task);
+          break;
+        case 'Completed':
+          groups.completed.push(task);
+          break;
+      }
+    }
+    
     return groups;
   }, [filteredTasks]);
 

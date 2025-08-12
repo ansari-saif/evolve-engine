@@ -9,24 +9,34 @@ interface UseTaskStopwatchProps {
 export const useTaskStopwatch = ({ taskId, completionStatus, startedAt }: UseTaskStopwatchProps) => {
   const [showStopwatch, setShowStopwatch] = useState(false);
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [localStartTime, setLocalStartTime] = useState<number | null>(null);
 
-  // Show stopwatch when task is in progress
+  // Show stopwatch when task is in progress and handle start time
   useEffect(() => {
     if (completionStatus === 'In Progress') {
       setShowStopwatch(true);
+      
+      // If startedAt is available, use it; otherwise use current time
+      if (startedAt) {
+        setLocalStartTime(new Date(startedAt).getTime());
+      } else {
+        // If no startedAt but status is 'In Progress', use current time
+        setLocalStartTime(Date.now());
+      }
     } else {
       setShowStopwatch(false);
+      setLocalStartTime(null);
     }
-  }, [completionStatus]);
+  }, [completionStatus, startedAt]);
 
   // Real-time stopwatch update (every 100ms for smooth display)
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (showStopwatch && startedAt) {
+    if (showStopwatch && localStartTime) {
       interval = setInterval(() => {
         setCurrentTime(Date.now());
-      }, 100); // Update every 100ms for smooth millisecond display
+      }, 200); // Update every 200ms for better performance while maintaining smooth display
     }
     
     return () => {
@@ -34,16 +44,15 @@ export const useTaskStopwatch = ({ taskId, completionStatus, startedAt }: UseTas
         clearInterval(interval);
       }
     };
-  }, [showStopwatch, startedAt]);
+  }, [showStopwatch, localStartTime]);
 
   // Calculate elapsed time with millisecond precision
   const elapsedTime = useMemo(() => {
-    if (!startedAt || completionStatus !== 'In Progress') {
+    if (!localStartTime || completionStatus !== 'In Progress') {
       return 0;
     }
-    const startTime = new Date(startedAt).getTime();
-    return currentTime - startTime;
-  }, [startedAt, completionStatus, currentTime]);
+    return currentTime - localStartTime;
+  }, [localStartTime, completionStatus, currentTime]);
 
   // Format elapsed time as HH:MM:SS.mm
   const formattedTime = useMemo(() => {

@@ -99,9 +99,12 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
           <span className="ml-2 text-xs opacity-60">⌘K</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px]" aria-describedby="create-task-description">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
+          <p id="create-task-description" className="text-sm text-muted-foreground">
+            Add a new task to your list. Fill in the details below to create a task with priority, energy level, and optional scheduling.
+          </p>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
