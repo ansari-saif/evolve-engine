@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -7,9 +7,12 @@ import { Textarea } from '../components/ui/textarea';
 import { LoadingSpinner, SkeletonLoader, ErrorMessage } from '../components/ui';
 import { useGetUserDayLogs, useCreateDayLog } from '../hooks/useDayLogs';
 import { useUserId } from '../contexts/AppContext';
+import { performanceMetrics } from '../utils/performance';
 import type { DayLogResponse } from '../client/models';
 
 const Diary: React.FC = () => {
+  const startTime = performance.now();
+  
   const [newLogTitle, setNewLogTitle] = useState('');
   const [newLogContent, setNewLogContent] = useState('');
   const [newLogMood, setNewLogMood] = useState('');
@@ -19,6 +22,11 @@ const Diary: React.FC = () => {
 
   const { data: dayLogs, isLoading, error } = useGetUserDayLogs(userId);
   const createDayLogMutation = useCreateDayLog();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Diary', startTime);
+  }, [startTime]);
 
   const handleCreateDayLog = async () => {
     if (!newLogContent.trim()) return;

@@ -1,13 +1,21 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import WeeklyRoadmap from "../components/dashboard/WeeklyRoadmap";
 import StatsCards from "../components/dashboard/StatsCards";
 import TodaysTasks from "../components/dashboard/TodaysTasks";
 import MotivationCard from "../components/dashboard/MotivationCard";
 import { LiquidGlass } from "../components/ui/liquid-glass";
 import { useUserId } from "../contexts/AppContext";
+import { performanceMetrics } from "../utils/performance";
 
 const Dashboard = () => {
+  const startTime = performance.now();
   const userId = useUserId();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Dashboard', startTime);
+  }, [startTime]);
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-full">

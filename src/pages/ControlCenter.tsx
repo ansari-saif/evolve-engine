@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { performanceMetrics } from '../utils/performance';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -73,6 +74,8 @@ interface CustomTheme {
 }
 
 const ControlCenter: React.FC = () => {
+  const startTime = performance.now();
+  
   const { theme, setTheme, availableThemes } = useTheme();
   const {
     updateToken,
@@ -94,6 +97,11 @@ const ControlCenter: React.FC = () => {
   const [tokenValue, setTokenValue] = useState('');
   const [selectedTokenCategory, setSelectedTokenCategory] = useState<string>('');
   
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('ControlCenter', startTime);
+  }, [startTime]);
+
   // App control state
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);

@@ -1,11 +1,19 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { performanceMetrics } from "../utils/performance";
 import { Button } from "@/components/ui/button";
 import startupHero from "@/assets/startup-hero.jpg";
 
 const Index = () => {
+  const startTime = performance.now();
   const navigate = useNavigate();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Index', startTime);
+  }, [startTime]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">

@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Progress } from '../components/ui/progress';
-import { LoadingSpinner, SkeletonLoader, ErrorMessage } from '../components/ui';
+import { LoadingSpinner, SkeletonLoader, ErrorMessage, SkeletonGoalList } from '../components/ui';
 import { useGetUserGoals, useCreateGoal } from '../hooks/useGoals';
 import { useUserId } from '../contexts/AppContext';
+import { performanceMetrics } from '../utils/performance';
 import type { GoalResponse } from '../client/models';
 
 const Goals: React.FC = () => {
+  const startTime = performance.now();
+  
   const [newGoalTitle, setNewGoalTitle] = useState('');
   const [newGoalDescription, setNewGoalDescription] = useState('');
   const [newGoalType, setNewGoalType] = useState<'Yearly' | 'Quarterly' | 'Monthly' | 'Weekly'>('Monthly');
@@ -20,6 +23,11 @@ const Goals: React.FC = () => {
 
   const { data: goals, isLoading, error } = useGetUserGoals(userId);
   const createGoalMutation = useCreateGoal();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Goals', startTime);
+  }, [startTime]);
 
   const handleCreateGoal = async () => {
     if (!newGoalTitle.trim()) return;
@@ -46,9 +54,7 @@ const Goals: React.FC = () => {
     return (
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6">Goals</h1>
-        <div className="grid gap-3 sm:gap-4">
-          <SkeletonLoader count={3} className="h-24 sm:h-32" />
-        </div>
+        <SkeletonGoalList count={3} />
       </div>
     );
   }

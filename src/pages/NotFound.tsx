@@ -1,8 +1,15 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { performanceMetrics } from "../utils/performance";
 
 const NotFound = () => {
+  const startTime = performance.now();
   const location = useLocation();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('NotFound', startTime);
+  }, [startTime]);
 
   useEffect(() => {
     console.error(

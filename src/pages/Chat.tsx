@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { performanceMetrics } from "../utils/performance";
 import { useChatCompletion, useUserPrompts } from "../hooks/useChat";
 import { GlassIconButton } from "../components/ui/glass-icon-button";
 import { useNotification } from "@/hooks/use-notification";
@@ -23,6 +24,8 @@ function TypingDots() {
 }
 
 export default function Chat() {
+  const startTime = performance.now();
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: crypto.randomUUID(),
@@ -91,6 +94,11 @@ export default function Chat() {
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages.length]);
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Chat', startTime);
+  }, [startTime]);
 
   // Try to request permission early (non-blocking)
   useEffect(() => {

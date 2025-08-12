@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { SkeletonLoader, ErrorMessage } from '../components/ui';
+import { SkeletonLoader, ErrorMessage, SkeletonTaskList } from '../components/ui';
 import { TaskCard, CreateTaskDialog, BulkCreateDialog, EditTaskDialog, TaskFilters, GenerateDailyTasksDialog, type CreateTaskDialogRef } from '../components/tasks';
 import { useGetUserTasks, useCreateTask, useUpdateTask, useCompleteTask, useDeleteTask, useCreateBulkTasks } from '../hooks/useTasks';
 import { useGetUserGoals } from '../hooks/useGoals';
@@ -10,11 +10,14 @@ import { Button } from '../components/ui/button';
 import { Sparkles } from 'lucide-react';
 import { useAiService } from '../hooks/useAiService';
 import { useToast } from '../hooks/use-toast';
+import { performanceMetrics } from '../utils/performance';
 import type { TaskResponse, TaskCreate, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum, PhaseEnum } from '../client/models';
 import type { TaskFilter } from '../types/app';
 import type { TaskPriority, EnergyLevel } from '../components/tasks/DialogStateManager';
 
 const Tasks: React.FC = () => {
+  const startTime = performance.now();
+  
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'in-progress' | 'completed'>('all');
   const [editingTask, setEditingTask] = useState<TaskResponse | null>(null);
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
@@ -33,6 +36,11 @@ const Tasks: React.FC = () => {
 
   // Data fetching
   const { data: tasks, isLoading, error } = useGetUserTasks(userId);
+  
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Tasks', startTime);
+  }, [startTime]);
   const { data: goals } = useGetUserGoals(userId);
   
   // Mutations
@@ -313,9 +321,7 @@ const Tasks: React.FC = () => {
           <h1 className="text-3xl font-bold">Tasks</h1>
           <SkeletonLoader className="h-10 w-32" />
         </div>
-        <div className="grid gap-4">
-          <SkeletonLoader count={3} className="h-32" />
-        </div>
+        <SkeletonTaskList count={5} />
       </div>
     );
   }

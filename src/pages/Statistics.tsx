@@ -1,7 +1,16 @@
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { BarChart3, TrendingUp } from "lucide-react";
+import { performanceMetrics } from "../utils/performance";
 
 const Statistics = () => {
+  const startTime = performance.now();
+
+  // Performance tracking
+  useEffect(() => {
+    performanceMetrics.componentRender('Statistics', startTime);
+  }, [startTime]);
+
   return (
     <div className="space-y-6 pt-16">
       <motion.div
