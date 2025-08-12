@@ -264,7 +264,7 @@ export default function Chat() {
   );
 
   return (
-    <div className="mx-auto max-w-3xl h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] flex flex-col px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6">
+    <div className="mx-auto max-w-3xl h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)] flex flex-col px-3 sm:px-4 lg:px-6 py-3 sm:py-4 lg:py-6" role="main" aria-label="AI Chat Interface">
       {/* Header */}
       <div className="pb-2 sm:pb-3">
         <h1 className="text-lg sm:text-xl font-semibold">Chat</h1>

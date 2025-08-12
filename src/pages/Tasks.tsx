@@ -27,6 +27,7 @@ const Tasks: React.FC = () => {
     energy: 'All',
     goal: 'All'
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   const createTaskDialogRef = useRef<CreateTaskDialogRef>(null);
 
@@ -59,6 +60,11 @@ const Tasks: React.FC = () => {
     if (!tasks) return [];
     
     const filtered = tasks.filter(task => {
+      // Search filter
+      if (searchTerm && !task.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      
       if (filters.status !== 'All' && task.completion_status !== filters.status) return false;
       if (filters.priority !== 'All' && task.priority !== filters.priority) return false;
       if (filters.energy !== 'All' && task.energy_required !== filters.energy) return false;
@@ -82,7 +88,7 @@ const Tasks: React.FC = () => {
     });
 
     return sorted;
-  }, [tasks, filters]);
+  }, [tasks, filters, searchTerm]);
 
   // Group tasks by status for tabs
   const taskGroups = useMemo(() => {
@@ -175,6 +181,10 @@ const Tasks: React.FC = () => {
         console.error('Failed to delete task: (Error logging failed)');
       }
     }
+  };
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
   };
 
   const handleOpenGenerateDialog = () => {
@@ -377,33 +387,37 @@ const Tasks: React.FC = () => {
       </div>
 
       {/* Task Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'all' | 'pending' | 'in-progress' | 'completed')}>
-        <div className="flex overflow-x-auto scrollbar-hide mb-3 sm:mb-6">
-          <TabsList className="flex bg-muted/50 p-1 rounded-lg min-w-full sm:min-w-0">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => setActiveTab(value as 'all' | 'pending' | 'in-progress' | 'completed')}
+        aria-label="Task status tabs"
+      >
+        <div className="flex overflow-x-auto scrollbar-hide mb-3 sm:mb-6 touch-pan-x">
+          <TabsList className="flex bg-muted/50 p-1 rounded-lg min-w-full sm:min-w-0 touch-manipulation">
             <TabsTrigger 
               value="all" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
             >
               <span className="hidden sm:inline">All ({taskGroups.all.length})</span>
               <span className="sm:hidden">All</span>
             </TabsTrigger>
             <TabsTrigger 
               value="pending" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
             >
               <span className="hidden sm:inline">Pending ({taskGroups.pending.length})</span>
               <span className="sm:hidden">Pending</span>
             </TabsTrigger>
             <TabsTrigger 
               value="in-progress" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
             >
               <span className="hidden sm:inline">In Progress ({taskGroups['in-progress'].length})</span>
               <span className="sm:hidden">Progress</span>
             </TabsTrigger>
             <TabsTrigger 
               value="completed" 
-              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px]"
+              className="flex-1 sm:flex-initial whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-muted-foreground hover:text-foreground min-h-[36px] sm:min-h-[40px] touch-manipulation"
             >
               <span className="hidden sm:inline">Completed ({taskGroups.completed.length})</span>
               <span className="sm:hidden">Done</span>
@@ -417,6 +431,7 @@ const Tasks: React.FC = () => {
             filters={filters}
             setFilters={setFilters}
             goals={goals}
+            onSearchChange={handleSearchChange}
           />
         </div>
 

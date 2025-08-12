@@ -16,7 +16,7 @@ const Index = () => {
   }, [startTime]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden" role="main" aria-labelledby="index-heading">
       {/* Background image with overlay */}
       <div className="absolute inset-0">
         <img 
@@ -78,7 +78,7 @@ const Index = () => {
             <span className="text-2xl font-bold text-gradient-primary">Startup Journey</span>
           </motion.div>
           
-          <h1 className="text-6xl md:text-7xl font-bold mb-6">
+          <h1 className="text-6xl md:text-7xl font-bold mb-6" id="index-heading">
             <span className="text-gradient-primary">Transform Your</span>
             <br />
             <span className="text-text-primary">Entrepreneurial Dream</span>

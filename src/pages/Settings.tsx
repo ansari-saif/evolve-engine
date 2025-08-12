@@ -17,12 +17,12 @@ const Settings = () => {
   }, [startTime]);
 
   return (
-    <div className="space-y-6 pt-16">
+    <div className="space-y-6 pt-16" role="main" aria-labelledby="settings-heading">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold text-gradient-primary mb-2">Settings</h1>
+        <h1 className="text-3xl font-bold text-gradient-primary mb-2" id="settings-heading">Settings</h1>
         <p className="text-text-secondary">Customize your startup journey experience</p>
       </motion.div>
 
