@@ -18,6 +18,7 @@ import Settings from "./pages/Settings";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
+import ControlCenter from "./pages/ControlCenter";
 import BottomTabBar from "@/components/layout/BottomTabBar";
 import Header from "@/components/layout/Header";
 import MenuBar from "@/components/navigation/MenuBar";
@@ -65,6 +66,7 @@ const AppContent = () => {
           <Route path="/statistics" element={<Statistics />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/control-center" element={<ControlCenter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
