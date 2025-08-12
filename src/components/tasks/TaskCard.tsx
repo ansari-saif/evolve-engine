@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
-import { Stopwatch } from '../ui/Stopwatch';
 
 import { Play, Pause, CheckCircle, Edit, Trash2, Calendar as CalendarIcon2, Clock, Target, Zap } from 'lucide-react';
 import { format } from 'date-fns';
@@ -46,6 +45,15 @@ const TaskCard = React.memo(({
   const [showStopwatch, setShowStopwatch] = useState(false);
   const [stopwatchTime, setStopwatchTime] = useState(0);
 
+  // Memoize the elapsed time calculation to avoid unnecessary recalculations
+  const elapsedTime = useMemo(() => {
+    if (!task.started_at || task.completion_status !== 'In Progress') {
+      return 0;
+    }
+    const startTime = new Date(task.started_at).getTime();
+    return Math.floor((Date.now() - startTime) / 1000);
+  }, [task.started_at, task.completion_status]);
+
   // Show stopwatch when task is in progress
   useEffect(() => {
     if (task.completion_status === 'In Progress') {
@@ -69,11 +77,13 @@ const TaskCard = React.memo(({
     let interval: NodeJS.Timeout;
     
     if (showStopwatch && task.started_at) {
+      // Memoize the start time to avoid recalculating on every interval
+      const startTime = new Date(task.started_at).getTime();
+      
       interval = setInterval(() => {
-        const startTime = new Date(task.started_at).getTime();
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         setStopwatchTime(elapsed);
-      }, 1000);
+      }, 5000); // Update every 5 seconds instead of every second for better performance
     }
     
     return () => {
@@ -183,17 +193,14 @@ const TaskCard = React.memo(({
                 </div>
               </div>
 
-              {/* Stopwatch for tasks in progress */}
+              {/* Stopwatch for tasks in progress - Optimized for performance */}
               {showStopwatch && (
                 <div className="flex items-center gap-2 p-2 sm:p-3 bg-primary/5 rounded-lg border border-primary/20">
-                  <Stopwatch
-                    initialTime={stopwatchTime}
-                    displayOnly={true}
-                    showControls={false}
-                    size="small"
-                    timeFormat="HH:MM:SS"
-                    className="text-primary font-mono text-xs sm:text-sm"
-                  />
+                  <div className="text-primary font-mono text-xs sm:text-sm">
+                    {Math.floor(elapsedTime / 3600).toString().padStart(2, '0')}:
+                    {Math.floor((elapsedTime % 3600) / 60).toString().padStart(2, '0')}:
+                    {(elapsedTime % 60).toString().padStart(2, '0')}
+                  </div>
                   <span className="text-xs sm:text-sm text-primary font-medium">Task in progress</span>
                 </div>
               )}
@@ -287,6 +294,7 @@ const TaskCard = React.memo(({
 }, (prevProps, nextProps) => {
   return prevProps.task.task_id === nextProps.task.task_id &&
          prevProps.task.completion_status === nextProps.task.completion_status &&
+         prevProps.task.started_at === nextProps.task.started_at &&
          prevProps.isLoading === nextProps.isLoading;
 });
 
