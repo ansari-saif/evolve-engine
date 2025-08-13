@@ -2,9 +2,30 @@ import { createAction } from '@reduxjs/toolkit';
 import type { TaskUpdate, GoalUpdate, TaskCreate, GoalCreate } from '../../client/models';
 import type { TaskFilter } from '../../types/app';
 
+// Type definitions for action payloads
+interface Toast {
+  id: string;
+  title?: string;
+  description?: string;
+  variant?: 'default' | 'destructive';
+  duration?: number;
+}
+
+interface DialogData {
+  [key: string]: unknown;
+}
+
+interface FormData {
+  [key: string]: unknown;
+}
+
+interface OptimisticUpdateData {
+  [key: string]: unknown;
+}
+
 // UI Domain Actions
-export const uiToastAdd = createAction<{ toast: any }>('ui/toast/add');
-export const uiToastUpdate = createAction<{ id: string; updates: any }>('ui/toast/update');
+export const uiToastAdd = createAction<{ toast: Toast }>('ui/toast/add');
+export const uiToastUpdate = createAction<{ id: string; updates: Partial<Toast> }>('ui/toast/update');
 export const uiToastDismiss = createAction<string>('ui/toast/dismiss');
 export const uiToastRemove = createAction<string>('ui/toast/remove');
 export const uiToastClearAll = createAction('ui/toast/clearAll');
@@ -46,10 +67,10 @@ export const goalBulkUpdate = createAction<{ goals: Array<{ id: number; updates:
 export const goalBulkDelete = createAction<number[]>('goal/bulkDelete');
 
 // Form Domain Actions
-export const formSetValues = createAction<{ formId: string; values: Record<string, any> }>('form/setValues');
+export const formSetValues = createAction<{ formId: string; values: FormData }>('form/setValues');
 export const formSetErrors = createAction<{ formId: string; errors: Record<string, string> }>('form/setErrors');
 export const formClear = createAction<string>('form/clear');
-export const formSubmit = createAction<{ formId: string; data: Record<string, any> }>('form/submit');
+export const formSubmit = createAction<{ formId: string; data: FormData }>('form/submit');
 
 // Navigation Domain Actions
 export const navigationSetRoute = createAction<string>('navigation/setRoute');
@@ -59,24 +80,24 @@ export const navigationReplace = createAction<string>('navigation/replace');
 export const navigationBack = createAction('navigation/back');
 
 // Dialog Domain Actions
-export const dialogOpen = createAction<{ dialogId: string; data?: any }>('dialog/open');
+export const dialogOpen = createAction<{ dialogId: string; data?: DialogData }>('dialog/open');
 export const dialogClose = createAction<string>('dialog/close');
-export const dialogSetData = createAction<{ dialogId: string; data: any }>('dialog/setData');
+export const dialogSetData = createAction<{ dialogId: string; data: DialogData }>('dialog/setData');
 
 // App Config Domain Actions
 export const appConfigSetUserId = createAction<string>('appConfig/setUserId');
 export const appConfigSetApiBaseUrl = createAction<string>('appConfig/setApiBaseUrl');
 export const appConfigSetWebSocketUrl = createAction<string>('appConfig/setWebSocketUrl');
-export const appConfigUpdate = createAction<Record<string, any>>('appConfig/update');
+export const appConfigUpdate = createAction<Record<string, unknown>>('appConfig/update');
 
 // Filter Domain Actions
 export const filterSetTaskFilters = createAction<TaskFilter>('filter/setTaskFilters');
-export const filterSetGoalFilters = createAction<Record<string, any>>('filter/setGoalFilters');
+export const filterSetGoalFilters = createAction<Record<string, unknown>>('filter/setGoalFilters');
 export const filterClear = createAction<string>('filter/clear');
 export const filterReset = createAction<string>('filter/reset');
 
 // Optimistic Updates Domain Actions
-export const optimisticUpdateAdd = createAction<{ operationId: string; data: any }>('optimisticUpdate/add');
+export const optimisticUpdateAdd = createAction<{ operationId: string; data: OptimisticUpdateData }>('optimisticUpdate/add');
 export const optimisticUpdateRemove = createAction<string>('optimisticUpdate/remove');
 export const optimisticUpdateClear = createAction('optimisticUpdate/clear');
 

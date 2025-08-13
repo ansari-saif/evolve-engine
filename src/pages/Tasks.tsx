@@ -1,14 +1,16 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, Suspense, lazy } from 'react';
 import { SkeletonLoader, ErrorMessage } from '../components/ui';
 import { 
   CreateTaskDialog, 
-  BulkCreateDialog, 
-  EditTaskDialog, 
   TaskFilters, 
-  GenerateDailyTasksDialog, 
   type CreateTaskDialogRef 
 } from '../components/tasks';
 import TaskList from '../components/tasks/TaskList';
+
+// Lazy load heavy components
+const BulkCreateDialog = lazy(() => import('../components/tasks/BulkCreateDialog'));
+const EditTaskDialog = lazy(() => import('../components/tasks/EditTaskDialog'));
+const GenerateDailyTasksDialog = lazy(() => import('../components/tasks/GenerateDailyTasksDialog'));
 import { TaskTabs } from '../components/tasks/TaskTabs';
 import { TaskActions } from '../components/tasks/TaskActions';
 import { useGetUserTasks } from '../hooks/useTasks';
@@ -172,35 +174,45 @@ const Tasks: React.FC = () => {
         isLoading={taskOperations.isLoading.create}
       />
 
-      <EditTaskDialog
-        task={taskState.editingTask}
-        onCancel={taskState.stopEditing}
-        onSave={async (taskId, updates) => {
-          try {
-            await taskOperations.updateTask(taskId, updates);
-            taskState.stopEditing(); // Close dialog after successful update
-          } catch (error) {
-            // Error is already handled by taskOperations.updateTask
-            // Dialog will stay open so user can fix the error
-          }
-        }}
-        goals={goals || []}
-        isLoading={taskOperations.isLoading.update}
-      />
+      {taskState.editingTask && (
+        <Suspense fallback={<div>Loading dialog...</div>}>
+          <EditTaskDialog
+            task={taskState.editingTask}
+            onCancel={taskState.stopEditing}
+            onSave={async (taskId, updates) => {
+              try {
+                await taskOperations.updateTask(taskId, updates);
+                taskState.stopEditing(); // Close dialog after successful update
+              } catch (error) {
+                // Error is already handled by taskOperations.updateTask
+                // Dialog will stay open so user can fix the error
+              }
+            }}
+            goals={goals || []}
+            isLoading={taskOperations.isLoading.update}
+          />
+        </Suspense>
+      )}
 
-      <GenerateDailyTasksDialog
-        open={taskState.generateDialogOpen}
-        onClose={taskState.closeGenerateDialog}
-        onGenerate={handleGenerateTasks}
-        onCreateTasks={handleCreateGeneratedTasks}
-        isLoading={taskOperations.isLoading.bulkCreate}
-      />
+      {taskState.generateDialogOpen && (
+        <Suspense fallback={<div>Loading dialog...</div>}>
+          <GenerateDailyTasksDialog
+            open={taskState.generateDialogOpen}
+            onClose={taskState.closeGenerateDialog}
+            onGenerate={handleGenerateTasks}
+            onCreateTasks={handleCreateGeneratedTasks}
+            isLoading={taskOperations.isLoading.bulkCreate}
+          />
+        </Suspense>
+      )}
 
-      <BulkCreateDialog
-        onCreateTasks={taskOperations.createBulkTasks}
-        goals={goals || []}
-        isLoading={taskOperations.isLoading.bulkCreate}
-      />
+      <Suspense fallback={<div>Loading dialog...</div>}>
+        <BulkCreateDialog
+          onCreateTasks={taskOperations.createBulkTasks}
+          goals={goals || []}
+          isLoading={taskOperations.isLoading.bulkCreate}
+        />
+      </Suspense>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { ReactNode, useState, useCallback } from 'react';
+import type { TaskResponse, GoalResponse } from '../../client/models';
 
 interface DataProviderProps<T> {
   data: T[];
@@ -88,14 +89,14 @@ export function TaskDataProvider({
   onRefresh,
   onLoadMore,
   hasMore,
-}: Omit<DataProviderProps<any>, 'children'> & {
-  children: (props: DataProviderRenderProps<any> & {
+}: Omit<DataProviderProps<TaskResponse>, 'children'> & {
+  children: (props: DataProviderRenderProps<TaskResponse> & {
     // Task-specific utilities
-    getTasksByStatus: (status: string) => any[];
-    getTasksByPriority: (priority: string) => any[];
-    getTasksByGoal: (goalId: number) => any[];
-    getOverdueTasks: () => any[];
-    getCompletedTasks: () => any[];
+    getTasksByStatus: (status: string) => TaskResponse[];
+    getTasksByPriority: (priority: string) => TaskResponse[];
+    getTasksByGoal: (goalId: number) => TaskResponse[];
+    getOverdueTasks: () => TaskResponse[];
+    getCompletedTasks: () => TaskResponse[];
   }) => ReactNode;
 }) {
   return (
@@ -109,22 +110,22 @@ export function TaskDataProvider({
     >
       {(baseProps) => {
         const getTasksByStatus = (status: string) => 
-          baseProps.filter((task: any) => task.completion_status === status);
+          baseProps.filter((task: TaskResponse) => task.completion_status === status);
         
         const getTasksByPriority = (priority: string) => 
-          baseProps.filter((task: any) => task.priority === priority);
+          baseProps.filter((task: TaskResponse) => task.priority === priority);
         
         const getTasksByGoal = (goalId: number) => 
-          baseProps.filter((task: any) => task.goal_id === goalId);
+          baseProps.filter((task: TaskResponse) => task.goal_id === goalId);
         
         const getOverdueTasks = () => 
-          baseProps.filter((task: any) => {
+          baseProps.filter((task: TaskResponse) => {
             if (!task.scheduled_for_date) return false;
             return new Date(task.scheduled_for_date) < new Date();
           });
         
         const getCompletedTasks = () => 
-          baseProps.filter((task: any) => task.completion_status === 'Completed');
+          baseProps.filter((task: TaskResponse) => task.completion_status === 'Completed');
 
         return children({
           ...baseProps,
@@ -147,13 +148,13 @@ export function GoalDataProvider({
   onRefresh,
   onLoadMore,
   hasMore,
-}: Omit<DataProviderProps<any>, 'children'> & {
-  children: (props: DataProviderRenderProps<any> & {
+}: Omit<DataProviderProps<GoalResponse>, 'children'> & {
+  children: (props: DataProviderRenderProps<GoalResponse> & {
     // Goal-specific utilities
-    getGoalsByStatus: (status: string) => any[];
-    getGoalsByCategory: (category: string) => any[];
-    getActiveGoals: () => any[];
-    getCompletedGoals: () => any[];
+    getGoalsByStatus: (status: string) => GoalResponse[];
+    getGoalsByType: (type: string) => GoalResponse[];
+    getActiveGoals: () => GoalResponse[];
+    getCompletedGoals: () => GoalResponse[];
   }) => ReactNode;
 }) {
   return (
@@ -167,21 +168,21 @@ export function GoalDataProvider({
     >
       {(baseProps) => {
         const getGoalsByStatus = (status: string) => 
-          baseProps.filter((goal: any) => goal.status === status);
+          baseProps.filter((goal: GoalResponse) => goal.status === status);
         
-        const getGoalsByCategory = (category: string) => 
-          baseProps.filter((goal: any) => goal.category === category);
+        const getGoalsByType = (type: string) => 
+          baseProps.filter((goal: GoalResponse) => goal.type === type);
         
         const getActiveGoals = () => 
-          baseProps.filter((goal: any) => goal.status === 'Active');
+          baseProps.filter((goal: GoalResponse) => goal.status === 'Active');
         
         const getCompletedGoals = () => 
-          baseProps.filter((goal: any) => goal.status === 'Completed');
+          baseProps.filter((goal: GoalResponse) => goal.status === 'Completed');
 
         return children({
           ...baseProps,
           getGoalsByStatus,
-          getGoalsByCategory,
+          getGoalsByType,
           getActiveGoals,
           getCompletedGoals,
         });

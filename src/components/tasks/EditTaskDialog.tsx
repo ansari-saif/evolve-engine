@@ -27,20 +27,20 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
   onCancel,
   isLoading
 }) => {
+  const [updates, setUpdates] = useState<Partial<TaskUpdate>>({
+    description: task?.description,
+    priority: task?.priority,
+    completion_status: task?.completion_status,
+    energy_required: task?.energy_required,
+    estimated_duration: task?.estimated_duration,
+    scheduled_for_date: task?.scheduled_for_date,
+    goal_id: task?.goal_id
+  });
+
   // Don't render if no task is provided
   if (!task) {
     return null;
   }
-
-  const [updates, setUpdates] = useState<Partial<TaskUpdate>>({
-    description: task.description,
-    priority: task.priority,
-    completion_status: task.completion_status,
-    energy_required: task.energy_required,
-    estimated_duration: task.estimated_duration,
-    scheduled_for_date: task.scheduled_for_date,
-    goal_id: task.goal_id
-  });
 
   const handleSave = async () => {
     await onSave(task.task_id, updates as TaskUpdate);

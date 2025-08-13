@@ -7,7 +7,7 @@ import { registerCustomTheme, unregisterCustomTheme } from '../utils/themeRegist
 export interface CustomTheme {
   name: string;
   colors: {
-    primary: string;
+  primary: string;
     secondary: string;
     background: string;
     surface: string;

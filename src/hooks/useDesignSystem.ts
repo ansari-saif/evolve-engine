@@ -43,6 +43,23 @@ export const useDesignSystem = () => {
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
   const [activeCustomTheme, setActiveCustomTheme] = useState<string | null>(null);
 
+  // Migration function to fix old surface colors in saved themes
+  const migrateSurfaceColors = useCallback((themes: CustomTheme[]): CustomTheme[] => {
+    return themes.map(theme => {
+      // Check if theme has old surface color values and update them
+      if (theme.colors.surface === 'hsl(217 19% 12%)' || theme.colors.surface === '217 19% 12%') {
+        return {
+          ...theme,
+          colors: {
+            ...theme.colors,
+            surface: '217 19% 15%' // Updated accessible surface color
+          }
+        };
+      }
+      return theme;
+    });
+  }, []);
+
   // Load saved customizations from localStorage
   useEffect(() => {
     try {
@@ -54,7 +71,16 @@ export const useDesignSystem = () => {
         setCustomTokens(JSON.parse(savedTokens));
       }
       if (savedThemes) {
-        setCustomThemes(JSON.parse(savedThemes));
+        const parsedThemes = JSON.parse(savedThemes);
+        const migratedThemes = migrateSurfaceColors(parsedThemes);
+        
+        // If themes were migrated, save them back to localStorage
+        if (JSON.stringify(migratedThemes) !== JSON.stringify(parsedThemes)) {
+          localStorage.setItem('evolve-custom-themes', JSON.stringify(migratedThemes));
+          console.log('🔧 Migrated custom themes with updated surface colors for accessibility');
+        }
+        
+        setCustomThemes(migratedThemes);
       }
       if (savedActiveTheme) {
         setActiveCustomTheme(savedActiveTheme);
@@ -63,7 +89,7 @@ export const useDesignSystem = () => {
     } catch (error) {
       console.error('Failed to load design system customizations:', error);
     }
-  }, []);
+  }, [migrateSurfaceColors]);
 
   // Apply custom theme to CSS custom properties
   const applyCustomTheme = useCallback((themeId: string) => {
@@ -352,7 +378,7 @@ export const useDesignSystem = () => {
       '--primary': 'hsl(231 48% 63%)',
       '--secondary': 'hsl(328 86% 70%)',
       '--background': 'hsl(220 13% 6%)',
-      '--surface': 'hsl(217 19% 12%)',
+      '--surface': 'hsl(217 19% 15%)',
       '--foreground': 'hsl(210 20% 95%)',
       '--muted': 'hsl(215 16% 17%)',
       '--accent': 'hsl(215 16% 17%)',
@@ -501,5 +527,17 @@ export const useDesignSystem = () => {
     // Import/Export
     exportConfiguration,
     importConfiguration,
+    
+    // Migration utilities (for development/debugging)
+    clearAllThemeCache: useCallback(() => {
+      localStorage.removeItem('evolve-custom-themes');
+      localStorage.removeItem('evolve-custom-tokens');
+      localStorage.removeItem('evolve-active-custom-theme');
+      setCustomThemes([]);
+      setCustomTokens({});
+      setActiveCustomTheme(null);
+      resetToDefaultTheme();
+      console.log('🗑️ Cleared all theme cache and reset to default');
+    }, [resetToDefaultTheme]),
   };
 };

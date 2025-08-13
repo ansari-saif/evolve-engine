@@ -17,6 +17,7 @@ import { useAiPreloading } from "@/hooks/use-ai-preloading";
 import { useAdvancedCaching } from "@/hooks/use-advanced-caching";
 import { createSkipLink } from "@/utils/accessibility";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { logger } from "@/utils/logger";
 
 // Lazy load pages for better performance
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -94,13 +95,13 @@ const AppContent = () => {
 
   const webSocketOptions = useMemo(() => ({
     onMessage: (message: WebSocketMessage) => {
-      console.log('🔔 Global WebSocket message received:', message);
+      logger.debug('Global WebSocket message received', message);
     },
     onConnect: () => {
-      console.log('🟢 Global WebSocket connected successfully');
+      logger.info('Global WebSocket connected successfully');
     },
     onDisconnect: () => {
-      console.log('🔴 Global WebSocket disconnected');
+      logger.info('Global WebSocket disconnected');
     }
   }), []);
 

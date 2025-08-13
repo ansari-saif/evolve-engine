@@ -53,13 +53,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const getColor = useCallback((colorKey: string) => {
     // Navigate through tokens to get color value
     const keys = colorKey.split('.');
-    let value: any = tokens.colors;
+    let value: Record<string, unknown> | unknown = tokens.colors;
     
     for (const key of keys) {
-      value = value?.[key];
+      if (value && typeof value === 'object' && key in value) {
+        value = (value as Record<string, unknown>)[key];
+      } else {
+        return '#000000';
+      }
     }
     
-    return value || '#000000';
+    return (typeof value === 'string' ? value : '#000000');
   }, []);
 
   const getSpacing = useCallback((spacingKey: string) => {

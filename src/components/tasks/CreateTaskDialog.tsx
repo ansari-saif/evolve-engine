@@ -81,7 +81,7 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
       });
       setShowDialog(false);
     } catch (error) {
-      console.error('Failed to create task:', error);
+      // Error is handled by the caller
     }
   };
 

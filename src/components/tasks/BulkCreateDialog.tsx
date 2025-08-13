@@ -73,7 +73,7 @@ const BulkCreateDialog: React.FC<BulkCreateDialogProps> = ({
       });
       setShowDialog(false);
     } catch (error) {
-      console.error('Failed to create bulk tasks:', error);
+      // Error is handled by the caller
     }
   };
 
