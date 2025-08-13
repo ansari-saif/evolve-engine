@@ -9,7 +9,7 @@ import React from 'react';
 import { AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { Alert, AlertDescription } from './alert';
 import { Badge } from './badge';
-import { analyzeContrast, ContrastResult, TextSize, WCAGLevel } from '../../utils/contrastChecker';
+import { analyzeContrast, ContrastResult, TextSize, WCAGLevel, parseColor } from '../../utils/contrastChecker';
 
 interface ContrastWarningProps {
   foreground: string;
@@ -59,6 +59,19 @@ export const ContrastWarning: React.FC<ContrastWarningProps> = ({
   showDetails = true
 }) => {
   const result = analyzeContrast(foreground, background, textSize);
+  
+  // Debug logging for development
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Contrast Analysis:', {
+        foreground,
+        background,
+        result,
+        foregroundRgb: parseColor(foreground),
+        backgroundRgb: parseColor(background)
+      });
+    }
+  }, [foreground, background, result]);
   
   // Don't show anything if contrast is perfect
   if (result.score === 'aaa') {

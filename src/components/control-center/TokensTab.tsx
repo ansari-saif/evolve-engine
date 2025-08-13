@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { ContrastWarning, ContrastIndicator } from '../../components/ui/contrast-warning';
+import { useTheme } from '../../providers/ThemeProvider';
+import { getThemeVariables } from '../../utils/themeManager';
 import { 
   Palette, 
   Layers, 
@@ -47,6 +49,8 @@ export const TokensTab: React.FC<TokensTabProps> = ({
   onUpdateToken,
   onTokenValueChange,
 }) => {
+  const { theme } = useTheme();
+  
   // Helper to determine if we should show contrast warnings
   const shouldCheckContrast = (tokenName: string, value: string) => {
     const isColor = tokenName.toLowerCase().includes('color') || 
@@ -56,13 +60,83 @@ export const TokensTab: React.FC<TokensTabProps> = ({
     return isColor && !tokenName.toLowerCase().includes('gradient') && !tokenName.toLowerCase().includes('shadow');
   };
 
+  // Get actual color values from theme manager as fallback
+  const getActualColorValue = (tokenName: string, fallbackValue: string) => {
+    try {
+      const themeVars = getThemeVariables(theme);
+      
+      // Map token names to CSS variable names
+      const cssVarMap: Record<string, string> = {
+        'primary': '--primary',
+        'secondary': '--secondary',
+        'success': '--success',
+        'warning': '--warning',
+        'danger': '--danger',
+        'background': '--background',
+        'surface': '--surface',
+        'foreground': '--foreground'
+      };
+      
+      const lowerName = tokenName.toLowerCase();
+      for (const [key, cssVar] of Object.entries(cssVarMap)) {
+        if (lowerName.includes(key)) {
+          const actualValue = themeVars[cssVar];
+          if (actualValue) {
+            // Convert HSL values to proper format
+            if (/^\d+\s+\d+%\s+\d+%$/.test(actualValue)) {
+              const resolved = `hsl(${actualValue})`;
+              console.log(`Resolved ${tokenName} (${fallbackValue}) -> ${resolved}`);
+              return resolved;
+            }
+            console.log(`Using direct value for ${tokenName}: ${actualValue}`);
+            return actualValue;
+          }
+        }
+      }
+      
+      console.log(`No mapping found for ${tokenName}, using fallback: ${fallbackValue}`);
+    } catch (error) {
+      console.warn('Failed to get actual color value:', error);
+    }
+    
+    return fallbackValue;
+  };
+
   // Get background color for contrast checking (fallback to a default)
   const getBackgroundColor = () => {
-    // Try to find background color from current tokens
-    const backgroundToken = tokenCategories
-      .flatMap(cat => cat.tokens)
-      .find(token => token.name.toLowerCase().includes('background'));
-    return backgroundToken?.value || 'hsl(220, 13%, 6%)'; // Default dark background
+    try {
+      // Use theme manager to get the actual background value
+      const themeVars = getThemeVariables(theme);
+      const backgroundValue = themeVars['--background'];
+      
+      if (backgroundValue) {
+        // Convert HSL values to proper format
+        if (/^\d+\s+\d+%\s+\d+%$/.test(backgroundValue)) {
+          const resolved = `hsl(${backgroundValue})`;
+          console.log(`Background resolved to: ${resolved}`);
+          return resolved;
+        }
+        return backgroundValue;
+      }
+    } catch (error) {
+      console.warn('Failed to get background from theme manager:', error);
+    }
+    
+    // Fallback to reading the actual CSS variable value
+    try {
+      const computedStyle = getComputedStyle(document.documentElement);
+      const bgValue = computedStyle.getPropertyValue('--background').trim();
+      if (bgValue) {
+        if (/^\d+\s+\d+%\s+\d+%$/.test(bgValue)) {
+          return `hsl(${bgValue})`;
+        }
+        return bgValue;
+      }
+    } catch (error) {
+      console.warn('Failed to read background CSS variable:', error);
+    }
+    
+    return 'hsl(220, 13%, 6%)'; // Default dark background
   };
 
   const backgroundColor = getBackgroundColor();
@@ -156,7 +230,7 @@ export const TokensTab: React.FC<TokensTabProps> = ({
                       </p>
                       {shouldCheckContrast(token.name, token.value) && !token.name.toLowerCase().includes('background') && (
                         <ContrastIndicator
-                          foreground={token.value}
+                          foreground={getActualColorValue(token.name, token.value)}
                           background={backgroundColor}
                           className="self-start"
                         />
@@ -195,7 +269,7 @@ export const TokensTab: React.FC<TokensTabProps> = ({
               {/* Show contrast warning for color tokens */}
               {shouldCheckContrast(selectedToken, tokenValue) && !selectedToken.toLowerCase().includes('background') && tokenValue && (
                 <ContrastWarning
-                  foreground={tokenValue}
+                  foreground={getActualColorValue(selectedToken, tokenValue)}
                   background={backgroundColor}
                   className="mt-3"
                   showDetails={true}

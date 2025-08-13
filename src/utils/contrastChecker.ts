@@ -81,11 +81,74 @@ export function rgbToHex(r: number, g: number, b: number): string {
 }
 
 /**
+ * Resolves CSS variables by reading from computed styles
+ */
+function resolveCSSVariable(color: string): string {
+  if (typeof window === 'undefined') return color;
+  
+  // If it contains var(), try to resolve it
+  if (color.includes('var(')) {
+    try {
+      const computedStyle = getComputedStyle(document.documentElement);
+      // Extract variable name from var(--variable-name)
+      const match = color.match(/var\((--[^)]+)\)/);
+      if (match) {
+        const varName = match[1];
+        const varValue = computedStyle.getPropertyValue(varName).trim();
+        
+        if (varValue) {
+          // If the resolved value is HSL format without hsl(), add it
+          if (/^\d+\s+\d+%\s+\d+%$/.test(varValue)) {
+            return `hsl(${varValue})`;
+          }
+          // If it's already an HSL string, return as-is
+          if (varValue.startsWith('hsl(')) {
+            return varValue;
+          }
+          return varValue;
+        } else {
+          console.warn(`CSS variable ${varName} resolved to empty value`);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to resolve CSS variable:', color, error);
+    }
+  }
+  
+  // If it's already an hsl() function with a var() inside, try to resolve the inner variable
+  if (color.startsWith('hsl(var(')) {
+    try {
+      const computedStyle = getComputedStyle(document.documentElement);
+      const match = color.match(/hsl\(var\((--[^)]+)\)\)/);
+      if (match) {
+        const varName = match[1];
+        const varValue = computedStyle.getPropertyValue(varName).trim();
+        
+        if (varValue) {
+          // If the resolved value is HSL format without hsl(), add it
+          if (/^\d+\s+\d+%\s+\d+%$/.test(varValue)) {
+            return `hsl(${varValue})`;
+          }
+          return varValue;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to resolve HSL CSS variable:', color, error);
+    }
+  }
+  
+  return color;
+}
+
+/**
  * Parses various color formats to RGB
  */
 export function parseColor(color: string): { r: number; g: number; b: number } | null {
-  // Remove CSS functions and spaces
-  const cleanColor = color.replace(/var\(--[^)]+\)|\s/g, '').trim();
+  // First resolve any CSS variables
+  const resolvedColor = resolveCSSVariable(color);
+  
+  // Remove extra spaces
+  const cleanColor = resolvedColor.replace(/\s+/g, ' ').trim();
   
   // Try HSL format first (most common in our theme system)
   if (cleanColor.includes('%')) {
@@ -98,13 +161,19 @@ export function parseColor(color: string): { r: number; g: number; b: number } |
   }
   
   // Try rgb format
-  const rgbMatch = cleanColor.match(/rgb\((\d+),(\d+),(\d+)\)/);
+  const rgbMatch = cleanColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
   if (rgbMatch) {
     return {
       r: parseInt(rgbMatch[1]),
       g: parseInt(rgbMatch[2]),
       b: parseInt(rgbMatch[3])
     };
+  }
+  
+  // Try HSL format with hsl() wrapper
+  const hslMatch = cleanColor.match(/hsl\(([^)]+)\)/);
+  if (hslMatch) {
+    return hslToRgb(hslMatch[1]);
   }
   
   return null;
@@ -140,6 +209,17 @@ export function calculateContrast(color1: string, color2: string): number {
   const rgb2 = parseColor(color2);
   
   if (!rgb1 || !rgb2) {
+    // Debug logging for failed parsing
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('Failed to parse colors for contrast calculation:', {
+        color1: color1,
+        color2: color2,
+        rgb1: rgb1,
+        rgb2: rgb2,
+        resolved1: resolveCSSVariable(color1),
+        resolved2: resolveCSSVariable(color2)
+      });
+    }
     return 1; // Worst case if we can't parse colors
   }
   
