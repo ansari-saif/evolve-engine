@@ -6,6 +6,7 @@ interface TaskActionsProps {
   onCreateTask: () => void;
   onGenerateTasks: () => void;
   onCreateBulk: () => void;
+  onClearToasts?: () => void;
   isLoading?: boolean;
 }
 
@@ -17,6 +18,7 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
   onCreateTask,
   onGenerateTasks,
   onCreateBulk,
+  onClearToasts,
   isLoading = false,
 }) => {
   return (
@@ -41,6 +43,16 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
       >
         Bulk Create
       </Button>
+      
+      {onClearToasts && (
+        <Button 
+          variant="outline" 
+          onClick={onClearToasts}
+          className="text-destructive hover:text-destructive/80"
+        >
+          Clear Toasts
+        </Button>
+      )}
     </div>
   );
 };

@@ -8,7 +8,7 @@ import {
   GenerateDailyTasksDialog, 
   type CreateTaskDialogRef 
 } from '../components/tasks';
-import { TaskList } from '../components/tasks/TaskList';
+import TaskList from '../components/tasks/TaskList';
 import { TaskTabs } from '../components/tasks/TaskTabs';
 import { TaskActions } from '../components/tasks/TaskActions';
 import { useGetUserTasks } from '../hooks/useTasks';
@@ -19,6 +19,7 @@ import { useTaskSorting } from '../hooks/useTaskSorting';
 import { useTaskOperations } from '../hooks/useTaskOperations';
 import { useTaskState } from '../hooks/useTaskState';
 import { useAiService } from '../hooks/useAiService';
+import { useToasts } from '../hooks/redux/useToasts';
 import type { TaskResponse, TaskCreate, PhaseEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../client/models';
 import type { GeneratedTask } from '../store/types';
 
@@ -36,6 +37,7 @@ const Tasks: React.FC = () => {
   const { data: goals } = useGetUserGoals(userId);
   const { generateDailyTasks } = useAiService();
   const taskOperations = useTaskOperations(userId);
+  const { clearToasts } = useToasts();
 
   // Filter and sort tasks
   const filteredTasks = useTaskFiltering(tasks, taskState.filters);
@@ -131,6 +133,7 @@ const Tasks: React.FC = () => {
         onCreateTask={() => createTaskDialogRef.current?.open()}
         onGenerateTasks={taskState.openGenerateDialog}
         onCreateBulk={() => {/* Handle bulk create */}}
+        onClearToasts={clearToasts}
         isLoading={taskOperations.isLoading.create}
       />
 
@@ -150,10 +153,12 @@ const Tasks: React.FC = () => {
         {(tasks) => (
           <TaskList
             tasks={tasks}
+            goals={goals || []}
             isLoading={isLoading}
             onTaskComplete={handleTaskComplete}
             onTaskEdit={handleTaskEdit}
             onTaskDelete={handleTaskDelete}
+            onTaskStatusChange={(taskId, status) => taskOperations.updateTask(taskId, { completion_status: status })}
             loadingTaskId={taskState.loadingTaskId}
           />
         )}
@@ -170,7 +175,15 @@ const Tasks: React.FC = () => {
       <EditTaskDialog
         task={taskState.editingTask}
         onCancel={taskState.stopEditing}
-        onSave={(taskId, updates) => taskOperations.updateTask(taskId, updates)}
+        onSave={async (taskId, updates) => {
+          try {
+            await taskOperations.updateTask(taskId, updates);
+            taskState.stopEditing(); // Close dialog after successful update
+          } catch (error) {
+            // Error is already handled by taskOperations.updateTask
+            // Dialog will stay open so user can fix the error
+          }
+        }}
         goals={goals || []}
         isLoading={taskOperations.isLoading.update}
       />

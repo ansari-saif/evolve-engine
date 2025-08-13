@@ -19,7 +19,14 @@ export const useToasts = () => {
   
   // Actions
   const showToast = (toast: Omit<ToastState, 'id'>) => {
-    dispatch(addToast({ toast }));
+    const toastId = crypto.randomUUID();
+    dispatch(addToast({ 
+      toast: {
+        ...toast,
+        id: toastId,
+      } as ToastState
+    }));
+    return toastId;
   };
   
   const updateToastById = (id: string, updates: Partial<ToastState>) => {
@@ -39,30 +46,33 @@ export const useToasts = () => {
   };
   
   // Convenience methods for common toast types
-  const showSuccessToast = (title: string, description?: string) => {
+  const showSuccessToast = (title: string, description?: string, duration: number = 1000) => {
     showToast({
       title,
       description,
       variant: 'default',
       open: true,
+      duration,
     });
   };
   
-  const showErrorToast = (title: string, description?: string) => {
+  const showErrorToast = (title: string, description?: string, duration: number = 3000) => {
     showToast({
       title,
       description,
       variant: 'destructive',
       open: true,
+      duration,
     });
   };
   
-  const showInfoToast = (title: string, description?: string) => {
+  const showInfoToast = (title: string, description?: string, duration: number = 2000) => {
     showToast({
       title,
       description,
       variant: 'default',
       open: true,
+      duration,
     });
   };
   

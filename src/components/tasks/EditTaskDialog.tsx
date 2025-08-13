@@ -13,9 +13,9 @@ import type { TaskResponse, TaskUpdate, TaskPriorityEnum, CompletionStatusEnum, 
 import type { GoalResponse } from '../../client/models';
 
 interface EditTaskDialogProps {
-  task: TaskResponse;
+  task: TaskResponse | null;
   goals: GoalResponse[];
-  onSave: (taskId: number, updates: TaskUpdate) => void;
+  onSave: (taskId: number, updates: TaskUpdate) => Promise<void>;
   onCancel: () => void;
   isLoading: boolean;
 }
@@ -27,6 +27,11 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
   onCancel,
   isLoading
 }) => {
+  // Don't render if no task is provided
+  if (!task) {
+    return null;
+  }
+
   const [updates, setUpdates] = useState<Partial<TaskUpdate>>({
     description: task.description,
     priority: task.priority,
@@ -37,13 +42,13 @@ const EditTaskDialog: React.FC<EditTaskDialogProps> = ({
     goal_id: task.goal_id
   });
 
-  const handleSave = () => {
-    onSave(task.task_id, updates as TaskUpdate);
+  const handleSave = async () => {
+    await onSave(task.task_id, updates as TaskUpdate);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleSave();
+    await handleSave();
   };
 
   return (

@@ -24,7 +24,8 @@ export const useTaskState = () => {
     status: 'All',
     priority: 'All',
     energy: 'All',
-    goal: 'All'
+    goal: 'All',
+    searchTerm: ''
   });
 
   // Tab management
@@ -65,7 +66,8 @@ export const useTaskState = () => {
       status: 'All',
       priority: 'All',
       energy: 'All',
-      goal: 'All'
+      goal: 'All',
+      searchTerm: ''
     });
   }, []);
 

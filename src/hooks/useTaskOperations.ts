@@ -35,8 +35,8 @@ export const useTaskOperations = (userId: string) => {
   const updateTask = useCallback(async (taskId: number, updates: TaskUpdate) => {
     try {
       await updateTaskMutation.mutateAsync({
-        task_id: taskId,
-        ...updates,
+        id: taskId,
+        data: updates,
       });
       showSuccessToast('Task updated successfully');
     } catch (error) {
@@ -70,11 +70,11 @@ export const useTaskOperations = (userId: string) => {
   // Create bulk tasks
   const createBulkTasks = useCallback(async (tasks: TaskCreate[]) => {
     try {
-      await createBulkTasksMutation.mutateAsync(tasks);
-      showSuccessToast(`${tasks.length} tasks created successfully`);
+      await createBulkTasksMutation.mutateAsync({ tasks });
+      showSuccessToast(`${tasks.length} tasks created successfully`, undefined, 4000);
     } catch (error) {
       console.error('Failed to create bulk tasks:', error instanceof Error ? error.message : 'Unknown error');
-      showErrorToast('Failed to create tasks', error instanceof Error ? error.message : 'Unknown error');
+      showErrorToast('Failed to create tasks', error instanceof Error ? error.message : 'Unknown error', 5000);
     }
   }, [createBulkTasksMutation, showSuccessToast, showErrorToast]);
 

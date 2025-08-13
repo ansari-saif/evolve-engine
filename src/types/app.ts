@@ -7,6 +7,7 @@ export type TaskFilter = {
   priority: TaskPriorityEnum | 'All';
   energy: EnergyRequiredEnum | 'All';
   goal: number | 'All';
+  searchTerm: string;
 };
 
 export interface Task {

@@ -26,10 +26,7 @@ const uiSlice = createSlice({
   reducers: {
     // Toast actions
     addToast: (state, action: PayloadAction<AddToastPayload>) => {
-      const newToast: ToastState = {
-        id: crypto.randomUUID(),
-        ...action.payload.toast,
-      };
+      const newToast: ToastState = action.payload.toast;
       state.toasts.unshift(newToast);
       
       // Limit to 5 toasts

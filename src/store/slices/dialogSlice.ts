@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
+import { DialogStateEnum } from '../types';
 import type { 
   DialogState, 
-  DialogStateEnum, 
   GeneratedTask, 
   EditableGeneratedTask,
   SetEnergyLevelPayload,

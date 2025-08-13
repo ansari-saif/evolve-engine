@@ -71,6 +71,7 @@ export interface ToastState {
   };
   open: boolean;
   variant?: 'default' | 'destructive';
+  duration?: number; // Duration in milliseconds, undefined means no auto-dismiss
 }
 
 // Optimistic Updates Slice Types
@@ -157,7 +158,7 @@ export interface SetFormErrorsPayload {
 }
 
 export interface AddToastPayload {
-  toast: Omit<ToastState, 'id'>;
+  toast: ToastState;
 }
 
 export interface UpdateToastPayload {
