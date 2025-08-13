@@ -160,7 +160,12 @@ const Tasks: React.FC = () => {
             onTaskComplete={handleTaskComplete}
             onTaskEdit={handleTaskEdit}
             onTaskDelete={handleTaskDelete}
-            onTaskStatusChange={(taskId, status) => taskOperations.updateTask(taskId, { completion_status: status })}
+            onTaskStatusChange={(taskId, status) =>
+              taskOperations.updateTask(taskId, {
+                completion_status: status,
+                ...(status === 'In Progress' ? { started_at: new Date().toISOString() } : {})
+              })
+            }
             loadingTaskId={taskState.loadingTaskId}
           />
         )}

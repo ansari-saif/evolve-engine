@@ -31,16 +31,6 @@ export const useTaskFiltering = (tasks: TaskResponse[] | undefined, filters: Tas
         return false;
       }
       
-      // Filter by search term
-      if (filters.searchTerm && filters.searchTerm.trim() !== '') {
-        const searchLower = filters.searchTerm.toLowerCase();
-        const descriptionLower = task.description.toLowerCase();
-        
-        if (!descriptionLower.includes(searchLower)) {
-          return false;
-        }
-      }
-      
       return true;
     });
   }, [tasks, filters]);
