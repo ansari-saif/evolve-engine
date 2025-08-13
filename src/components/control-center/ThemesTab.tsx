@@ -34,8 +34,8 @@ interface ThemesTabProps {
   onResetToDefault: () => void;
   onExportConfiguration: () => void;
   onImportConfiguration: () => void;
-  // Added: updater for color values
-  updateCustomThemeColor?: (themeId: string, key: keyof CustomTheme['colors'], value: string) => void;
+  // Updater for color values (required)
+  updateCustomThemeColor: (themeId: string, key: keyof CustomTheme['colors'], value: string) => void;
 }
 
 export const ThemesTab: React.FC<ThemesTabProps> = ({
@@ -184,18 +184,18 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                         style={{ backgroundColor: hslToCss(theme.colors.primary) }}
                         title="Primary"
                       />
-                      <input
+                       <input
                         type="color"
                         aria-label="Primary color picker"
                         className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
                         value={cssToHex(hslToCss(theme.colors.primary))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'primary', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'primary', e.target.value)}
                       />
-                      <input
+                       <input
                         aria-label="Primary color"
                         className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
                         value={cssToHslNumbers(hslToCss(theme.colors.primary))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'primary', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'primary', e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -204,18 +204,18 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                         style={{ backgroundColor: hslToCss(theme.colors.secondary) }}
                         title="Secondary"
                       />
-                      <input
+                       <input
                         type="color"
                         aria-label="Secondary color picker"
                         className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
                         value={cssToHex(hslToCss(theme.colors.secondary))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'secondary', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'secondary', e.target.value)}
                       />
-                      <input
+                       <input
                         aria-label="Secondary color"
                         className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
                         value={cssToHslNumbers(hslToCss(theme.colors.secondary))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'secondary', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'secondary', e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -224,18 +224,18 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                         style={{ backgroundColor: hslToCss(theme.colors.background) }}
                         title="Background"
                       />
-                      <input
+                       <input
                         type="color"
                         aria-label="Background color picker"
                         className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
                         value={cssToHex(hslToCss(theme.colors.background))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'background', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'background', e.target.value)}
                       />
-                      <input
+                       <input
                         aria-label="Background color"
                         className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
                         value={cssToHslNumbers(hslToCss(theme.colors.background))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'background', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'background', e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -244,18 +244,18 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                         style={{ backgroundColor: hslToCss(theme.colors.surface) }}
                         title="Surface"
                       />
-                      <input
+                       <input
                         type="color"
                         aria-label="Surface color picker"
                         className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
                         value={cssToHex(hslToCss(theme.colors.surface))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'surface', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'surface', e.target.value)}
                       />
-                      <input
+                       <input
                         aria-label="Surface color"
                         className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
                         value={cssToHslNumbers(hslToCss(theme.colors.surface))}
-                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'surface', e.target.value)}
+                         onChange={(e) => updateCustomThemeColor(theme.id, 'surface', e.target.value)}
                       />
                     </div>
                   </div>
