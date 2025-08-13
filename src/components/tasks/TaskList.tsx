@@ -64,19 +64,32 @@ const TaskList: React.FC<TaskListProps> = ({
     }
   };
 
+  /**
+   * Format a duration value expressed in minutes into a compact human-readable string.
+   *
+   * - Interprets the input as minutes (not seconds)
+   * - Floors fractional values to whole minutes
+   * - Clamps negatives to 0
+   * - Returns null for null/undefined/NaN/Infinity
+   *
+   * Examples:
+   * - 0 -> "0m"
+   * - 45 -> "45m"
+   * - 90 -> "1h 30m"
+   *
+   * @param duration Minutes to format. May be null.
+   * @returns A formatted string like "1h 30m" or "45m", or null if invalid.
+   */
   const formatDuration = (duration: number | null) => {
-    if (!duration) return null;
-    const hours = Math.floor(duration / 3600);
-    const minutes = Math.floor((duration % 3600) / 60);
-    const seconds = duration % 60;
-    
+    if (duration == null || !Number.isFinite(duration)) return null;
+    const totalMinutes = Math.max(0, Math.floor(duration));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    } else {
-      return `${seconds}s`;
     }
+    return `${minutes}m`;
   };
 
   if (isLoading) {
