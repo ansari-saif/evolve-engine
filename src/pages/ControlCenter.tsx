@@ -56,6 +56,7 @@ const ControlCenter: React.FC = () => {
     importConfiguration,
     updateTokenValue,
     updateCustomThemeColor,
+    renameCustomTheme,
   } = useThemeManagement();
 
   const {
@@ -210,6 +211,7 @@ const ControlCenter: React.FC = () => {
             onExportConfiguration={handleExportDesignSystem}
             onImportConfiguration={handleImportConfiguration}
             updateCustomThemeColor={updateCustomThemeColor}
+            updateCustomThemeName={renameCustomTheme}
           />
         );
       case 'components':

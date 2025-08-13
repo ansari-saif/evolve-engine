@@ -16,6 +16,7 @@ import {
 import { Moon, Sun, Palette, Building2 } from 'lucide-react';
 import { useTheme } from '../../providers/ThemeProvider';
 import { Theme } from '../../theme';
+import { getThemeLabel } from '../../utils/themeRegistry';
 
 const themeIcons: Record<Theme, React.ReactNode> = {
   dark: <Moon className="w-4 h-4" />,
@@ -67,7 +68,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             className="flex items-center gap-2 cursor-pointer"
           >
             {themeIcons[themeOption]}
-            <span>{themeLabels[themeOption]}</span>
+            <span>{getThemeLabel(themeOption)}</span>
             {themeOption === theme && (
               <span className="ml-auto text-xs text-muted-foreground">✓</span>
             )}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTheme } from '../providers/ThemeProvider';
 import { useDesignSystem } from './useDesignSystem';
 import { tokens } from '../theme';
+import { registerCustomTheme, unregisterCustomTheme } from '../utils/themeRegistry';
 
 export interface CustomTheme {
   name: string;
@@ -28,6 +29,7 @@ export const useThemeManagement = () => {
     exportConfiguration,
     importConfiguration,
     updateCustomThemeColor,
+    renameCustomTheme,
   } = useDesignSystem();
 
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export const useThemeManagement = () => {
   const [selectedTokenCategory, setSelectedTokenCategory] = useState<string>('');
 
   const handleCreateCustomTheme = () => {
-    createCustomTheme(`Custom Theme ${customThemes.length + 1}`, {
+    const newTheme = createCustomTheme(`Custom Theme ${customThemes.length + 1}`, {
       primary: tokens.colors.primary.DEFAULT,
       secondary: tokens.colors.secondary.DEFAULT,
       background: tokens.colors.background,
@@ -44,10 +46,26 @@ export const useThemeManagement = () => {
       muted: tokens.colors.muted.DEFAULT,
       accent: tokens.colors.accent.DEFAULT
     });
+    // Register in central registry for discoverability
+    try {
+      registerCustomTheme(newTheme.id, newTheme.name);
+    } catch {
+      // ignore
+    }
   };
 
   const handleDeleteCustomTheme = (themeId: string) => {
     deleteCustomTheme(themeId);
+    try {
+      unregisterCustomTheme(themeId);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleRenameCustomTheme = (themeId: string, newName: string) => {
+    if (!newName) return;
+    renameCustomTheme(themeId, newName);
   };
 
   const handleUpdateToken = (tokenName: string, newValue: string) => {
@@ -87,6 +105,7 @@ export const useThemeManagement = () => {
     // Theme operations
     createCustomTheme: handleCreateCustomTheme,
     deleteCustomTheme: handleDeleteCustomTheme,
+    renameCustomTheme: handleRenameCustomTheme,
     applyCustomThemeById,
     resetToDefaultTheme,
     exportConfiguration: handleExportDesignSystem,

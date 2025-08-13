@@ -204,6 +204,7 @@ export const getStoredThemeName = (): Theme | null => {
   try {
     return (localStorage.getItem(STORAGE_THEME_KEY) as Theme) || null;
   } catch {
+    void 0;
     return null;
   }
 };
@@ -212,14 +213,18 @@ export const getThemeVariables = (theme: Theme): ThemeVariables => {
   try {
     const raw = localStorage.getItem(STORAGE_VARS_PREFIX + theme);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch {
+    void 0;
+  }
   return PRESETS[theme];
 };
 
 export const saveThemeVariables = (theme: Theme, vars: ThemeVariables): void => {
   try {
     localStorage.setItem(STORAGE_VARS_PREFIX + theme, JSON.stringify(vars));
-  } catch {}
+  } catch {
+    void 0;
+  }
 };
 
 export const ensurePresetSaved = (theme: Theme): void => {
@@ -228,7 +233,9 @@ export const ensurePresetSaved = (theme: Theme): void => {
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, JSON.stringify(PRESETS[theme]));
     }
-  } catch {}
+  } catch {
+    void 0;
+  }
 };
 
 export const applyThemeVariables = (theme: Theme): void => {

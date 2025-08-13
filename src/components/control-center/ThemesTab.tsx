@@ -37,6 +37,8 @@ interface ThemesTabProps {
   onImportConfiguration: () => void;
   // Updater for color values (required)
   updateCustomThemeColor: (themeId: string, key: keyof CustomTheme['colors'], value: string) => void;
+  // Optional: rename theme handler
+  updateCustomThemeName?: (themeId: string, name: string) => void;
 }
 
 export const ThemesTab: React.FC<ThemesTabProps> = ({
@@ -50,6 +52,7 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
   onExportConfiguration,
   onImportConfiguration,
   updateCustomThemeColor,
+  updateCustomThemeName,
 }) => {
   const hslToCss = (value: string) => {
     // Accepts either "H S% L%" or "hsl(H S% L%)"
@@ -167,15 +170,10 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                       onBlur={(e) => {
                         const name = e.target.value.trim();
                         if (!name) return;
-                        // Update theme name in storage/state
-                        try {
-                          const themes = JSON.parse(localStorage.getItem('evolve-custom-themes') || '[]');
-                          const idx = themes.findIndex((t: any) => t.id === theme.id);
-                          if (idx !== -1) {
-                            themes[idx].name = name;
-                            localStorage.setItem('evolve-custom-themes', JSON.stringify(themes));
-                          }
-                        } catch {}
+                        // Delegate rename to hook (which updates registry and storage)
+                        if (updateCustomThemeName) {
+                          updateCustomThemeName(theme.id, name);
+                        }
                       }}
                       className="h-8 px-2 py-1 text-sm flex-1"
                     />
@@ -186,7 +184,11 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onDeleteCustomTheme(theme.id)}
+                        onClick={() => {
+                          if (window.confirm('Delete this custom theme? This action cannot be undone.')) {
+                            onDeleteCustomTheme(theme.id);
+                          }
+                        }}
                         className="h-6 w-6 p-0 text-destructive"
                       >
                         <Trash2 className="w-3 h-3" />

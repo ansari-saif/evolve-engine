@@ -5,9 +5,10 @@
  * Supports multiple theme variations while maintaining the existing CSS custom properties system.
  */
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Theme } from '../theme';
 import { applyTheme, ensurePresetSaved } from '../utils/themeManager';
+import { listThemes } from '../utils/themeRegistry';
 
 interface ThemeContextType {
   theme: Theme;
@@ -38,6 +39,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     }
   });
 
+  const [availableThemes, setAvailableThemes] = useState<Theme[]>(() => {
+    // Filter to built-ins to match Theme union type
+    const builtIns: Theme[] = ['dark', 'light', 'startup', 'enterprise'];
+    try {
+      const fromRegistry = listThemes().filter((t): t is Theme => (builtIns as string[]).includes(t));
+      return fromRegistry.length ? fromRegistry : builtIns;
+    } catch {
+      return builtIns;
+    }
+  });
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     try {
@@ -53,7 +65,21 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     applyTheme(theme);
   }, [theme]);
 
-  const availableThemes: Theme[] = ['dark', 'light', 'startup', 'enterprise'];
+  useEffect(() => {
+    const handler = () => {
+      const builtIns: Theme[] = ['dark', 'light', 'startup', 'enterprise'];
+      try {
+        const fromRegistry = listThemes().filter((t): t is Theme => (builtIns as string[]).includes(t));
+        setAvailableThemes(fromRegistry.length ? fromRegistry : builtIns);
+      } catch {
+        setAvailableThemes(builtIns);
+      }
+    };
+    // Initialize once on mount as well
+    handler();
+    window.addEventListener('evolve-theme-registry-changed', handler as EventListener);
+    return () => window.removeEventListener('evolve-theme-registry-changed', handler as EventListener);
+  }, []);
 
   const value: ThemeContextType = {
     theme,
@@ -75,6 +101,17 @@ export const useTheme = (): ThemeContextType => {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
+};
+
+// Convenience hooks for narrower consumption
+export const useSetTheme = () => {
+  const { setTheme } = useTheme();
+  return setTheme;
+};
+
+export const useAvailableThemes = () => {
+  const { availableThemes } = useTheme();
+  return availableThemes;
 };
 
 // Theme switching utility

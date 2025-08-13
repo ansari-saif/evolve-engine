@@ -7,7 +7,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { tokens } from '../theme';
-import { updateCurrentThemeVariable } from '../utils/themeManager';
+import { renameCustomTheme as registryRenameCustomTheme, getRegistrySnapshot, importRegistrySnapshot } from '../utils/themeRegistry';
+import { updateCurrentThemeVariable, getThemeVariables, saveThemeVariables } from '../utils/themeManager';
 
 interface TokenUpdate {
   category: string;
@@ -292,6 +293,25 @@ export const useDesignSystem = () => {
     }
   }, [customThemes, activeCustomTheme]);
 
+  // Rename a custom theme
+  const renameCustomTheme = useCallback((themeId: string, newName: string) => {
+    if (!newName) return;
+    setCustomThemes((prev) => {
+      const updated = prev.map((t) => (t.id === themeId ? { ...t, name: newName } : t));
+      try {
+        localStorage.setItem('evolve-custom-themes', JSON.stringify(updated));
+      } catch {
+        // ignore persistence issues
+      }
+      return updated;
+    });
+    try {
+      registryRenameCustomTheme(themeId, newName);
+    } catch {
+      // ignore registry update issues
+    }
+  }, []);
+
   // Apply a custom theme
   const applyCustomThemeById = useCallback((themeId: string) => {
     setActiveCustomTheme(themeId);
@@ -388,13 +408,26 @@ export const useDesignSystem = () => {
 
   // Export design system configuration
   const exportConfiguration = useCallback(() => {
+    // Gather per-theme variables for built-in and custom themes
+    const builtInIds = ['dark','light','startup','enterprise'];
+    const variables: Record<string, Record<string, string>> = {};
+    builtInIds.forEach((id) => {
+      try { variables[id] = getThemeVariables(id as any); } catch {}
+    });
+    customThemes.forEach((t) => {
+      try { variables[t.id] = getThemeVariables(t.id as any); } catch {}
+    });
+
     const config = {
+      version: 1,
+      registry: getRegistrySnapshot(),
+      variables,
+      activeCustomTheme,
       customTokens,
       customThemes,
-      activeCustomTheme,
       exportDate: new Date().toISOString(),
     };
-    
+
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -411,6 +444,18 @@ export const useDesignSystem = () => {
       reader.onload = (e) => {
         try {
           const config = JSON.parse(e.target?.result as string);
+          // Import registry snapshot
+          if (Array.isArray(config.registry)) {
+            try { importRegistrySnapshot(config.registry, 'merge'); } catch {}
+          }
+          // Import per-theme variables
+          if (config.variables && typeof config.variables === 'object') {
+            try {
+              Object.entries(config.variables as Record<string, Record<string, string>>).forEach(([id, vars]) => {
+                saveThemeVariables(id as any, vars);
+              });
+            } catch {}
+          }
           
           if (config.customTokens) {
             setCustomTokens(config.customTokens);
@@ -446,6 +491,7 @@ export const useDesignSystem = () => {
     // Theme management
     createCustomTheme,
     deleteCustomTheme,
+    renameCustomTheme,
     applyCustomThemeById,
     customThemes,
     activeCustomTheme,
