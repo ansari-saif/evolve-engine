@@ -163,7 +163,7 @@ const Tasks: React.FC = () => {
             onTaskStatusChange={(taskId, status) =>
               taskOperations.updateTask(taskId, {
                 completion_status: status,
-                ...(status === 'In Progress' ? { started_at: new Date().toISOString() } : {})
+                ...(status === 'In Progress' ? { started_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} : {})
               })
             }
             loadingTaskId={taskState.loadingTaskId}
