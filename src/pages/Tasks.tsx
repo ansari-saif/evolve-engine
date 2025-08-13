@@ -14,6 +14,7 @@ const GenerateDailyTasksDialog = lazy(() => import('../components/tasks/Generate
 import { TaskTabs } from '../components/tasks/TaskTabs';
 import { TaskActions } from '../components/tasks/TaskActions';
 import { useGetUserTasks } from '../hooks/useTasks';
+import { getCurrentISOStringIST } from '../utils/timeUtils';
 import { useGetUserGoals } from '../hooks/useGoals';
 import { useUserId } from '../hooks/redux/useAppConfig';
 import { useTaskFiltering } from '../hooks/useTaskFiltering';
@@ -163,7 +164,7 @@ const Tasks: React.FC = () => {
             onTaskStatusChange={(taskId, status) =>
               taskOperations.updateTask(taskId, {
                 completion_status: status,
-                ...(status === 'In Progress' ? { started_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} : {})
+                ...(status === 'In Progress' ? { started_at: getCurrentISOStringIST() } : {})
               })
             }
             loadingTaskId={taskState.loadingTaskId}

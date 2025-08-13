@@ -1,5 +1,6 @@
 import type { ITaskService } from '../interfaces/ITaskService';
 import type { TaskCreate, TaskUpdate, TaskResponse } from '../../client/models';
+import { getCurrentISOStringIST } from '../../utils/timeUtils';
 
 /**
  * Mock implementation of ITaskService for testing
@@ -122,7 +123,7 @@ export class MockTaskService implements ITaskService {
   async startTask(taskId: number): Promise<TaskResponse> {
     return this.updateTask(taskId, {
       completion_status: 'In Progress',
-      started_at: new Date().toISOString(),
+      started_at: getCurrentISOStringIST(),
     });
   }
 

@@ -100,21 +100,21 @@ export const getCurrentTimestampIST = (): number => {
  */
 export const getCurrentISOStringIST = (): string => {
   const now = new Date();
-  
-  // Get local time components (which should be IST if you're in India)
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-  
-  const istISOString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
-  
+  // Convert to UTC milliseconds, then add IST offset (UTC+05:30)
+  const utcMs = now.getTime() + now.getTimezoneOffset() * 60 * 1000;
+  const istMs = utcMs + 5.5 * 60 * 60 * 1000;
+  const ist = new Date(istMs);
 
-  
-  return istISOString;
+  const year = ist.getFullYear();
+  const month = String(ist.getMonth() + 1).padStart(2, '0');
+  const day = String(ist.getDate()).padStart(2, '0');
+  const hours = String(ist.getHours()).padStart(2, '0');
+  const minutes = String(ist.getMinutes()).padStart(2, '0');
+  const seconds = String(ist.getSeconds()).padStart(2, '0');
+  const milliseconds = String(ist.getMilliseconds()).padStart(3, '0');
+
+  // Return ISO 8601 with explicit IST offset
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
 };
 
 /**
