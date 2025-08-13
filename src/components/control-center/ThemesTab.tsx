@@ -34,6 +34,8 @@ interface ThemesTabProps {
   onResetToDefault: () => void;
   onExportConfiguration: () => void;
   onImportConfiguration: () => void;
+  // Added: updater for color values
+  updateCustomThemeColor?: (themeId: string, key: keyof CustomTheme['colors'], value: string) => void;
 }
 
 export const ThemesTab: React.FC<ThemesTabProps> = ({
@@ -46,7 +48,53 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
   onResetToDefault,
   onExportConfiguration,
   onImportConfiguration,
+  updateCustomThemeColor,
 }) => {
+  const hslToCss = (value: string) => {
+    // Accepts either "H S% L%" or "hsl(H S% L%)"
+    const trimmed = value?.toString().trim() || '';
+    if (/^hsl\(/i.test(trimmed)) return trimmed;
+    if (/^\d+\s+\d+%\s+\d+%$/.test(trimmed)) return `hsl(${trimmed})`;
+    return trimmed;
+  };
+  const hslNumbersToHex = (value: string) => {
+    // value: "H S% L%"
+    const m = value.match(/^(\d+)\s+(\d+)%\s+(\d+)%$/);
+    if (!m) return '#000000';
+    const h = parseInt(m[1], 10);
+    const s = parseInt(m[2], 10) / 100;
+    const l = parseInt(m[3], 10) / 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m0 = l - c / 2;
+    let r1 = 0, g1 = 0, b1 = 0;
+    if (h < 60) { r1 = c; g1 = x; b1 = 0; }
+    else if (h < 120) { r1 = x; g1 = c; b1 = 0; }
+    else if (h < 180) { r1 = 0; g1 = c; b1 = x; }
+    else if (h < 240) { r1 = 0; g1 = x; b1 = c; }
+    else if (h < 300) { r1 = x; g1 = 0; b1 = c; }
+    else { r1 = c; g1 = 0; b1 = x; }
+    const r = Math.round((r1 + m0) * 255);
+    const g = Math.round((g1 + m0) * 255);
+    const b = Math.round((b1 + m0) * 255);
+    const toHex = (n: number) => n.toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+  const cssToHex = (value: string) => {
+    const trimmed = value?.toString().trim() || '';
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed)) return trimmed;
+    const m = trimmed.match(/^hsl\(\s*(\d+)\s*,?\s*(\d+)%\s*,?\s*(\d+)%\s*\)$/i);
+    if (m) return hslNumbersToHex(`${m[1]} ${m[2]}% ${m[3]}%`);
+    // Fallback: try to parse H S% L% directly
+    if (/^\d+\s+\d+%\s+\d+%$/.test(trimmed)) return hslNumbersToHex(trimmed);
+    return '#000000';
+  };
+  const cssToHslNumbers = (value: string) => {
+    const trimmed = value?.toString().trim() || '';
+    const m = trimmed.match(/^hsl\(\s*(\d+)\s*,?\s*(\d+)%\s*,?\s*(\d+)%\s*\)$/i);
+    if (m) return `${m[1]} ${m[2]}% ${m[3]}%`;
+    return trimmed;
+  };
   return (
     <div className="space-y-6">
       {/* Built-in Themes */}
@@ -128,28 +176,88 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                     </div>
                   </div>
                   
-                  {/* Color Preview */}
-                  <div className="grid grid-cols-4 gap-2 mb-3">
-                    <div 
-                      className="w-6 h-6 rounded border"
-                      style={{ backgroundColor: theme.colors.primary }}
-                      title="Primary"
-                    />
-                    <div 
-                      className="w-6 h-6 rounded border"
-                      style={{ backgroundColor: theme.colors.secondary }}
-                      title="Secondary"
-                    />
-                    <div 
-                      className="w-6 h-6 rounded border"
-                      style={{ backgroundColor: theme.colors.background }}
-                      title="Background"
-                    />
-                    <div 
-                      className="w-6 h-6 rounded border"
-                      style={{ backgroundColor: theme.colors.surface }}
-                      title="Surface"
-                    />
+                  {/* Color Preview + Inputs */}
+                  <div className="grid grid-cols-4 gap-3 mb-3 items-center">
+                    <div className="flex flex-col gap-1">
+                      <div 
+                        className="w-6 h-6 rounded border"
+                        style={{ backgroundColor: hslToCss(theme.colors.primary) }}
+                        title="Primary"
+                      />
+                      <input
+                        type="color"
+                        aria-label="Primary color picker"
+                        className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
+                        value={cssToHex(hslToCss(theme.colors.primary))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'primary', e.target.value)}
+                      />
+                      <input
+                        aria-label="Primary color"
+                        className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
+                        value={cssToHslNumbers(hslToCss(theme.colors.primary))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'primary', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div 
+                        className="w-6 h-6 rounded border"
+                        style={{ backgroundColor: hslToCss(theme.colors.secondary) }}
+                        title="Secondary"
+                      />
+                      <input
+                        type="color"
+                        aria-label="Secondary color picker"
+                        className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
+                        value={cssToHex(hslToCss(theme.colors.secondary))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'secondary', e.target.value)}
+                      />
+                      <input
+                        aria-label="Secondary color"
+                        className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
+                        value={cssToHslNumbers(hslToCss(theme.colors.secondary))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'secondary', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div 
+                        className="w-6 h-6 rounded border"
+                        style={{ backgroundColor: hslToCss(theme.colors.background) }}
+                        title="Background"
+                      />
+                      <input
+                        type="color"
+                        aria-label="Background color picker"
+                        className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
+                        value={cssToHex(hslToCss(theme.colors.background))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'background', e.target.value)}
+                      />
+                      <input
+                        aria-label="Background color"
+                        className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
+                        value={cssToHslNumbers(hslToCss(theme.colors.background))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'background', e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div 
+                        className="w-6 h-6 rounded border"
+                        style={{ backgroundColor: hslToCss(theme.colors.surface) }}
+                        title="Surface"
+                      />
+                      <input
+                        type="color"
+                        aria-label="Surface color picker"
+                        className="h-6 w-full cursor-pointer bg-transparent border border-border rounded"
+                        value={cssToHex(hslToCss(theme.colors.surface))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'surface', e.target.value)}
+                      />
+                      <input
+                        aria-label="Surface color"
+                        className="bg-background text-foreground border rounded px-1 py-0.5 text-xs"
+                        value={cssToHslNumbers(hslToCss(theme.colors.surface))}
+                        onChange={(e) => updateCustomThemeColor?.(theme.id, 'surface', e.target.value)}
+                      />
+                    </div>
                   </div>
                   
                   <div className="flex gap-2">

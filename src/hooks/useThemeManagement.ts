@@ -27,6 +27,7 @@ export const useThemeManagement = () => {
     resetToDefaultTheme,
     exportConfiguration,
     importConfiguration,
+    updateCustomThemeColor,
   } = useDesignSystem();
 
   const [selectedToken, setSelectedToken] = useState<string | null>(null);
@@ -90,6 +91,7 @@ export const useThemeManagement = () => {
     resetToDefaultTheme,
     exportConfiguration: handleExportDesignSystem,
     importConfiguration,
+    updateCustomThemeColor,
     
     // Token operations
     updateTokenValue: handleUpdateToken,

@@ -5,7 +5,7 @@
  * and controlling various aspects of the application.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -55,6 +55,7 @@ const ControlCenter: React.FC = () => {
     exportConfiguration,
     importConfiguration,
     updateTokenValue,
+    updateCustomThemeColor,
   } = useThemeManagement();
 
   const {
@@ -63,6 +64,9 @@ const ControlCenter: React.FC = () => {
     copiedToken,
     copyToClipboard,
   } = useControlCenterState();
+
+  // File input ref for theme import
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   // Performance tracking
   useEffect(() => {
@@ -158,7 +162,16 @@ const ControlCenter: React.FC = () => {
   };
 
   const handleImportConfiguration = () => {
-    importConfiguration();
+    importFileInputRef.current?.click();
+  };
+
+  const handleImportFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      importConfiguration(file);
+    }
+    // reset value to allow re-uploading the same file later
+    if (importFileInputRef.current) importFileInputRef.current.value = '';
   };
 
   // Render tab content based on active tab
@@ -196,6 +209,7 @@ const ControlCenter: React.FC = () => {
             onResetToDefault={handleResetToDefault}
             onExportConfiguration={handleExportDesignSystem}
             onImportConfiguration={handleImportConfiguration}
+            updateCustomThemeColor={updateCustomThemeColor}
           />
         );
       case 'components':
@@ -253,6 +267,14 @@ const ControlCenter: React.FC = () => {
         >
           {renderTabContent()}
         </motion.div>
+        {/* Hidden file input for importing themes */}
+        <input
+          ref={importFileInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={handleImportFileChange}
+        />
       </div>
     </div>
   );

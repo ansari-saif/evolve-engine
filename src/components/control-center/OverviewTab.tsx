@@ -122,7 +122,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3 p-3 border rounded-lg">
-              <DesktopIcon className="w-6 h-6 text-primary" />
+              <Monitor className="w-6 h-6 text-primary" />
               <div>
                 <p className="font-medium">Desktop</p>
                 <p className="text-sm text-muted-foreground">Full support</p>

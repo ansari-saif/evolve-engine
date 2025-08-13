@@ -7,6 +7,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Theme } from '../theme';
+import { applyTheme, ensurePresetSaved } from '../utils/themeManager';
 
 interface ThemeContextType {
   theme: Theme;
@@ -47,18 +48,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   };
 
   useEffect(() => {
-    // Apply theme to document root
-    const root = document.documentElement;
-    
-    // Remove existing theme classes
-    root.classList.remove('light', 'dark', 'startup', 'enterprise');
-    
-    // Add new theme class
-    root.classList.add(theme);
-    
-    // Set data attribute for CSS targeting
-    root.setAttribute('data-theme', theme);
-    
+    // Ensure a preset map exists and apply both the class and variables
+    ensurePresetSaved(theme);
+    applyTheme(theme);
   }, [theme]);
 
   const availableThemes: Theme[] = ['dark', 'light', 'startup', 'enterprise'];
