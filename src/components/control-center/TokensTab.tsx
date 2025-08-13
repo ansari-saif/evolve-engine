@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { ContrastWarning, ContrastIndicator } from '../../components/ui/contrast-warning';
 import { 
   Palette, 
   Layers, 
@@ -46,6 +47,26 @@ export const TokensTab: React.FC<TokensTabProps> = ({
   onUpdateToken,
   onTokenValueChange,
 }) => {
+  // Helper to determine if we should show contrast warnings
+  const shouldCheckContrast = (tokenName: string, value: string) => {
+    const isColor = tokenName.toLowerCase().includes('color') || 
+                   ['Primary', 'Secondary', 'Success', 'Warning', 'Danger', 'Background', 'Surface', 'Foreground'].some(type => 
+                     tokenName.includes(type)
+                   );
+    return isColor && !tokenName.toLowerCase().includes('gradient') && !tokenName.toLowerCase().includes('shadow');
+  };
+
+  // Get background color for contrast checking (fallback to a default)
+  const getBackgroundColor = () => {
+    // Try to find background color from current tokens
+    const backgroundToken = tokenCategories
+      .flatMap(cat => cat.tokens)
+      .find(token => token.name.toLowerCase().includes('background'));
+    return backgroundToken?.value || 'hsl(220, 13%, 6%)'; // Default dark background
+  };
+
+  const backgroundColor = getBackgroundColor();
+
   const renderTokenPreview = (tokenName: string, value: string) => {
     if (tokenName.toLowerCase().includes('color') || 
         ['Primary', 'Secondary', 'Success', 'Warning', 'Danger', 'Background', 'Surface'].includes(tokenName)) {
@@ -129,9 +150,18 @@ export const TokensTab: React.FC<TokensTabProps> = ({
                         )}
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground font-mono break-all">
-                      {token.value}
-                    </p>
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground font-mono break-all">
+                        {token.value}
+                      </p>
+                      {shouldCheckContrast(token.name, token.value) && !token.name.toLowerCase().includes('background') && (
+                        <ContrastIndicator
+                          foreground={token.value}
+                          background={backgroundColor}
+                          className="self-start"
+                        />
+                      )}
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -161,6 +191,17 @@ export const TokensTab: React.FC<TokensTabProps> = ({
                   placeholder="Enter new value..."
                 />
               </div>
+              
+              {/* Show contrast warning for color tokens */}
+              {shouldCheckContrast(selectedToken, tokenValue) && !selectedToken.toLowerCase().includes('background') && tokenValue && (
+                <ContrastWarning
+                  foreground={tokenValue}
+                  background={backgroundColor}
+                  className="mt-3"
+                  showDetails={true}
+                />
+              )}
+              
               <div className="flex gap-2">
                 <Button
                   onClick={() => onUpdateToken(selectedToken, tokenValue)}

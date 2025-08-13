@@ -141,6 +141,60 @@ All colors MUST be HSL.
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Enhanced focus indicators for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-ring outline-offset-2;
+    outline-style: solid;
+    border-radius: var(--radius);
+  }
+
+  /* High contrast theme focus indicators */
+  .high-contrast *:focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+    box-shadow: 0 0 0 1px hsl(var(--background));
+  }
+
+  /* Interactive element focus styles */
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-2 outline-ring outline-offset-2;
+    outline-style: solid;
+    transition: outline-color 0.2s ease-in-out;
+  }
+
+  /* Enhanced focus for high contrast theme */
+  .high-contrast button:focus-visible,
+  .high-contrast [role="button"]:focus-visible,
+  .high-contrast a:focus-visible,
+  .high-contrast input:focus-visible,
+  .high-contrast textarea:focus-visible,
+  .high-contrast select:focus-visible,
+  .high-contrast [tabindex]:focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+    box-shadow: 
+      0 0 0 1px hsl(var(--background)),
+      0 0 0 5px hsl(var(--ring) / 0.2);
+  }
+
+  /* Focus indicators for custom components */
+  [data-focus-visible="true"] {
+    @apply outline-2 outline-ring outline-offset-2;
+    outline-style: solid;
+  }
+
+  .high-contrast [data-focus-visible="true"] {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 3px;
+    box-shadow: 0 0 0 1px hsl(var(--background));
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     @apply w-2;

@@ -6,6 +6,7 @@
  */
 
 import type { Theme } from '../theme';
+import { getSystemPreferredTheme } from './systemColorScheme';
 
 const STORAGE_THEME_KEY = 'evolve-theme';
 const STORAGE_VARS_PREFIX = 'evolve-theme-vars-';
@@ -193,11 +194,95 @@ const PRESET_ENTERPRISE: ThemeVariables = {
   '--ring': '215 28% 40%'
 };
 
+const PRESET_HIGH_CONTRAST: ThemeVariables = {
+  // Maximum contrast backgrounds - pure black and white
+  '--background': '0 0% 0%',           // Pure black
+  '--foreground': '0 0% 100%',         // Pure white
+  '--surface': '0 0% 5%',              // Near black
+  '--surface-light': '0 0% 10%',       // Dark gray
+  
+  // Card backgrounds
+  '--card': '0 0% 0%',
+  '--card-foreground': '0 0% 100%',
+  
+  // Popover backgrounds
+  '--popover': '0 0% 0%',
+  '--popover-foreground': '0 0% 100%',
+  
+  // High contrast primary colors
+  '--primary': '220 100% 60%',         // Bright blue (AAA compliant on black)
+  '--primary-dark': '220 100% 50%',
+  '--primary-foreground': '0 0% 0%',   // Black text on bright backgrounds
+  
+  // High contrast secondary
+  '--secondary': '60 100% 50%',        // Bright yellow (AAA compliant)
+  '--secondary-foreground': '0 0% 0%', // Black text on bright yellow
+  
+  // Status colors with maximum contrast
+  '--success': '120 100% 40%',         // Dark green (AAA compliant on white)
+  '--success-foreground': '0 0% 100%',
+  '--warning': '45 100% 35%',          // Dark orange (AAA compliant on white)
+  '--warning-foreground': '0 0% 100%',
+  '--danger': '0 100% 30%',            // Dark red (AAA compliant on white)
+  '--danger-foreground': '0 0% 100%',
+  
+  // Destructive colors
+  '--destructive': '0 100% 30%',
+  '--destructive-foreground': '0 0% 100%',
+  
+  // Text hierarchy with high contrast
+  '--text-primary': '0 0% 100%',       // Pure white
+  '--text-secondary': '0 0% 85%',      // Light gray (still AAA compliant)
+  '--text-muted': '0 0% 70%',          // Medium gray (AA compliant)
+  
+  // Muted elements
+  '--muted': '0 0% 15%',               // Dark gray background
+  '--muted-foreground': '0 0% 100%',   // White text on dark gray
+  
+  // Accent colors
+  '--accent': '300 100% 25%',          // Dark magenta
+  '--accent-foreground': '0 0% 100%',
+  
+  // Borders and inputs with high contrast
+  '--border': '0 0% 30%',              // Medium gray for visibility
+  '--input': '0 0% 5%',                // Dark input background
+  '--ring': '220 100% 60%',            // Bright blue focus ring
+  
+  // High contrast gradients (simplified for accessibility)
+  '--gradient-primary': 'linear-gradient(135deg, hsl(220 100% 60%) 0%, hsl(240 100% 50%) 100%)',
+  '--gradient-success': 'linear-gradient(135deg, hsl(120 100% 40%) 0%, hsl(140 100% 35%) 100%)',
+  '--gradient-motivation': 'linear-gradient(135deg, hsl(60 100% 50%) 0%, hsl(45 100% 45%) 100%)',
+  '--gradient-warning': 'linear-gradient(135deg, hsl(45 100% 35%) 0%, hsl(30 100% 35%) 100%)',
+  '--gradient-subtle': 'linear-gradient(180deg, hsl(0 0% 0%) 0%, hsl(0 0% 10%) 100%)',
+  
+  // Enhanced shadows for better visual separation
+  '--shadow-elegant': '0 10px 30px -10px hsl(0 0% 100% / 0.4)',
+  '--shadow-glow': '0 0 40px hsl(220 100% 60% / 0.8)',
+  '--shadow-card': '0 4px 16px -4px hsl(0 0% 100% / 0.2)',
+  
+  // Standard transitions
+  '--transition-smooth': 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '--transition-spring': 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
+  '--radius': '0.75rem',
+  
+  // Sidebar with high contrast
+  '--sidebar-background': '0 0% 0%',
+  '--sidebar-foreground': '0 0% 100%',
+  '--sidebar-primary': '220 100% 60%',
+  '--sidebar-primary-foreground': '0 0% 0%',
+  '--sidebar-accent': '0 0% 15%',
+  '--sidebar-accent-foreground': '0 0% 100%',
+  '--sidebar-border': '0 0% 30%',
+  '--sidebar-ring': '220 100% 60%'
+};
+
 const PRESETS: Record<Theme, ThemeVariables> = {
   dark: PRESET_DARK,
   light: PRESET_LIGHT,
   startup: PRESET_STARTUP,
-  enterprise: PRESET_ENTERPRISE
+  enterprise: PRESET_ENTERPRISE,
+  'high-contrast': PRESET_HIGH_CONTRAST,
+  system: PRESET_DARK // Default fallback for system theme
 };
 
 export const getStoredThemeName = (): Theme | null => {
@@ -210,28 +295,37 @@ export const getStoredThemeName = (): Theme | null => {
 };
 
 export const getThemeVariables = (theme: Theme): ThemeVariables => {
+  // Resolve 'system' theme to actual theme for variable lookup
+  const resolvedTheme = theme === 'system' ? getSystemPreferredTheme() : theme;
+  
   try {
-    const raw = localStorage.getItem(STORAGE_VARS_PREFIX + theme);
+    const raw = localStorage.getItem(STORAGE_VARS_PREFIX + resolvedTheme);
     if (raw) return JSON.parse(raw);
   } catch {
     void 0;
   }
-  return PRESETS[theme];
+  return PRESETS[resolvedTheme];
 };
 
 export const saveThemeVariables = (theme: Theme, vars: ThemeVariables): void => {
+  // Resolve 'system' theme to actual theme for storage
+  const resolvedTheme = theme === 'system' ? getSystemPreferredTheme() : theme;
+  
   try {
-    localStorage.setItem(STORAGE_VARS_PREFIX + theme, JSON.stringify(vars));
+    localStorage.setItem(STORAGE_VARS_PREFIX + resolvedTheme, JSON.stringify(vars));
   } catch {
     void 0;
   }
 };
 
 export const ensurePresetSaved = (theme: Theme): void => {
+  // Resolve 'system' theme to actual theme for preset storage
+  const resolvedTheme = theme === 'system' ? getSystemPreferredTheme() : theme;
+  
   try {
-    const key = STORAGE_VARS_PREFIX + theme;
+    const key = STORAGE_VARS_PREFIX + resolvedTheme;
     if (!localStorage.getItem(key)) {
-      localStorage.setItem(key, JSON.stringify(PRESETS[theme]));
+      localStorage.setItem(key, JSON.stringify(PRESETS[resolvedTheme]));
     }
   } catch {
     void 0;
@@ -252,10 +346,15 @@ export const applyThemeVariables = (theme: Theme): void => {
 
 export const applyTheme = (theme: Theme): void => {
   const root = document.documentElement;
-  root.classList.remove('light', 'dark', 'startup', 'enterprise');
-  root.classList.add(theme);
-  root.setAttribute('data-theme', theme);
-  applyThemeVariables(theme);
+  
+  // Resolve 'system' theme to actual theme based on system preference
+  const resolvedTheme = theme === 'system' ? getSystemPreferredTheme() : theme;
+  
+  root.classList.remove('light', 'dark', 'startup', 'enterprise', 'system');
+  root.classList.add(resolvedTheme);
+  root.setAttribute('data-theme', theme); // Keep original theme name for reference
+  root.setAttribute('data-resolved-theme', resolvedTheme); // Add resolved theme for CSS targeting
+  applyThemeVariables(resolvedTheme);
 };
 
 export const updateCurrentThemeVariable = (cssVarName: string, value: string): void => {

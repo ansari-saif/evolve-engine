@@ -21,6 +21,8 @@ interface ThemeRegistryState {
 }
 
 const BUILT_IN_THEMES: Array<{ id: Theme; name: string }> = [
+  { id: 'system', name: 'System' },
+  { id: 'high-contrast', name: 'High Contrast' },
   { id: 'dark', name: 'Dark' },
   { id: 'light', name: 'Light' },
   { id: 'startup', name: 'Startup' },

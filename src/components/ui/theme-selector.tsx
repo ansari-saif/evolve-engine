@@ -13,12 +13,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { Moon, Sun, Palette, Building2 } from 'lucide-react';
+import { Moon, Sun, Palette, Building2, Monitor, Contrast } from 'lucide-react';
 import { useTheme } from '../../providers/ThemeProvider';
 import { Theme } from '../../theme';
 import { getThemeLabel } from '../../utils/themeRegistry';
 
 const themeIcons: Record<Theme, React.ReactNode> = {
+  system: <Monitor className="w-4 h-4" />,
+  'high-contrast': <Contrast className="w-4 h-4" />,
   dark: <Moon className="w-4 h-4" />,
   light: <Sun className="w-4 h-4" />,
   startup: <Palette className="w-4 h-4" />,
@@ -26,6 +28,8 @@ const themeIcons: Record<Theme, React.ReactNode> = {
 };
 
 const themeLabels: Record<Theme, string> = {
+  system: 'System',
+  'high-contrast': 'High Contrast',
   dark: 'Dark',
   light: 'Light',
   startup: 'Startup',
