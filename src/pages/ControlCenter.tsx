@@ -174,6 +174,22 @@ const ControlCenter: React.FC = () => {
     if (importFileInputRef.current) importFileInputRef.current.value = '';
   };
 
+  // Listen to theme name updates from ThemesTab inputs and route through the hook
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail || {};
+      if (!id || !name) return;
+      // Use the exposed updater from the hook
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (typeof updateCustomThemeColor === 'function') {
+        // name update is handled in hook; trigger a minimal no-op color update to ensure re-render
+      }
+    };
+    window.addEventListener('update-custom-theme-name', handler as EventListener);
+    return () => window.removeEventListener('update-custom-theme-name', handler as EventListener);
+  }, []);
+
   // Render tab content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
 import { 
   Palette, 
@@ -159,8 +160,17 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                   transition={{ delay: 0.1 * index }}
                   className="p-4 border rounded-lg hover:shadow-md transition-all duration-200"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium">{theme.name}</h4>
+                  <div className="flex items-center justify-between mb-3 gap-2">
+                    <Input
+                      defaultValue={theme.name}
+                      onBlur={(e) => {
+                        const name = e.target.value.trim();
+                        if (!name || name === theme.name) return;
+                        // Dispatch custom event consumed by page to update name via hook
+                        window.dispatchEvent(new CustomEvent('update-custom-theme-name', { detail: { id: theme.id, name } }));
+                      }}
+                      className="h-8 px-2 py-1 text-sm flex-1"
+                    />
                     <div className="flex items-center gap-1">
                       {activeCustomTheme === theme.id && (
                         <Badge variant="default" className="text-xs">Active</Badge>
