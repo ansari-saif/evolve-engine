@@ -14,7 +14,6 @@ const GenerateDailyTasksDialog = lazy(() => import('../components/tasks/Generate
 import { TaskTabs } from '../components/tasks/TaskTabs';
 import { TaskActions } from '../components/tasks/TaskActions';
 import { useGetUserTasks } from '../hooks/useTasks';
-import { getCurrentISOStringIST } from '../utils/timeUtils';
 import { useGetUserGoals } from '../hooks/useGoals';
 import { useUserId } from '../hooks/redux/useAppConfig';
 import { useTaskFiltering } from '../hooks/useTaskFiltering';
@@ -23,7 +22,7 @@ import { useTaskOperations } from '../hooks/useTaskOperations';
 import { useTaskState } from '../hooks/useTaskState';
 import { useAiService } from '../hooks/useAiService';
 import { useToasts } from '../hooks/redux/useToasts';
-import type { TaskResponse, TaskCreate, PhaseEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../client/models';
+import type { TaskCreate, PhaseEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../client/models';
 import type { GeneratedTask } from '../store/types';
 
 /**
@@ -57,22 +56,6 @@ const Tasks: React.FC = () => {
   // Event handlers
   const handleCreateTask = async (task: TaskCreate) => {
     await taskOperations.createTask(task);
-  };
-
-  const handleTaskComplete = async (taskId: number) => {
-    taskState.setTaskLoading(taskId);
-    await taskOperations.completeTask(taskId);
-    taskState.setTaskLoading(null);
-  };
-
-  const handleTaskEdit = (task: TaskResponse) => {
-    taskState.startEditing(task);
-  };
-
-  const handleTaskDelete = async (taskId: number) => {
-    taskState.setTaskLoading(taskId);
-    await taskOperations.deleteTask(taskId);
-    taskState.setTaskLoading(null);
   };
 
   const handleGenerateTasks = async (params: { energyLevel: number; currentPhase: PhaseEnum | null }): Promise<GeneratedTask[]> => {
@@ -156,17 +139,7 @@ const Tasks: React.FC = () => {
         {(tasks) => (
           <TaskList
             tasks={tasks}
-            goals={goals || []}
             isLoading={isLoading}
-            onTaskComplete={handleTaskComplete}
-            onTaskEdit={handleTaskEdit}
-            onTaskDelete={handleTaskDelete}
-            onTaskStatusChange={(taskId, status) =>
-              taskOperations.updateTask(taskId, {
-                completion_status: status,
-                ...(status === 'In Progress' ? { started_at: getCurrentISOStringIST() } : {})
-              })
-            }
             loadingTaskId={taskState.loadingTaskId}
           />
         )}

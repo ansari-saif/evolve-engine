@@ -1,68 +1,35 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import TaskCard from './TaskCard';
 import { SkeletonLoader } from '../ui';
+import { useGetUserGoals } from '../../hooks/useGoals';
+import { useUserId } from '../../hooks/redux/useAppConfig';
 import type { TaskResponse, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../../client/models';
-import type { GoalResponse } from '../../client/models';
 import { format } from 'date-fns';
 
 interface TaskListProps {
   tasks: TaskResponse[];
-  goals?: GoalResponse[];
   isLoading: boolean;
-  onTaskComplete: (taskId: number) => void;
-  onTaskEdit: (task: TaskResponse) => void;
-  onTaskDelete: (taskId: number) => void;
-  onTaskStatusChange: (taskId: number, status: CompletionStatusEnum) => void;
-  loadingTaskId: number | null;
+  loadingTaskId?: number | null;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
   tasks,
-  goals = [],
   isLoading,
-  onTaskComplete,
-  onTaskEdit,
-  onTaskDelete,
-  onTaskStatusChange,
   loadingTaskId
 }) => {
-  // Utility functions for TaskCard
-  const getPriorityColor = (priority: TaskPriorityEnum) => {
-    switch (priority) {
-      case 'Urgent': return 'destructive';
-      case 'High': return 'secondary';
-      case 'Medium': return 'default';
-      case 'Low': return 'outline';
-      default: return 'default';
-    }
-  };
-
-  const getStatusColor = (status: CompletionStatusEnum) => {
-    switch (status) {
-      case 'Completed': return 'default';
-      case 'In Progress': return 'secondary';
-      case 'Pending': return 'outline';
-      default: return 'outline';
-    }
-  };
-
-  const getEnergyColor = (energy: EnergyRequiredEnum) => {
-    switch (energy) {
-      case 'High': return 'destructive';
-      case 'Medium': return 'secondary';
-      case 'Low': return 'outline';
-      default: return 'outline';
-    }
-  };
-
-  const formatDate = (date: string | null) => {
+  // ALL HOOKS MUST BE CALLED FIRST - NO EARLY RETURNS BEFORE THIS POINT
+  const userId = useUserId();
+  const { data: goals = [] } = useGetUserGoals(userId);
+  
+  // Memoized utility functions for TaskCard
+  const formatDate = useCallback((date: string | null) => {
     if (!date) return null;
     try {
       return format(new Date(date), 'MMM dd, yyyy');
     } catch {
       return date;
     }
-  };
+  }, []);
 
   /**
    * Format a duration value expressed in minutes into a compact human-readable string.
@@ -80,7 +47,7 @@ const TaskList: React.FC<TaskListProps> = ({
    * @param duration Minutes to format. May be null.
    * @returns A formatted string like "1h 30m" or "45m", or null if invalid.
    */
-  const formatDuration = (duration: number | null) => {
+  const formatDuration = useCallback((duration: number | null) => {
     if (duration == null || !Number.isFinite(duration)) return null;
     const totalMinutes = Math.max(0, Math.floor(duration));
     const hours = Math.floor(totalMinutes / 60);
@@ -90,8 +57,23 @@ const TaskList: React.FC<TaskListProps> = ({
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
-  };
+  }, []);
 
+  // Memoize the task cards to prevent unnecessary re-renders
+  const taskCards = useMemo(() => {
+    return tasks.map((task) => (
+      <TaskCard
+        key={task.task_id}
+        task={task}
+        goals={goals}
+        formatDate={formatDate}
+        formatDuration={formatDuration}
+        loadingTaskId={loadingTaskId}
+      />
+    ));
+  }, [tasks, goals, formatDate, formatDuration, loadingTaskId]);
+
+  // CONDITIONAL RENDERING AFTER ALL HOOKS
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -112,25 +94,9 @@ const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <div className="space-y-4">
-      {tasks.map((task) => (
-        <TaskCard
-          key={task.task_id}
-          task={task}
-          goals={goals}
-          onStatusChange={onTaskStatusChange}
-          onComplete={onTaskComplete}
-          onEdit={onTaskEdit}
-          onDelete={onTaskDelete}
-          getPriorityColor={getPriorityColor}
-          getStatusColor={getStatusColor}
-          getEnergyColor={getEnergyColor}
-          formatDate={formatDate}
-          formatDuration={formatDuration}
-          loadingTaskId={loadingTaskId}
-        />
-      ))}
+      {taskCards}
     </div>
   );
 };
 
-export default TaskList;
+export default React.memo(TaskList);

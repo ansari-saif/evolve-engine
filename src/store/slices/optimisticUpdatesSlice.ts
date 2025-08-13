@@ -100,15 +100,11 @@ export const {
 export default optimisticUpdatesSlice.reducer;
 
 // Memoized selectors for better performance
-export const selectOptimisticTasks = createSelector(
-  [(state: { optimisticUpdates: OptimisticUpdatesState }) => state.optimisticUpdates.optimisticTasks],
-  (optimisticTasks) => optimisticTasks
-);
+export const selectOptimisticTasks = (state: { optimisticUpdates: OptimisticUpdatesState }) => 
+  state.optimisticUpdates.optimisticTasks;
 
-export const selectPendingOperations = createSelector(
-  [(state: { optimisticUpdates: OptimisticUpdatesState }) => state.optimisticUpdates.pendingOperations],
-  (pendingOperations) => pendingOperations
-);
+export const selectPendingOperations = (state: { optimisticUpdates: OptimisticUpdatesState }) => 
+  state.optimisticUpdates.pendingOperations;
 
 export const selectHasOptimisticTasks = createSelector(
   [selectOptimisticTasks],

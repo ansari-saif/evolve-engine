@@ -1,0 +1,185 @@
+## Goal
+
+Eliminate prop drilling by leveraging Redux (and existing project hooks) so components connect directly to state and actions. Keep server data in React Query for now; move only UI/control state and cross-component commands into Redux.
+
+## Current State (quick scan)
+
+- Redux slices exist: `appConfig`, `ui`, `dialog`, `navigation`, `optimisticUpdates`, `form`.
+- React Query handles server state for tasks/goals via hooks like `useGetUserTasks`, `useUpdateTask`, etc.
+- Task views pass many props down (`Tasks` → `TaskList` → `TaskCard`) including handlers and helpers:
+  - `onTaskComplete`, `onTaskEdit`, `onTaskDelete`, `onTaskStatusChange`
+  - `loadingTaskId`, `goals`, and formatting helpers
+- UI state for Tasks page (filters, active tab, editing, loading id) is stored in a local hook `useTaskState` (component state), not Redux.
+
+## Principles / Target Architecture
+
+- Keep server state in React Query (cache, mutations). Do NOT move to Redux unless necessary.
+- Move UI/control state for tasks into a dedicated Redux slice (`taskUi`), with selectors and action creators.
+- Expose domain actions via Redux thunks (or a thin action layer) so components can dispatch instead of receiving callbacks.
+- Connect leaf components (e.g., `TaskCard`) directly to selectors/actions; intermediate components should not forward props.
+- Provide reusable hooks that internally use `useSelector`/`useDispatch` to keep components clean (e.g., `useTaskActions`, `useVisibleTasks`).
+
+## Incremental Migration Plan (Phased)
+
+### Phase 1: Remove trivial prop drilling (helpers/local concerns)
+
+- Move formatting/helpers used only by a component into that component or a utils import.
+  - Example: `getPriorityColor`, `getStatusColor`, `getEnergyColor`, `formatDate`, `formatDuration` consumed by `TaskCard` → import/util inside `TaskCard`.
+
+Outcome: `TaskList` no longer passes helper functions.
+
+### Phase 2: Centralize Tasks UI state in Redux
+
+- Create slice `src/store/slices/taskUiSlice.ts` with state:
+  - `activeTab: 'all' | 'pending' | 'in-progress' | 'completed'`
+  - `editingTask: TaskResponse | null`
+  - `generateDialogOpen: boolean`
+  - `loadingTaskId: number | null`
+  - `filters: { status: 'All' | CompletionStatusEnum; priority: 'All' | TaskPriorityEnum; energy: 'All' | EnergyRequiredEnum; goal: 'All' | number }`
+- Actions: `setActiveTab`, `startEditing`, `stopEditing`, `openGenerateDialog`, `closeGenerateDialog`, `setTaskLoading`, `setFilters`, `resetFilters`.
+- Selectors in `src/store/selectors/compositeSelectors.ts`:
+  - `selectTaskUi`, `selectActiveTab`, `selectTaskFilters`, `selectLoadingTaskId`, `selectEditingTask`, etc.
+
+Refactor:
+  - Replace `useTaskState` with Redux-backed hooks (e.g., `useTaskUi` that wraps selectors/dispatchers).
+  - Update `TaskFilters`, `TaskTabs`, and `Tasks` to use Redux state instead of local state.
+
+Outcome: Tasks UI state comes from store; no need to thread these values down as props.
+
+### Phase 3: Replace handler prop drilling with store-connected actions
+
+- Create thunks in `src/store/thunks/taskThunks.ts` or action wrappers that call existing React Query mutations:
+  - `dispatch(taskStart(taskId))`, `dispatch(taskComplete(taskId))`, `dispatch(taskUpdate({ id, updates }))`, `dispatch(taskDelete(id))`.
+  - Internally, these can call `TasksService` or simply re-use existing hooks pattern by introducing a thin command layer:
+    - Option A (Thunk): call services directly, then dispatch `ui` toasts and `taskUi` loading toggles.
+    - Option B (Hook + Dispatch): create `useTaskActions` hook that uses React Query mutations and dispatches Redux UI updates; components import this hook directly.
+
+Recommended (minimal churn): Option B with a small `useTaskActions` hook that:
+  - Exposes `startTask`, `completeTask`, `updateTask`, `deleteTask` using existing `useTaskOperations` under the hood
+  - Dispatches `taskUi` loading state and any UI toasts as needed
+
+Refactor:
+  - `TaskCard` calls `const { startTask, completeTask, updateTask, deleteTask } = useTaskActions()` instead of receiving callbacks via props.
+  - Remove `onTaskComplete`, `onTaskEdit`, `onTaskDelete`, `onTaskStatusChange` props from `TaskList` and `TaskCard` paths.
+
+Outcome: Leaf components invoke actions directly; no callback props needed.
+
+### Phase 4: Source data locally without prop threading
+
+- Data needed by `TaskList`/`TaskCard`:
+  - Tasks list: keep using React Query, called in the component that needs it (cache prevents duplicate fetch cost).
+  - Goals list: same approach (React Query) or add a `goalsUi` if you want filters/search, but keep server state in RQ.
+  - Visible tasks: introduce `useVisibleTasks(userId)` hook that:
+    - Gets tasks from `useGetUserTasks(userId)`
+    - Reads `filters` and `activeTab` from Redux selectors
+    - Returns the filtered/sorted list
+
+Refactor:
+  - `TaskList` uses `useVisibleTasks(userId)` and `useSelector(selectLoadingTaskId)` directly; removes incoming `tasks`, `isLoading`, `loadingTaskId` props.
+  - `TaskCard` reads only its own `task` prop (from map) and uses `useTaskActions` and helpers locally.
+
+Outcome: Components are self-sufficient; parents don’t forward data/handlers.
+
+### Phase 5 (optional): Unify server state into Redux
+
+- Only if required, add RTK Query or Redux-managed entities for tasks/goals. This is a larger change and not necessary for eliminating prop drilling.
+
+## Prop-to-Store Mapping (before → after)
+
+- `filters`, `setFilters` → Redux `taskUi.filters`, `dispatch(taskUi.setFilters)`
+- `activeTab`, `onTabChange` → Redux `taskUi.activeTab`, `dispatch(taskUi.setActiveTab)`
+- `loadingTaskId`, `setTaskLoading` → Redux `taskUi.loadingTaskId`, `dispatch(taskUi.setTaskLoading)`
+- `editingTask`, `startEditing/stopEditing` → Redux `taskUi.editingTask`, `dispatch(taskUi.startEditing/stopEditing)`
+- `onTaskComplete/onTaskDelete/onTaskStatusChange/onTaskEdit` → `useTaskActions()` hook (or thunks) used directly in `TaskCard`
+- `tasks`, `goals`, `isLoading` → Query inside consuming components (`useGetUserTasks`, `useGetUserGoals`), or via `useVisibleTasks` hook
+
+## Minimal Code Changes (sketches)
+
+1) New slice `taskUiSlice.ts` (abbreviated)
+
+```ts
+// src/store/slices/taskUiSlice.ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { CompletionStatusEnum, TaskPriorityEnum, EnergyRequiredEnum, TaskResponse } from '@/client/models';
+
+type Filters = {
+  status: 'All' | CompletionStatusEnum;
+  priority: 'All' | TaskPriorityEnum;
+  energy: 'All' | EnergyRequiredEnum;
+  goal: 'All' | number;
+};
+
+interface TaskUiState {
+  activeTab: 'all' | 'pending' | 'in-progress' | 'completed';
+  editingTask: TaskResponse | null;
+  generateDialogOpen: boolean;
+  loadingTaskId: number | null;
+  filters: Filters;
+}
+
+const initialState: TaskUiState = {
+  activeTab: 'all',
+  editingTask: null,
+  generateDialogOpen: false,
+  loadingTaskId: null,
+  filters: { status: 'All', priority: 'All', energy: 'All', goal: 'All' },
+};
+
+export const taskUiSlice = createSlice({
+  name: 'taskUi',
+  initialState,
+  reducers: {
+    setActiveTab: (s, a: PayloadAction<TaskUiState['activeTab']>) => { s.activeTab = a.payload; },
+    startEditing: (s, a: PayloadAction<TaskResponse>) => { s.editingTask = a.payload; },
+    stopEditing: (s) => { s.editingTask = null; },
+    openGenerateDialog: (s) => { s.generateDialogOpen = true; },
+    closeGenerateDialog: (s) => { s.generateDialogOpen = false; },
+    setTaskLoading: (s, a: PayloadAction<number | null>) => { s.loadingTaskId = a.payload; },
+    setFilters: (s, a: PayloadAction<Partial<Filters>>) => { s.filters = { ...s.filters, ...a.payload }; },
+    resetFilters: (s) => { s.filters = initialState.filters; },
+  }
+});
+
+export const { actions: taskUiActions, reducer: taskUiReducer } = taskUiSlice;
+```
+
+2) Use in components without prop drilling
+
+```tsx
+// In TaskList.tsx
+const userId = useUserId();
+const { data: tasks, isLoading } = useGetUserTasks(userId);
+const filters = useSelector(selectTaskFilters);
+const activeTab = useSelector(selectActiveTab);
+const visible = useMemo(() => applyFiltersAndTabs(tasks || [], filters, activeTab), [tasks, filters, activeTab]);
+
+return <>{visible.map(task => <TaskCard key={task.task_id} task={task} />)}</>;
+```
+
+```tsx
+// In TaskCard.tsx
+const loadingTaskId = useSelector(selectLoadingTaskId);
+const { startTask, completeTask, updateTask, deleteTask } = useTaskActions();
+
+<Button onClick={() => startTask(task.task_id)} disabled={loadingTaskId === task.task_id} />
+```
+
+## Rollout Checklist
+
+1. Add `taskUiSlice` and wire it in `store/index.ts`.
+2. Create selectors in `store/selectors/compositeSelectors.ts` for `taskUi`.
+3. Replace `useTaskState` with Redux-driven hooks for UI state.
+4. Remove helper prop drilling: localize helpers in `TaskCard`.
+5. Introduce `useTaskActions` that wraps existing mutations + Redux UI updates.
+6. Update `TaskList` and `TaskCard` to use selectors/actions directly; remove handler props.
+7. Update `TaskFilters` to read/write filters via Redux.
+8. Verify lints and existing tests; smoke test Tasks flows.
+
+## Definition of Done
+
+- No props for UI state or handlers are passed from `Tasks` → `TaskList` → `TaskCard`.
+- `TaskTabs`, `TaskFilters`, and dialogs consume Redux UI state.
+- Leaf components dispatch actions or call `useTaskActions`; no callback props threaded.
+- No regression in behavior; React Query still manages server state.
+
+

@@ -4,43 +4,43 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Stopwatch } from '../ui/Stopwatch';
+import { useUpdateTask, useCompleteTask, useDeleteTask } from '../../hooks/useTasks';
+import { useTaskState } from '../../hooks/useTaskState';
+import { getCurrentISOStringIST } from '../../utils/timeUtils';
 
-import { Play, Pause, CheckCircle, Edit, Trash2, Calendar as CalendarIcon2, Clock, Target, Zap } from 'lucide-react';
-import { format } from 'date-fns';
+import { Play, CheckCircle, Edit, Trash2, Calendar as CalendarIcon2, Clock, Target, Zap } from 'lucide-react';
 import type { TaskResponse, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../../client/models';
 import type { GoalResponse } from '../../client/models';
 
-import { fadeInUp, scaleIn } from '../../utils/animations';
 
 interface TaskCardProps {
   task: TaskResponse;
   goals: GoalResponse[];
-  onStatusChange: (taskId: number, status: CompletionStatusEnum) => void;
-  onComplete: (taskId: number) => void;
-  onDelete: (taskId: number) => void;
-  onEdit: (task: TaskResponse) => void;
-  getPriorityColor: (priority: TaskPriorityEnum) => "destructive" | "secondary" | "outline" | "default";
-  getStatusColor: (status: CompletionStatusEnum) => "destructive" | "secondary" | "outline" | "default";
-  getEnergyColor: (energy: EnergyRequiredEnum) => "destructive" | "secondary" | "outline" | "default";
   formatDate: (date: string | null) => string | null;
   formatDuration: (duration: number | null) => string | null;
-  loadingTaskId: number | null;
+  loadingTaskId?: number | null;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   goals,
-  onStatusChange,
-  onComplete,
-  onDelete,
-  onEdit,
-  getPriorityColor,
-  getStatusColor,
-  getEnergyColor,
   formatDate,
   formatDuration,
   loadingTaskId
 }) => {
+  // React Query mutations
+  const updateTaskMutation = useUpdateTask();
+  const completeTaskMutation = useCompleteTask();
+  const deleteTaskMutation = useDeleteTask();
+  
+  // Task state management
+  const taskState = useTaskState();
+  
+  // Check if this task is currently loading
+  const isTaskLoading = loadingTaskId === task.task_id || 
+    updateTaskMutation.isPending || 
+    completeTaskMutation.isPending || 
+    deleteTaskMutation.isPending;
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   const [showStopwatch, setShowStopwatch] = useState(false);
 
@@ -99,17 +99,22 @@ const TaskCard: React.FC<TaskCardProps> = ({
                       >
                         <Button
                           onClick={() => {
-                            // Start the task
-                            onStatusChange(task.task_id, 'In Progress');
+                            updateTaskMutation.mutate({
+                              id: task.task_id,
+                              data: {
+                                completion_status: 'In Progress',
+                                started_at: getCurrentISOStringIST()
+                              }
+                            });
                             setShowStopwatch(true);
                           }}
-                          disabled={loadingTaskId === task.task_id || task.completion_status === 'In Progress'}
+                          disabled={isTaskLoading || task.completion_status === 'In Progress'}
                           variant="ghost"
                           size="sm"
                           className="text-primary hover:text-primary/80 hover:bg-primary/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0 transition-all duration-200"
                           title="Start task"
                         >
-                          {loadingTaskId === task.task_id ? (
+                          {isTaskLoading ? (
                             <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                           ) : (
                             <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -117,13 +122,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         </Button>
                       </motion.div>
                       <Button
-                        onClick={() => onComplete(task.task_id)}
-                        disabled={loadingTaskId === task.task_id}
+                        onClick={() => completeTaskMutation.mutate(task.task_id)}
+                        disabled={isTaskLoading}
                         variant="ghost"
                         size="sm"
                         className="text-success hover:text-success/80 hover:bg-success/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
                       >
-                        {loadingTaskId === task.task_id ? (
+                        {isTaskLoading ? (
                           <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                         ) : (
                           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -132,7 +137,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     </>
                   )}
                   <Button
-                    onClick={() => onEdit(task)}
+                    onClick={() => taskState.startEditing(task)}
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:text-foreground hover:bg-muted min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
@@ -140,13 +145,13 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </Button>
                   <Button
-                    onClick={() => onDelete(task.task_id)}
-                    disabled={loadingTaskId === task.task_id}
+                    onClick={() => deleteTaskMutation.mutate(task.task_id)}
+                    disabled={isTaskLoading}
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 min-h-[32px] sm:min-h-[36px] w-8 sm:w-9 h-8 sm:h-9 p-0"
                   >
-                    {loadingTaskId === task.task_id ? (
+                    {isTaskLoading ? (
                       <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     ) : (
                       <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -284,4 +289,4 @@ const TaskCard: React.FC<TaskCardProps> = ({
   );
 };
 
-export default TaskCard;
+export default React.memo(TaskCard);
