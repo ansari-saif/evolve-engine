@@ -1,0 +1,68 @@
+<context>
+# Overview
+Centralize theming to ensure app-wide propagation, dynamic custom themes in the selector, and full token editability from the Control Center. Targets designers/devs needing live, persistent theming without code changes.
+
+# Core Features
+- Dynamic Theme Registry: Built-ins + custom themes; persisted locally.
+- Single Apply Path: Applies document class + CSS variables globally.
+- Per-Theme Variables: Store and load CSS variable maps per theme.
+- Control Center Editing: CRUD custom themes; live token editing (colors, gradients, shadows, animations, radii).
+- Import/Export: JSON of registry, per-theme vars, active theme.
+
+# User Experience
+- Persona: Designer adjusts theme live; Developer ensures consistent propagation.
+- Flows:
+  - Switch theme from dropdown → instant global update, persisted.
+  - Create custom theme → appears in dropdown → edit colors → auto-save per theme.
+  - Import/Export → restore/share full theme setup.
+- UX Notes: No page reloads; immediate visual feedback; sensible labels/icons for themes.
+</context>
+<PRD>
+# Technical Architecture
+- Components:
+  - Theme Provider: exposes theme, setTheme, availableThemes (from registry).
+  - Theme Manager Utils: registry CRUD, CSS var maps, apply/snapshot/update variables, events.
+  - Control Center: uses hooks for theme CRUD and token editing.
+  - Theme Selector: renders from availableThemes; labels via resolver.
+- Data Models:
+  - Registry Item: { id: string; name: string }
+  - Per-Theme Vars: Record<cssVar, value> (stored as evolve-theme-vars-<id>)
+- Storage Keys:
+  - evolve-theme, evolve-theme-registry, evolve-theme-vars-<id>
+- APIs:
+  - listThemes(), getThemeLabel(id)
+  - registerCustomTheme(id,name), renameCustomTheme(id,name), unregisterCustomTheme(id)
+  - applyTheme(id), updateCurrentThemeVariable(cssVar,value)
+  - getThemeVariables(id), saveThemeVariables(id,vars), snapshotCurrentThemeVariables(id)
+- Events:
+  - window 'evolve-theme-registry-changed' on registry updates
+
+# Development Roadmap
+- MVP:
+  - Implement registry utils + persistence + event.
+  - Provider reads listThemes(); reacts to registry change.
+  - Single applyTheme path (class + CSS vars).
+  - Control Center: create/apply/delete custom themes; edit token → updateCurrentThemeVariable.
+  - Theme Selector: dynamic items, labels/icons.
+  - Import/Export: registry, per-theme vars, active theme.
+- Enhancements:
+  - Contrast checks, preset templates, undo/redo edits, server sync.
+
+# Logical Dependency Chain
+1) Utilities (registry + vars + apply)  
+2) Provider integration (availableThemes, setTheme)  
+3) Selector update (dynamic list, labels)  
+4) Control Center CRUD + token editing  
+5) Import/Export + migration from legacy keys
+
+# Risks and Mitigations
+- Storage unavailable: fallback in-memory; warn.
+- Variable name drift: central mapping table; unit tests.
+- Performance on apply: batch set CSS vars; limit to known keys.
+
+# Appendix
+- Built-ins: dark, light, startup, enterprise.
+- Persistence format: JSON per theme for CSS variables.
+- Accessibility: support system scheme and maintain readable contrast in defaults.
+</PRD>
+

@@ -323,15 +323,6 @@ export const useDesignSystem = () => {
     }
   }, [activeCustomTheme, applyCustomTheme]);
 
-  // Update custom theme name
-  const updateCustomThemeName = useCallback((themeId: string, name: string) => {
-    setCustomThemes((prev) => {
-      const updated = prev.map((t) => t.id === themeId ? { ...t, name } : t);
-      localStorage.setItem('evolve-custom-themes', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
-
   // Reset to default theme
   const resetToDefaultTheme = useCallback(() => {
     const root = document.documentElement;
@@ -460,7 +451,6 @@ export const useDesignSystem = () => {
     activeCustomTheme,
     resetToDefaultTheme,
     updateCustomThemeColor,
-    updateCustomThemeName,
     
     // Import/Export
     exportConfiguration,

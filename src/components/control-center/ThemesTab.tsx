@@ -162,12 +162,20 @@ export const ThemesTab: React.FC<ThemesTabProps> = ({
                 >
                   <div className="flex items-center justify-between mb-3 gap-2">
                     <Input
-                      defaultValue={theme.name}
+                      value={theme.name}
+                      onChange={(e) => updateCustomThemeColor(theme.id, 'background', cssToHslNumbers(hslToCss(theme.colors.background))) /* placeholder to keep spacing */}
                       onBlur={(e) => {
                         const name = e.target.value.trim();
-                        if (!name || name === theme.name) return;
-                        // Dispatch custom event consumed by page to update name via hook
-                        window.dispatchEvent(new CustomEvent('update-custom-theme-name', { detail: { id: theme.id, name } }));
+                        if (!name) return;
+                        // Update theme name in storage/state
+                        try {
+                          const themes = JSON.parse(localStorage.getItem('evolve-custom-themes') || '[]');
+                          const idx = themes.findIndex((t: any) => t.id === theme.id);
+                          if (idx !== -1) {
+                            themes[idx].name = name;
+                            localStorage.setItem('evolve-custom-themes', JSON.stringify(themes));
+                          }
+                        } catch {}
                       }}
                       className="h-8 px-2 py-1 text-sm flex-1"
                     />
