@@ -8,6 +8,7 @@ export interface RootState {
   optimisticUpdates: OptimisticUpdatesState;
   form: FormState;
   navigation: NavigationState;
+  taskUi: import('./slices/taskUiSlice').TaskUiState;
 }
 
 // App Config Slice Types

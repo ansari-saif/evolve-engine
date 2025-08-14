@@ -9,34 +9,36 @@
         "testStrategy": "Verify that Task component can access Redux state directly without relying on props. Test that TaskList no longer receives tasks array, isLoading, or loadingTaskId props. Check that TaskCard actions are dispatched correctly without receiving callbacks. Verify that TaskList updates correctly when data is loaded from Redux store. Test that UI state transitions (complete, edit, delete) work correctly.",
         "priority": "high",
         "dependencies": [],
-        "status": "Pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 2,
             "title": "Move Helper Functions to Local Components",
             "description": "Eliminate trivial prop drilling by moving formatting helpers used only by TaskCard into the component itself or utils imports",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "priority": "medium",
-            "details": "Move getPriorityColor, getStatusColor, getEnergyColor, formatDate, formatDuration from being passed as props to being imported/defined within TaskCard component. Create src/utils/taskHelpers.ts if needed for shared utilities. Remove these helper function props from TaskList -> TaskCard chain.",
+            "details": "Move getPriorityColor, getStatusColor, getEnergyColor, formatDate, formatDuration from being passed as props to being imported/defined within TaskCard component. Create src/utils/taskHelpers.ts if needed for shared utilities. Remove these helper function props from TaskList -> TaskCard chain.\n<info added on 2025-08-13T17:50:49.978Z>\n## Implementation Plan for Moving Helper Functions to Local Components\n\n### Step 1: Modify TaskList.tsx\n- Remove formatDate and formatDuration helper function definitions\n- Update the component props interface to remove these helper functions\n- Stop passing these helpers as props to TaskCard components\n- Ensure TaskList only passes required props: task, goals, loadingTaskId\n\n### Step 2: Update TaskCard.tsx\n- Import date-fns/format for date formatting\n- Add memoized helper functions using useCallback:\n  ```typescript\n  const formatDate = useCallback((date: string | null) => {\n    if (!date) return '';\n    try {\n      return format(new Date(date), 'MMM d, yyyy');\n    } catch (e) {\n      return '';\n    }\n  }, []);\n\n  const formatDuration = useCallback((duration: number | null) => {\n    if (!duration) return '';\n    return `${duration} min`;\n  }, []);\n  ```\n- Replace all instances of props.formatDate with the local formatDate function\n- Replace all instances of props.formatDuration with the local formatDuration function\n\n### Step 3: Testing and Validation\n- Verify TaskCard renders correctly with locally defined helpers\n- Ensure date formatting works properly with various date inputs\n- Confirm duration formatting displays correctly\n- Check that component re-renders are minimized with useCallback\n- Validate TypeScript types are compatible throughout the component chain\n</info added on 2025-08-13T17:50:49.978Z>",
             "testStrategy": "Verify TaskCard still renders correctly with proper styling and formatting. Check that TaskList no longer passes helper function props. Run existing unit tests for TaskCard component."
           },
           {
             "id": 3,
             "title": "Create TaskUI Redux Slice",
             "description": "Create dedicated Redux slice for task UI state management with all necessary actions and initial state",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "priority": "high",
-            "details": "Create src/store/slices/taskUiSlice.ts with state: activeTab ('all'|'pending'|'in-progress'|'completed'), editingTask (TaskResponse|null), generateDialogOpen (boolean), loadingTaskId (number|null), filters object. Implement actions: setActiveTab, startEditing, stopEditing, openGenerateDialog, closeGenerateDialog, setTaskLoading, setFilters, resetFilters. Use RTK createSlice with proper TypeScript types.",
+            "details": "Create src/store/slices/taskUiSlice.ts with state: activeTab ('all'|'pending'|'in-progress'|'completed'), editingTask (TaskResponse|null), generateDialogOpen (boolean), loadingTaskId (number|null), filters object. Implement actions: setActiveTab, startEditing, stopEditing, openGenerateDialog, closeGenerateDialog, setTaskLoading, setFilters, resetFilters. Use RTK createSlice with proper TypeScript types.\n<info added on 2025-08-13T17:54:10.540Z>\nCreate a new file `src/store/slices/taskUiSlice.ts` that implements a Redux slice for managing UI state related to tasks. The slice should use Redux Toolkit's createSlice function with proper TypeScript typing.\n\nDefine the initial state with the following properties:\n- activeTab: 'all' (default)\n- editingTask: null\n- generateDialogOpen: false\n- loadingTaskId: null\n- filters: { status: 'All', priority: 'All', energy: 'All', goal: 'All' }\n\nImplement the following action creators:\n- setActiveTab: updates the activeTab state\n- startEditing: sets the editingTask state to the provided task\n- stopEditing: resets the editingTask state to null\n- openGenerateDialog: sets generateDialogOpen to true\n- closeGenerateDialog: sets generateDialogOpen to false\n- setTaskLoading: updates the loadingTaskId state\n- setFilters: updates the filters object with partial changes\n- resetFilters: resets all filters to their default values\n\nExport the reducer and all action creators. Ensure all types are properly defined, reusing the TaskResponse type from existing client models.\n</info added on 2025-08-13T17:54:10.540Z>",
             "testStrategy": "Unit test all reducers and actions. Verify initial state is correct. Test that actions properly update state using RTK testing utilities."
           },
           {
             "id": 4,
             "title": "Wire TaskUI Slice to Store",
             "description": "Integrate the new taskUi slice into the existing Redux store configuration",
-            "status": "pending",
-            "dependencies": [3],
+            "status": "done",
+            "dependencies": [
+              3
+            ],
             "priority": "high",
             "details": "Add taskUiReducer to store/index.ts in the root reducer configuration. Ensure proper TypeScript types are exported for RootState to include taskUi state. Verify store setup doesn't break existing functionality.",
             "testStrategy": "Test that store initializes correctly with taskUi state. Verify TypeScript compilation. Check that existing Redux slices still function properly."
@@ -45,8 +47,10 @@
             "id": 5,
             "title": "Create TaskUI Selectors",
             "description": "Implement reusable selectors for taskUi state in composite selectors file",
-            "status": "pending",
-            "dependencies": [4],
+            "status": "done",
+            "dependencies": [
+              4
+            ],
             "priority": "medium",
             "details": "Add selectors to src/store/selectors/compositeSelectors.ts: selectTaskUi, selectActiveTab, selectTaskFilters, selectLoadingTaskId, selectEditingTask, selectGenerateDialogOpen. Use createSelector for memoization where appropriate. Include proper TypeScript typing.",
             "testStrategy": "Unit test each selector with mock state. Verify selectors return correct data types and handle edge cases (undefined state)."
@@ -55,8 +59,10 @@
             "id": 6,
             "title": "Create useTaskUi Custom Hook",
             "description": "Develop wrapper hook that combines selectors and dispatchers for clean component integration",
-            "status": "pending",
-            "dependencies": [5],
+            "status": "done",
+            "dependencies": [
+              5
+            ],
             "priority": "medium",
             "details": "Create custom hook that uses useSelector and useDispatch internally to provide clean interface for components. Return both state values and action dispatchers. This replaces the existing useTaskState local hook pattern.",
             "testStrategy": "Test hook returns correct state and dispatchers. Verify actions are properly dispatched when called. Use React Testing Library hooks testing utilities."
@@ -65,8 +71,10 @@
             "id": 7,
             "title": "Replace useTaskState with Redux",
             "description": "Refactor Tasks, TaskFilters, and TaskTabs components to use Redux state instead of local component state",
-            "status": "pending",
-            "dependencies": [6],
+            "status": "done",
+            "dependencies": [
+              6
+            ],
             "priority": "high",
             "details": "Remove useTaskState hook usage from Tasks component. Update TaskFilters to read/write filters via Redux selectors and actions. Update TaskTabs to use Redux activeTab state. Ensure all UI state transitions work correctly.",
             "testStrategy": "Integration test that UI state persists correctly across component re-renders. Verify filters and tab changes update Redux store. Test that multiple components stay in sync."
@@ -75,8 +83,10 @@
             "id": 8,
             "title": "Create useTaskActions Hook",
             "description": "Implement hook that wraps existing React Query mutations with Redux UI updates for task operations",
-            "status": "pending",
-            "dependencies": [7],
+            "status": "done",
+            "dependencies": [
+              7
+            ],
             "priority": "high",
             "details": "Create hook that exposes startTask, completeTask, updateTask, deleteTask functions. Internally use existing useTaskOperations React Query mutations. Dispatch taskUi loading state and UI toasts as needed. This provides the action layer for components to dispatch instead of receiving callbacks.",
             "testStrategy": "Test that mutations are called correctly. Verify Redux UI state updates (loading states, toasts). Mock React Query mutations and test Redux state changes."
@@ -85,8 +95,10 @@
             "id": 9,
             "title": "Remove Handler Props from TaskCard",
             "description": "Refactor TaskCard to use useTaskActions directly instead of receiving callback props",
-            "status": "pending",
-            "dependencies": [8],
+            "status": "done",
+            "dependencies": [
+              8
+            ],
             "priority": "high",
             "details": "Update TaskCard to import and use useTaskActions hook. Remove onTaskComplete, onTaskEdit, onTaskDelete, onTaskStatusChange props from component interface. Update TaskList to stop passing these handler props.",
             "testStrategy": "Verify TaskCard actions still work correctly. Test that props are no longer passed down. Check that loading states and UI feedback still function."
@@ -95,8 +107,10 @@
             "id": 10,
             "title": "Create useVisibleTasks Hook",
             "description": "Implement hook that combines React Query data fetching with Redux filters for self-sufficient data access",
-            "status": "pending",
-            "dependencies": [9],
+            "status": "done",
+            "dependencies": [
+              9
+            ],
             "priority": "medium",
             "details": "Create hook that calls useGetUserTasks(userId), reads filters and activeTab from Redux selectors, and returns filtered/sorted task list. Implement filtering logic for status, priority, energy, and goal filters. Use useMemo for performance optimization.",
             "testStrategy": "Test filtering logic with various filter combinations. Verify React Query integration. Test performance with large task lists. Mock different filter states and verify correct results."
@@ -105,8 +119,10 @@
             "id": 11,
             "title": "Remove Data Props from TaskList",
             "description": "Refactor TaskList to use useVisibleTasks and selectors directly, eliminating remaining prop drilling",
-            "status": "pending",
-            "dependencies": [10],
+            "status": "done",
+            "dependencies": [
+              10
+            ],
             "priority": "high",
             "details": "Update TaskList to use useVisibleTasks(userId) and useSelector(selectLoadingTaskId) directly. Remove incoming tasks, isLoading, loadingTaskId props. Update parent Tasks component to stop passing these props. Ensure TaskCard only receives task prop from map iteration.",
             "testStrategy": "Integration test that TaskList renders correctly with filtered data. Verify no props are passed from Tasks component except userId. Test loading states and data updates work correctly."
@@ -116,7 +132,7 @@
     ],
     "metadata": {
       "created": "2025-08-13T12:55:00.000Z",
-      "updated": "2025-08-13T15:21:46.298Z",
+      "updated": "2025-08-13T18:38:29.213Z",
       "description": "Condensed all theme-related tasks into a single master task."
     }
   }

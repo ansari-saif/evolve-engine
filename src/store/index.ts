@@ -10,6 +10,7 @@ import uiReducer from './slices/uiSlice';
 import optimisticUpdatesReducer from './slices/optimisticUpdatesSlice';
 import formReducer from './slices/formSlice';
 import navigationReducer from './slices/navigationSlice';
+import taskUiReducer from './slices/taskUiSlice';
 
 // Import types
 import type { RootState } from './types';
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
   optimisticUpdates: optimisticUpdatesReducer,
   form: formReducer,
   navigation: navigationReducer,
+  taskUi: taskUiReducer,
 });
 
 // Create persisted reducer

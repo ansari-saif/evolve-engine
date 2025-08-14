@@ -1,46 +1,61 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Stopwatch } from '../ui/Stopwatch';
 import { useUpdateTask, useCompleteTask, useDeleteTask } from '../../hooks/useTasks';
+import { useTaskActions } from '../../hooks/redux/useTaskActions';
 import { useTaskState } from '../../hooks/useTaskState';
 import { getCurrentISOStringIST } from '../../utils/timeUtils';
 
 import { Play, CheckCircle, Edit, Trash2, Calendar as CalendarIcon2, Clock, Target, Zap } from 'lucide-react';
 import type { TaskResponse, TaskPriorityEnum, CompletionStatusEnum, EnergyRequiredEnum } from '../../client/models';
+import { format } from 'date-fns';
 import type { GoalResponse } from '../../client/models';
 
 
 interface TaskCardProps {
   task: TaskResponse;
   goals: GoalResponse[];
-  formatDate: (date: string | null) => string | null;
-  formatDuration: (duration: number | null) => string | null;
   loadingTaskId?: number | null;
 }
 
 const TaskCard: React.FC<TaskCardProps> = ({
   task,
   goals,
-  formatDate,
-  formatDuration,
   loadingTaskId
 }) => {
-  // React Query mutations
-  const updateTaskMutation = useUpdateTask();
-  const completeTaskMutation = useCompleteTask();
-  const deleteTaskMutation = useDeleteTask();
+  // Localized helpers
+  const formatDate = useCallback((date: string | null) => {
+    if (!date) return null;
+    try {
+      return format(new Date(date), 'MMM dd, yyyy');
+    } catch {
+      return date;
+    }
+  }, []);
+
+  const formatDuration = useCallback((duration: number | null) => {
+    if (duration == null || !Number.isFinite(duration)) return null;
+    const totalMinutes = Math.max(0, Math.floor(duration));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  }, []);
+
+  // Unified task actions with Redux UI updates
+  const { updateTask, completeTask, deleteTask } = useTaskActions();
   
   // Task state management
   const taskState = useTaskState();
   
   // Check if this task is currently loading
-  const isTaskLoading = loadingTaskId === task.task_id || 
-    updateTaskMutation.isPending || 
-    completeTaskMutation.isPending || 
-    deleteTaskMutation.isPending;
+  const isTaskLoading = loadingTaskId === task.task_id;
   const linkedGoal = goals.find(g => g.goal_id === task.goal_id);
   const [showStopwatch, setShowStopwatch] = useState(false);
 
@@ -98,13 +113,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         transition={{ duration: 0.1 }}
                       >
                         <Button
-                          onClick={() => {
-                            updateTaskMutation.mutate({
-                              id: task.task_id,
-                              data: {
-                                completion_status: 'In Progress',
-                                started_at: getCurrentISOStringIST()
-                              }
+                          onClick={async () => {
+                            await updateTask(task.task_id, {
+                              completion_status: 'In Progress',
+                              started_at: getCurrentISOStringIST()
                             });
                             setShowStopwatch(true);
                           }}
@@ -122,7 +134,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                         </Button>
                       </motion.div>
                       <Button
-                        onClick={() => completeTaskMutation.mutate(task.task_id)}
+                        onClick={() => completeTask(task.task_id)}
                         disabled={isTaskLoading}
                         variant="ghost"
                         size="sm"
@@ -145,7 +157,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </Button>
                   <Button
-                    onClick={() => deleteTaskMutation.mutate(task.task_id)}
+                    onClick={() => deleteTask(task.task_id)}
                     disabled={isTaskLoading}
                     variant="ghost"
                     size="sm"

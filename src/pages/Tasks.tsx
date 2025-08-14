@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, Suspense, lazy } from 'react';
+import React, { useRef, Suspense, lazy } from 'react';
 import { SkeletonLoader, ErrorMessage } from '../components/ui';
 import { 
   CreateTaskDialog, 
@@ -13,13 +13,11 @@ const EditTaskDialog = lazy(() => import('../components/tasks/EditTaskDialog'));
 const GenerateDailyTasksDialog = lazy(() => import('../components/tasks/GenerateDailyTasksDialog'));
 import { TaskTabs } from '../components/tasks/TaskTabs';
 import { TaskActions } from '../components/tasks/TaskActions';
-import { useGetUserTasks } from '../hooks/useTasks';
 import { useGetUserGoals } from '../hooks/useGoals';
 import { useUserId } from '../hooks/redux/useAppConfig';
-import { useTaskFiltering } from '../hooks/useTaskFiltering';
-import { useTaskSorting } from '../hooks/useTaskSorting';
 import { useTaskOperations } from '../hooks/useTaskOperations';
-import { useTaskState } from '../hooks/useTaskState';
+import { useTaskUi } from '../hooks/redux/useTaskUi';
+import { useVisibleTasks } from '../hooks/useVisibleTasks';
 import { useAiService } from '../hooks/useAiService';
 import { useToasts } from '../hooks/redux/useToasts';
 import type { TaskCreate, PhaseEnum, TaskPriorityEnum, EnergyRequiredEnum } from '../client/models';
@@ -34,24 +32,14 @@ const Tasks: React.FC = () => {
   const userId = useUserId();
 
   // Custom hooks for different concerns
-  const taskState = useTaskState();
-  const { data: tasks, isLoading, error } = useGetUserTasks(userId);
+  const taskUi = useTaskUi();
+  const { taskGroups, isLoading, error } = useVisibleTasks();
   const { data: goals } = useGetUserGoals(userId);
   const { generateDailyTasks } = useAiService();
   const taskOperations = useTaskOperations(userId);
   const { clearToasts } = useToasts();
 
-  // Filter and sort tasks
-  const filteredTasks = useTaskFiltering(tasks, taskState.filters);
-  const sortedTasks = useTaskSorting(filteredTasks);
-
-  // Group tasks by status for tabs
-  const taskGroups = useMemo(() => ({
-    all: sortedTasks,
-    pending: sortedTasks.filter(t => t.completion_status === 'Pending'),
-    'in-progress': sortedTasks.filter(t => t.completion_status === 'In Progress'),
-    completed: sortedTasks.filter(t => t.completion_status === 'Completed')
-  }), [sortedTasks]);
+  // taskGroups provided by useVisibleTasks
 
   // Event handlers
   const handleCreateTask = async (task: TaskCreate) => {
@@ -117,7 +105,7 @@ const Tasks: React.FC = () => {
       {/* Task Actions */}
       <TaskActions
         onCreateTask={() => createTaskDialogRef.current?.open()}
-        onGenerateTasks={taskState.openGenerateDialog}
+        onGenerateTasks={taskUi.openGenerate}
         onCreateBulk={() => {/* Handle bulk create */}}
         onClearToasts={clearToasts}
         isLoading={taskOperations.isLoading.create}
@@ -125,23 +113,19 @@ const Tasks: React.FC = () => {
 
       {/* Task Filters */}
       <TaskFilters
-        filters={taskState.filters}
-        setFilters={taskState.updateFilters}
+        filters={taskUi.filters}
+        setFilters={taskUi.updateFilters}
         goals={goals || []}
       />
 
       {/* Task Tabs and List */}
       <TaskTabs
-        activeTab={taskState.activeTab}
-        onTabChange={taskState.handleTabChange}
+        activeTab={taskUi.activeTab}
+        onTabChange={taskUi.handleTabChange}
         taskGroups={taskGroups}
       >
         {(tasks) => (
-          <TaskList
-            tasks={tasks}
-            isLoading={isLoading}
-            loadingTaskId={taskState.loadingTaskId}
-          />
+          <TaskList />
         )}
       </TaskTabs>
 
@@ -153,15 +137,15 @@ const Tasks: React.FC = () => {
         isLoading={taskOperations.isLoading.create}
       />
 
-      {taskState.editingTask && (
+      {taskUi.editingTask && (
         <Suspense fallback={<div>Loading dialog...</div>}>
           <EditTaskDialog
-            task={taskState.editingTask}
-            onCancel={taskState.stopEditing}
+            task={taskUi.editingTask}
+            onCancel={taskUi.endEditing}
             onSave={async (taskId, updates) => {
               try {
                 await taskOperations.updateTask(taskId, updates);
-                taskState.stopEditing(); // Close dialog after successful update
+                taskUi.endEditing(); // Close dialog after successful update
               } catch (error) {
                 // Error is already handled by taskOperations.updateTask
                 // Dialog will stay open so user can fix the error
@@ -173,11 +157,11 @@ const Tasks: React.FC = () => {
         </Suspense>
       )}
 
-      {taskState.generateDialogOpen && (
+      {taskUi.generateDialogOpen && (
         <Suspense fallback={<div>Loading dialog...</div>}>
           <GenerateDailyTasksDialog
-            open={taskState.generateDialogOpen}
-            onClose={taskState.closeGenerateDialog}
+            open={taskUi.generateDialogOpen}
+            onClose={taskUi.closeGenerate}
             onGenerate={handleGenerateTasks}
             onCreateTasks={handleCreateGeneratedTasks}
             isLoading={taskOperations.isLoading.bulkCreate}
