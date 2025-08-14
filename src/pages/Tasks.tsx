@@ -1,4 +1,4 @@
-import React, { useRef, Suspense, lazy } from 'react';
+import React, { useRef, Suspense, lazy, useState } from 'react';
 import { SkeletonLoader, ErrorMessage } from '../components/ui';
 import { 
   CreateTaskDialog, 
@@ -29,6 +29,7 @@ import type { GeneratedTask } from '../store/types';
  */
 const Tasks: React.FC = () => {
   const createTaskDialogRef = useRef<CreateTaskDialogRef>(null);
+  const [bulkCreateOpen, setBulkCreateOpen] = useState(false);
   const userId = useUserId();
 
   // Custom hooks for different concerns
@@ -106,7 +107,7 @@ const Tasks: React.FC = () => {
       <TaskActions
         onCreateTask={() => createTaskDialogRef.current?.open()}
         onGenerateTasks={taskUi.openGenerate}
-        onCreateBulk={() => {/* Handle bulk create */}}
+        onCreateBulk={() => setBulkCreateOpen(true)}
         onClearToasts={clearToasts}
         isLoading={taskOperations.isLoading.create}
       />
@@ -174,6 +175,8 @@ const Tasks: React.FC = () => {
           onCreateTasks={taskOperations.createBulkTasks}
           goals={goals || []}
           isLoading={taskOperations.isLoading.bulkCreate}
+          open={bulkCreateOpen}
+          onOpenChange={setBulkCreateOpen}
         />
       </Suspense>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useState, FormEvent, useImperativeHandle, forwardRef, useEffect, useRef } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -29,6 +29,7 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
   isLoading
 }, ref) => {
   const [showDialog, setShowDialog] = useState(false);
+  const descriptionInputRef = useRef<HTMLInputElement>(null);
   
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
@@ -90,6 +91,22 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
     await handleCreateTask();
   };
 
+  // Focus description when dialog opens for keyboard-first flow
+  useEffect(() => {
+    if (showDialog) {
+      const id = window.setTimeout(() => descriptionInputRef.current?.focus(), 0);
+      return () => window.clearTimeout(id);
+    }
+  }, [showDialog]);
+
+  // Allow Cmd/Ctrl+Enter to submit from anywhere in the form
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      void handleCreateTask();
+    }
+  };
+
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <DialogTrigger asChild>
@@ -106,7 +123,7 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
             Add a new task to your list. Fill in the details below to create a task with priority, energy level, and optional scheduling.
           </p>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown} className="space-y-4">
           <div>
             <label htmlFor="task-description" className="text-sm font-medium">Description *</label>
             <Input
@@ -115,6 +132,7 @@ const CreateTaskDialog = forwardRef<CreateTaskDialogRef, CreateTaskDialogProps>(
               placeholder="What needs to be done?"
               value={newTask.description || ''}
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              ref={descriptionInputRef}
               required
             />
           </div>

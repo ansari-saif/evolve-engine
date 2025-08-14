@@ -18,17 +18,45 @@ interface BulkCreateDialogProps {
   goals: GoalResponse[] | undefined;
   onCreateTasks: (tasks: TaskCreate[]) => Promise<void>;
   isLoading: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const BulkCreateDialog: React.FC<BulkCreateDialogProps> = ({
   goals,
   onCreateTasks,
-  isLoading
+  isLoading,
+  open,
+  onOpenChange
 }) => {
-  const [showDialog, setShowDialog] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = typeof open !== 'undefined';
+  const showDialog = isControlled ? Boolean(open) : internalOpen;
+  const setShowDialog = onOpenChange ?? setInternalOpen;
   const [bulkTasksText, setBulkTasksText] = useState('');
   const [showShortcutFeedback, setShowShortcutFeedback] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Global shortcut: Cmd/Ctrl+Shift+K to open dialog
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const isOpenShortcut = (event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'k';
+      if (isOpenShortcut) {
+        event.preventDefault();
+        setShowDialog(true);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Autofocus textarea when dialog opens
+  useEffect(() => {
+    if (showDialog) {
+      const id = window.setTimeout(() => textareaRef.current?.focus(), 0);
+      return () => window.clearTimeout(id);
+    }
+  }, [showDialog]);
   
   // Get today's date in YYYY-MM-DD format for default (IST)
   const getTodayDate = () => {

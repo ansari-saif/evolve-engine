@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '../ui/button';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Plus, Upload } from 'lucide-react';
 
 interface TaskActionsProps {
   onCreateTask: () => void;
@@ -24,6 +24,7 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
   return (
     <div className="flex gap-2 mb-6">
       <Button onClick={onCreateTask} disabled={isLoading}>
+        <Plus className="w-4 h-4 mr-2" />
         Create Task
       </Button>
       
@@ -41,6 +42,7 @@ export const TaskActions: React.FC<TaskActionsProps> = ({
         onClick={onCreateBulk}
         disabled={isLoading}
       >
+        <Upload className="w-4 h-4 mr-2" />
         Bulk Create
       </Button>
       
