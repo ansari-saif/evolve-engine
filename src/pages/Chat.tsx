@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { performanceMetrics } from "../utils/performance";
-import { useChatCompletion, useUserPrompts } from "../hooks/useChat";
+import { useUserPrompts } from "../hooks/useChat";
 import { GlassIconButton } from "../components/ui/glass-icon-button";
 import { useNotification } from "@/hooks/use-notification";
 import { useUserId } from "../hooks/redux/useAppConfig";
+import { webSocketService } from "@/services/websocketService";
 
 interface Message {
   id: string;
@@ -37,10 +38,9 @@ export default function Chat() {
   const listRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Initialize chat client hook (base URL is centralized in OpenAPI.BASE)
-  const { ask } = useChatCompletion();
   const userId = useUserId();
   const queryClient = useQueryClient();
+  const awaitingResponseIdRef = useRef<string | null>(null);
   
   // Fetch previous user prompts
   const { data: userPrompts, isLoading: isLoadingPrompts } = useUserPrompts(userId);
@@ -161,21 +161,49 @@ export default function Chat() {
     }
   }, [notify, permission]);
 
-  // Backward compat: keep types, but delegate to hook
-  const { mutateAsync: askApi, isPending } = useMutation<{ response_text?: string }, Error, { prompt: string }>(
-    {
-      mutationFn: async ({ prompt }) => {
-        const response = await ask({ prompt, userId });
-        return { response_text: response.response_text };
-      },
-      onSuccess: () => {
-        // Invalidate and refetch user prompts to include the new message
-        queryClient.invalidateQueries({ queryKey: ['userPrompts', userId] });
-      },
-    }
-  );
+  const canSend = useMemo(() => input.trim().length > 0, [input]);
 
-  const canSend = useMemo(() => input.trim().length > 0 && !isPending, [input, isPending]);
+  // Attach a WebSocket message listener without re-subscribing/connecting
+  useEffect(() => {
+    const handleWsMessage = (wsMsg: { message: string; type?: string; data?: unknown }) => {
+      const answer = wsMsg?.message ?? "";
+      const pendingId = awaitingResponseIdRef.current;
+      if (pendingId) {
+        setMessages((m) =>
+          m.map((msg) => (msg.id === pendingId ? { ...msg, loading: false, content: answer || "(No answer received)" } : msg))
+        );
+        awaitingResponseIdRef.current = null;
+      } else {
+        setMessages((m) => [
+          ...m,
+          { id: crypto.randomUUID(), role: "assistant" as const, content: answer || "(No answer received)" },
+        ]);
+      }
+
+      // Invalidate and refetch user prompts to include the new message (if backend persists it)
+      queryClient.invalidateQueries({ queryKey: ['userPrompts', userId] });
+
+      // Native notification on successful reply (only if allowed)
+      const canNotify = permission === "granted" || Notification.permission === "granted";
+      if (canNotify) {
+        void notify("Reply received", {
+          body: answer ? "The assistant has responded." : "No content returned.",
+          icon: "/favicon.svg",
+        });
+        // Fallback cue in case OS delivers quietly
+        playBeep();
+        flashTitle("Reply received");
+      } else {
+        console.warn("Notification not shown: permission=", permission);
+      }
+    };
+
+    // Register listener
+    webSocketService.addEventListener(handleWsMessage);
+    return () => {
+      webSocketService.removeEventListener(handleWsMessage);
+    };
+  }, [flashTitle, notify, permission, playBeep, queryClient, userId]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
@@ -197,27 +225,19 @@ export default function Chat() {
     ]);
 
     try {
-      const data = await askApi({ prompt: text });
-      const answer = data?.response_text ?? "";
-      setMessages((m) =>
-        m.map((msg) =>
-          msg.id === thinkingId
-            ? { ...msg, loading: false, content: answer || "(No answer received)" }
-            : msg
-        )
-      );
-      // Native notification on successful reply (only if allowed)
-      const canNotify = permission === "granted" || Notification.permission === "granted";
-      if (canNotify) {
-        void notify("Reply received", {
-          body: answer ? "The assistant has responded." : "No content returned.",
-          icon: "/favicon.svg",
-        });
-        // Fallback cue in case OS delivers quietly
-        playBeep();
-        flashTitle("Reply received");
-      } else {
-        console.warn("Notification not shown: permission=", permission);
+      // Mark this message as awaiting a response to update the loading bubble on next WS event
+      awaitingResponseIdRef.current = thinkingId;
+      const ok = webSocketService.send({ message: text });
+      if (!ok) {
+        // If send failed immediately, surface an error in the thinking bubble
+        setMessages((m) =>
+          m.map((msg) =>
+            msg.id === thinkingId
+              ? { ...msg, loading: false, content: "Error: WebSocket not connected" }
+              : msg
+          )
+        );
+        awaitingResponseIdRef.current = null;
       }
     } catch (err: unknown) {
       setMessages((m) =>
@@ -226,9 +246,7 @@ export default function Chat() {
             ? {
                 ...msg,
                 loading: false,
-                content:
-                  "Error: " +
-                  (err instanceof Error ? err.message : String(err) || "Failed to get response"),
+                content: "Error: " + (err instanceof Error ? err.message : String(err) || "Failed to send message"),
               }
             : msg
         )
@@ -251,7 +269,7 @@ export default function Chat() {
       // Return focus for faster typing
       inputRef.current?.focus();
     }
-  }, [askApi, input, notify, permission, isSupported, requestPermission, playBeep, flashTitle]);
+  }, [input, notify, permission, isSupported, requestPermission, playBeep, flashTitle]);
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

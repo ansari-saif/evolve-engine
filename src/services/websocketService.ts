@@ -172,6 +172,25 @@ export class WebSocketService {
   }
 
   /**
+   * Send data over the active WebSocket connection
+   * Returns true if the message was sent, false otherwise
+   */
+  public send(data: string | Record<string, unknown>): boolean {
+    try {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.warn('WebSocket is not connected. Cannot send message.');
+        return false;
+      }
+      const payload = typeof data === 'string' ? data : JSON.stringify(data);
+      this.ws.send(payload);
+      return true;
+    } catch (error) {
+      console.error('Failed to send WebSocket message:', error);
+      return false;
+    }
+  }
+
+  /**
    * Schedule reconnection attempt
    */
   private scheduleReconnect(): void {
