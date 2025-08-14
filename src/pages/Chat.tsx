@@ -286,38 +286,7 @@ export default function Chat() {
       {/* Header */}
       <div className="pb-2 sm:pb-3">
         <h1 className="text-lg sm:text-xl font-semibold">Chat</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">ChatGPT-like interface</p>
-        {isSupported ? (
-          <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="text-[10px] sm:text-xs text-muted-foreground">Permission: {permission}</span>
-            {permission !== "granted" ? (
-              <>
-                <button
-                  type="button"
-                  onClick={handleEnableNotifications}
-                  className="px-1.5 sm:px-2 py-1 text-[10px] sm:text-xs rounded-md border bg-background hover:bg-muted min-h-[28px] sm:min-h-[32px]"
-                >
-                  Enable notifications
-                </button>
-                {permission === "denied" && (
-                  <span className="text-[10px] sm:text-xs text-muted-foreground">
-                    Unblock in browser site settings (lock icon → Site settings → Notifications → Allow).
-                  </span>
-                )}
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={handleTestNotification}
-                className="px-1.5 sm:px-2 py-1 text-[10px] sm:text-xs rounded-md border bg-background hover:bg-muted min-h-[28px] sm:min-h-[32px]"
-              >
-                Test notification
-              </button>
-            )}
-          </div>
-        ) : (
-          <p className="mt-2 text-[10px] sm:text-xs text-muted-foreground">Notifications not supported in this browser.</p>
-        )}
+        <p className="text-xs sm:text-sm text-muted-foreground">You personal Ai companion</p>
       </div>
 
       {/* Messages */}
