@@ -26,6 +26,7 @@ interface ThemeProviderProps {
 }
 
 const STORAGE_KEY = 'evolve-theme';
+const UPGRADE_FLAG_KEY = 'evolve-theme-upgraded-lightning-v1';
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
@@ -44,8 +45,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const [availableThemes, setAvailableThemes] = useState<Theme[]>(() => {
     // Include all built-ins including 'system' if supported
     const builtIns: Theme[] = isSystemColorSchemeSupported() 
-      ? ['system', 'high-contrast', 'dark', 'light', 'startup', 'enterprise']
-      : ['high-contrast', 'dark', 'light', 'startup', 'enterprise'];
+      ? ['system', 'high-contrast', 'dark', 'light', 'startup', 'enterprise', 'lightning']
+      : ['high-contrast', 'dark', 'light', 'startup', 'enterprise', 'lightning'];
     try {
       const fromRegistry = listThemes().filter((t): t is Theme => (builtIns as string[]).includes(t));
       return fromRegistry.length ? fromRegistry : builtIns;
@@ -69,11 +70,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     applyTheme(theme);
   }, [theme]);
 
+  // One-time rollout: if no upgrade flag exists, set default theme once (e.g., to 'lightning')
+  useEffect(() => {
+    try {
+      const upgraded = localStorage.getItem(UPGRADE_FLAG_KEY);
+      if (!upgraded) {
+        localStorage.setItem(UPGRADE_FLAG_KEY, '1');
+        // Apply the provider's default theme once across users
+        setTheme(defaultTheme);
+      }
+    } catch {
+      // Non-blocking if storage not available
+      setTheme(defaultTheme);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const handler = () => {
       const builtIns: Theme[] = isSystemColorSchemeSupported() 
-        ? ['system', 'high-contrast', 'dark', 'light', 'startup', 'enterprise']
-        : ['high-contrast', 'dark', 'light', 'startup', 'enterprise'];
+        ? ['system', 'high-contrast', 'dark', 'light', 'startup', 'enterprise', 'lightning']
+        : ['high-contrast', 'dark', 'light', 'startup', 'enterprise', 'lightning'];
       try {
         const fromRegistry = listThemes().filter((t): t is Theme => (builtIns as string[]).includes(t));
         setAvailableThemes(fromRegistry.length ? fromRegistry : builtIns);
@@ -120,7 +137,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
             MigrationService.cleanupLegacyData();
             
             // Refresh available themes since registry may have changed
-            const builtIns: Theme[] = ['dark', 'light', 'startup', 'enterprise'];
+            const builtIns: Theme[] = ['dark', 'light', 'startup', 'enterprise', 'lightning'];
             try {
               const fromRegistry = listThemes().filter((t): t is Theme => (builtIns as string[]).includes(t));
               setAvailableThemes(fromRegistry.length ? fromRegistry : builtIns);
@@ -177,7 +194,7 @@ export const useAvailableThemes = () => {
 // Theme switching utility
 export const switchTheme = (theme: Theme): void => {
   const root = document.documentElement;
-  root.classList.remove('light', 'dark', 'startup', 'enterprise');
+  root.classList.remove('light', 'dark', 'startup', 'enterprise', 'lightning');
   root.classList.add(theme);
   root.setAttribute('data-theme', theme);
 };

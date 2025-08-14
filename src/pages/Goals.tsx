@@ -171,7 +171,7 @@ const Goals: React.FC = () => {
                   <div className="flex-1">
                     <h3 className="text-sm sm:text-base lg:text-lg font-semibold mb-1.5 sm:mb-2">{goal.description}</h3>
                     {goal.deadline && (
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                         Deadline: {new Date(goal.deadline).toLocaleDateString()}
                       </p>
                     )}
@@ -198,7 +198,7 @@ const Goals: React.FC = () => {
           ))
         ) : (
           <div className="text-center py-6 sm:py-8">
-            <p className="text-xs sm:text-sm text-gray-500">No goals found. Create your first goal above!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">No goals found. Create your first goal above!</p>
           </div>
         )}
       </div>

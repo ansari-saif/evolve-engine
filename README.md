@@ -68,7 +68,15 @@ Simplified component access through custom Redux hooks:
 
 Built with a sophisticated design system featuring:
 - **Liquid Glass Effects**: Custom glass morphism components with fluid animations
-- **Dark Theme**: Professional dark color scheme optimized for productivity
+- **Theming**: Multiple built-in themes with a new neon-styled `lightning` option
+### Lightning Theme
+
+The built-in `lightning` theme features a neon violet primary with cyan accents and subtle glow.
+
+- Switch themes via the header's theme selector.
+- Default can be set in `src/App.tsx` using `<ThemeProvider defaultTheme="lightning" />`.
+- Preset variables live in `src/utils/themeManager.ts` and the theme is registered in `src/utils/themeRegistry.ts` and surfaced by `src/components/ui/theme-selector.tsx`.
+
 - **Brand Colors**: Indigo primary with motivation pink accents
 - **Responsive Design**: Mobile-first approach with bottom tab navigation
 - **Accessibility**: WCAG AA compliant with proper focus states

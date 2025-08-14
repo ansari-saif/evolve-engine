@@ -129,7 +129,7 @@ export type SpacingTokens = typeof tokens.spacing;
 export type BorderRadiusTokens = typeof tokens.borderRadius;
 
 // Theme type for dynamic theming
-export type Theme = 'dark' | 'light' | 'startup' | 'enterprise' | 'system' | 'high-contrast';
+export type Theme = 'dark' | 'light' | 'startup' | 'enterprise' | 'system' | 'high-contrast' | 'lightning';
 
 // Utility types for component props
 export interface ThemeAwareProps {

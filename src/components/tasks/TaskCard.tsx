@@ -103,7 +103,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-3 sm:space-y-4">
               <div className="flex items-start justify-between">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 pr-2">{task.description}</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground pr-2">{task.description}</h3>
                 <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                   {task.completion_status !== 'Completed' && (
                     <>

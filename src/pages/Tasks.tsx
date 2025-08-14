@@ -97,7 +97,7 @@ const Tasks: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 text-foreground">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Tasks</h1>
       </div>

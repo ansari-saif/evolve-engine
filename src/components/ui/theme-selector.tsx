@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import { Moon, Sun, Palette, Building2, Monitor, Contrast } from 'lucide-react';
+import { Moon, Sun, Palette, Building2, Monitor, Contrast, Zap } from 'lucide-react';
 import { useTheme } from '../../providers/ThemeProvider';
 import { Theme } from '../../theme';
 import { getThemeLabel } from '../../utils/themeRegistry';
@@ -24,7 +24,8 @@ const themeIcons: Record<Theme, React.ReactNode> = {
   dark: <Moon className="w-4 h-4" />,
   light: <Sun className="w-4 h-4" />,
   startup: <Palette className="w-4 h-4" />,
-  enterprise: <Building2 className="w-4 h-4" />
+  enterprise: <Building2 className="w-4 h-4" />,
+  lightning: <Zap className="w-4 h-4" />
 };
 
 const themeLabels: Record<Theme, string> = {
@@ -33,7 +34,8 @@ const themeLabels: Record<Theme, string> = {
   dark: 'Dark',
   light: 'Light',
   startup: 'Startup',
-  enterprise: 'Enterprise'
+  enterprise: 'Enterprise',
+  lightning: 'Lightning'
 };
 
 interface ThemeSelectorProps {

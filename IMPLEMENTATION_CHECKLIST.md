@@ -246,6 +246,14 @@ The application now has a production-ready architecture with excellent maintaina
 
 ## Implementation Notes
 
+### Theming
+- [x] Tokenized CSS variables in `src/index.css`
+- [x] Theme provider `src/providers/ThemeProvider.tsx`
+- [x] Theme manager and registry utilities
+- [x] Added new built-in theme `lightning` with neon violet/cyan palette
+- [x] Updated `Theme` union, presets, registry, selector icons/labels
+- [x] CSS variables applied via class `.lightning` and JS variable maps
+
 ### Code Quality Requirements
 - [ ] **Run linting after each change**
   - [ ] Fix all ESLint warnings

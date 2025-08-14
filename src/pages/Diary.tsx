@@ -128,12 +128,12 @@ const Diary: React.FC = () => {
                       </Badge>
                     </div>
                     {log.location && (
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                         📍 {log.location}
                       </p>
                     )}
                     {log.weather && (
-                      <p className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2">
                         🌤️ {log.weather}
                       </p>
                     )}
@@ -141,31 +141,31 @@ const Diary: React.FC = () => {
                       {log.highlights && (
                         <div>
                           <p className="text-xs sm:text-sm font-medium text-green-600">Highlights:</p>
-                          <p className="text-xs sm:text-sm text-gray-700">{log.highlights}</p>
+                           <p className="text-xs sm:text-sm text-foreground/80">{log.highlights}</p>
                         </div>
                       )}
                       {log.challenges && (
                         <div>
                           <p className="text-xs sm:text-sm font-medium text-orange-600">Challenges:</p>
-                          <p className="text-xs sm:text-sm text-gray-700">{log.challenges}</p>
+                           <p className="text-xs sm:text-sm text-foreground/80">{log.challenges}</p>
                         </div>
                       )}
                       {log.learnings && (
                         <div>
                           <p className="text-xs sm:text-sm font-medium text-blue-600">Learnings:</p>
-                          <p className="text-xs sm:text-sm text-gray-700">{log.learnings}</p>
+                           <p className="text-xs sm:text-sm text-foreground/80">{log.learnings}</p>
                         </div>
                       )}
                       {log.gratitude && (
                         <div>
                           <p className="text-xs sm:text-sm font-medium text-purple-600">Gratitude:</p>
-                          <p className="text-xs sm:text-sm text-gray-700">{log.gratitude}</p>
+                           <p className="text-xs sm:text-sm text-foreground/80">{log.gratitude}</p>
                         </div>
                       )}
                       {log.tomorrow_plan && (
                         <div>
                           <p className="text-xs sm:text-sm font-medium text-indigo-600">Tomorrow's Plan:</p>
-                          <p className="text-xs sm:text-sm text-gray-700">{log.tomorrow_plan}</p>
+                           <p className="text-xs sm:text-sm text-foreground/80">{log.tomorrow_plan}</p>
                         </div>
                       )}
                     </div>
@@ -176,7 +176,7 @@ const Diary: React.FC = () => {
           ))
         ) : (
           <div className="text-center py-6 sm:py-8">
-            <p className="text-xs sm:text-sm text-gray-500">No diary entries found. Write your first entry above!</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">No diary entries found. Write your first entry above!</p>
           </div>
         )}
       </div>

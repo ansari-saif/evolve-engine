@@ -276,12 +276,26 @@ const PRESET_HIGH_CONTRAST: ThemeVariables = {
   '--sidebar-ring': '220 100% 60%'
 };
 
+const PRESET_LIGHTNING: ThemeVariables = {
+  ...PRESET_DARK,
+  '--background': '240 100% 3%',
+  '--surface': '240 82% 8%',
+  '--surface-light': '240 82% 10%',
+  '--primary': '262 100% 67%',
+  '--primary-dark': '262 100% 58%',
+  '--secondary': '195 100% 55%',
+  '--gradient-primary': 'linear-gradient(135deg, hsl(262 100% 67%) 0%, hsl(195 100% 55%) 100%)',
+  '--shadow-glow': '0 0 40px hsl(262 90% 66% / 0.6)',
+  '--ring': '262 100% 67%'
+};
+
 const PRESETS: Record<Theme, ThemeVariables> = {
   dark: PRESET_DARK,
   light: PRESET_LIGHT,
   startup: PRESET_STARTUP,
   enterprise: PRESET_ENTERPRISE,
   'high-contrast': PRESET_HIGH_CONTRAST,
+  lightning: PRESET_LIGHTNING,
   system: PRESET_DARK // Default fallback for system theme
 };
 
@@ -350,7 +364,7 @@ export const applyTheme = (theme: Theme): void => {
   // Resolve 'system' theme to actual theme based on system preference
   const resolvedTheme = theme === 'system' ? getSystemPreferredTheme() : theme;
   
-  root.classList.remove('light', 'dark', 'startup', 'enterprise', 'system');
+  root.classList.remove('light', 'dark', 'startup', 'enterprise', 'system', 'lightning');
   root.classList.add(resolvedTheme);
   root.setAttribute('data-theme', theme); // Keep original theme name for reference
   root.setAttribute('data-resolved-theme', resolvedTheme); // Add resolved theme for CSS targeting

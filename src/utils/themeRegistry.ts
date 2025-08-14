@@ -26,7 +26,8 @@ const BUILT_IN_THEMES: Array<{ id: Theme; name: string }> = [
   { id: 'dark', name: 'Dark' },
   { id: 'light', name: 'Light' },
   { id: 'startup', name: 'Startup' },
-  { id: 'enterprise', name: 'Enterprise' }
+  { id: 'enterprise', name: 'Enterprise' },
+  { id: 'lightning', name: 'Lightning' }
 ];
 
 let memoryState: ThemeRegistryState | null = null;
