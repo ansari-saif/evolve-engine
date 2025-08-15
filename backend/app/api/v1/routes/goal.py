@@ -4,7 +4,7 @@ from typing import List, Optional
 from app.core.database import get_session
 from app.models.goal import Goal
 from app.models.user import User
-from app.schemas.goal import GoalCreate, GoalUpdate, GoalResponse, StatusEnum
+from app.schemas.goal import GoalCreate, GoalUpdate, GoalResponse, StatusEnum, GoalTypeEnum
 
 router = APIRouter()
 
