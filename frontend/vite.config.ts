@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
     chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {

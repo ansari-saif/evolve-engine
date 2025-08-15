@@ -14,6 +14,20 @@ interface Message {
   loading?: boolean;
 }
 
+// Fallback UUID generation for browsers that don't support crypto.randomUUID()
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  
+  // Fallback implementation
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 function TypingDots() {
   return (
     <div className="flex items-center gap-1" aria-label="Assistant is typing" aria-live="polite">
@@ -29,7 +43,7 @@ export default function Chat() {
   
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       role: "assistant",
       content: "Hi! I'm your AI assistant. How can I help you today?",
     },
@@ -176,7 +190,7 @@ export default function Chat() {
       } else {
         setMessages((m) => [
           ...m,
-          { id: crypto.randomUUID(), role: "assistant" as const, content: answer || "(No answer received)" },
+          { id: generateUUID(), role: "assistant" as const, content: answer || "(No answer received)" },
         ]);
       }
 
@@ -214,11 +228,11 @@ export default function Chat() {
       await requestPermission();
     }
 
-    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
+    const userMsg: Message = { id: generateUUID(), role: "user", content: text };
     setMessages((m) => [...m, userMsg]);
     setInput("");
 
-    const thinkingId = crypto.randomUUID();
+    const thinkingId = generateUUID();
     setMessages((m) => [
       ...m,
       { id: thinkingId, role: "assistant", content: "", loading: true },
