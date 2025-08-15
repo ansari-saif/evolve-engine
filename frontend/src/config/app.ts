@@ -4,7 +4,7 @@ export const APP_CONFIG = {
   userId: import.meta.env.VITE_USER_ID || '5976080378',
   
   // API configuration
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  apiBaseUrl: import.meta.env.VITE_API_URL,
   
   // WebSocket configuration
   webSocketUrl: 'ws://34.131.94.242:8000',

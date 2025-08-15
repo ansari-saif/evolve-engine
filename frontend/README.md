@@ -107,7 +107,7 @@ The built-in `lightning` theme features a neon violet primary with cyan accents 
    Create a `.env` file in the project root:
    ```env
    VITE_USER_ID=your_user_id_here
-   VITE_API_BASE_URL=http://localhost:8000
+   VITE_API_URL=http://localhost:8000
    ```
 
 4. **Start development server**
@@ -162,7 +162,7 @@ The built-in `lightning` theme features a neon violet primary with cyan accents 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `VITE_USER_ID` | Your user identifier | `"5976080378"` |
-| `VITE_API_BASE_URL` | Backend API endpoint | `"http://localhost:8000"` |
+| `VITE_API_URL` | Backend API endpoint | `"http://localhost:8000"` |
 
 ### API Integration
 
