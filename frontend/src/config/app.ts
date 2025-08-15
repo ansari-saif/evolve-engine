@@ -7,10 +7,7 @@ export const APP_CONFIG = {
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
   
   // WebSocket configuration
-  webSocketUrl: import.meta.env.VITE_WEBSOCKET_URL || (() => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    return baseUrl.replace(/^https?/, (match) => match === 'https' ? 'wss' : 'ws');
-  })(),
+  webSocketUrl: 'ws://34.131.94.242:8000',
   
   // App settings
   appName: 'Evolve Engine',
