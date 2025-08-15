@@ -5,8 +5,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Set environment variables
+ARG ENVIRONMENT=development
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    ENVIRONMENT=$ENVIRONMENT
 
 # Install system dependencies
 RUN apt-get update \
@@ -30,5 +32,5 @@ COPY . .
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Command to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the application based on environment
+CMD if [ "$ENVIRONMENT" = "production" ]; then uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4; else uvicorn app.main:app --host 0.0.0.0 --port 8000; fi

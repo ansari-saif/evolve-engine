@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        ENVIRONMENT: ${ENVIRONMENT:-development}
+    container_name: evolve_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PYTHONPATH=/app
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    networks:
+      - evolve_network
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-1G}
+          cpus: ${BACKEND_CPU_LIMIT:-0.5}
+        reservations:
+          memory: ${BACKEND_MEMORY_RESERVATION:-512M}
+          cpus: ${BACKEND_CPU_RESERVATION:-0.25}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV:-development}
+    container_name: evolve_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - VITE_API_URL=${VITE_API_URL:-http://backend:8000}
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - evolve_network
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-256M}
+          cpus: ${FRONTEND_CPU_LIMIT:-0.25}
+        reservations:
+          memory: ${FRONTEND_MEMORY_RESERVATION:-128M}
+          cpus: ${FRONTEND_CPU_RESERVATION:-0.1}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  evolve_network:
+    driver: bridge
