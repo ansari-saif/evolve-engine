@@ -45,7 +45,7 @@ interface AppConfigProviderProps {
 const defaultConfig: AppConfig = {
   userId: '',
   apiBaseUrl: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000',
-  webSocketUrl: process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws',
+  webSocketUrl: 'ws://34.131.94.24:8000/ws',
   environment: (process.env.NODE_ENV as AppConfig['environment']) || 'development',
   features: {
     aiGeneration: true,

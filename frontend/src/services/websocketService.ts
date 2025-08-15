@@ -73,7 +73,7 @@ export class WebSocketService {
    * Initialize WebSocket with default configuration and auto-connect
    * Useful for quick setup with sensible defaults
    */
-  public initialize(userId: string, url: string = 'ws://localhost:8000/api/v1/ws'): void {
+  public initialize(userId: string, url: string): void {
     this.connect({
       url,
       userId,
