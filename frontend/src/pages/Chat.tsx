@@ -16,9 +16,7 @@ interface Message {
 
 // Fallback UUID generation for browsers that don't support crypto.randomUUID()
 function generateUUID(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
+  
   
   // Fallback implementation
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
