@@ -20,6 +20,8 @@ def create_task(session: Session, data: TaskCreate) -> Task:
         energy_required=data.energy_required,
         scheduled_for_date=data.scheduled_for_date,
         scheduled_for_time=getattr(data, "scheduled_for_time", None),
+        started_at=data.started_at,
+        completed_at=data.completed_at,
     )
     session.add(task)
     session.commit()
@@ -181,16 +183,27 @@ def complete_task(session: Session, task_id: int) -> Task:
     if task.started_at and not task.actual_duration:
         # Handle timezone-aware vs timezone-naive datetime comparison
         started_at = task.started_at
-        if started_at.tzinfo is None:
-            # If started_at is timezone-naive, assume it's in UTC (common for stored timestamps)
-            # and convert to system timezone for comparison
-            started_at = started_at.replace(tzinfo=timezone.utc).astimezone()
-        elif started_at.tzinfo != task.completed_at.tzinfo:
-            # If it has a different timezone, convert to system timezone
-            started_at = started_at.astimezone()
         
+        # Ensure both timestamps are timezone-aware and in the same timezone
+        if started_at.tzinfo is None:
+            # If started_at is timezone-naive, assume it's in the local system timezone
+            # This prevents timezone conversion issues that can cause negative durations
+            started_at = started_at.replace(tzinfo=task.completed_at.tzinfo)
+        elif started_at.tzinfo != task.completed_at.tzinfo:
+            # If it has a different timezone, convert to the same timezone as completed_at
+            started_at = started_at.astimezone(task.completed_at.tzinfo)
+        
+        # Calculate duration and ensure it's non-negative
         duration = task.completed_at - started_at
-        task.actual_duration = int(duration.total_seconds() / 60)  # Convert to minutes
+        duration_minutes = int(duration.total_seconds() / 60)
+        
+        # Ensure duration is non-negative (handle edge cases)
+        if duration_minutes < 0:
+            # If we get a negative duration, it's likely due to timezone issues
+            # Use a fallback calculation or set to 0
+            duration_minutes = 0
+        
+        task.actual_duration = duration_minutes
     
     session.add(task)
     session.commit()
